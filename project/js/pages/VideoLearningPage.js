@@ -21,9 +21,9 @@ export default class VideoLearningPage {
   // 卡片数据
   cards = {
     column1: [
-      { id: 'yuan', image: 'images/002.png', selected: false, label: '犁辕' },
-      { id: 'jian', image: 'images/003.png', selected: false, label: '犁箭' },
-      { id: 'hua', image: 'images/004.png', selected: false, label: '犁铧' }
+      { id: 'yuan', image: 'images/qylPic1.png', selected: false, label: '犁辕' },
+      { id: 'jian', image: 'images/qylpic2.png', selected: false, label: '犁箭' },
+      { id: 'hua', image: 'images/qylpic3.png', selected: false, label: '犁铧' }
     ],
     column2: [
       { id: 'yuan_text', pinyin: 'lí yuán', chinese: '犁辕', selected: false, refId: 'yuan' },

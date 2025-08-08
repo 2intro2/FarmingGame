@@ -1,6 +1,7 @@
 import LoginPage from './LoginPage';
 import HomePage from './HomePage';
 import ToolAssemblyPage from './ToolAssemblyPage';
+import VideoLearningPage from './VideoLearningPage';
 
 /**
  * 页面管理器
@@ -15,7 +16,8 @@ export default class PageManager {
     this.pages = {
       login: new LoginPage(),
       home: new HomePage(),
-      toolAssembly: new ToolAssemblyPage()
+      toolAssembly: new ToolAssemblyPage(),
+      videoLearning: new VideoLearningPage()
     };
     
     // 设置默认页面

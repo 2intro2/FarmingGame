@@ -36,13 +36,13 @@ export default class HomePage {
         image: null
       },
       {
-        key: 'noodleLife',
-        name: '面条的一生',
+        key: 'videoLearning',
+        name: '视频学习',
         x: startX + moduleWidth + 20,
         y: startY,
         width: moduleWidth,
         height: moduleHeight,
-        unlocked: false,
+        unlocked: true,
         image: null
       },
       {
@@ -430,6 +430,9 @@ export default class HomePage {
       if (module.key === 'toolAssembly') {
         GameGlobal.pageManager.switchToPage('toolAssembly');
         this.showToast('进入农具拼装');
+      } else if (module.key === 'videoLearning') {
+        GameGlobal.pageManager.switchToPage('videoLearning');
+        this.showToast('进入视频学习');
       }
     } else {
       console.log('显示活动未开启提示');

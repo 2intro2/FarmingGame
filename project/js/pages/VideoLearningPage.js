@@ -803,6 +803,19 @@ export default class VideoLearningPage {
   }
 
   /**
+   * 检查是否所有卡片都已匹配成功
+   * @returns {boolean} 是否所有卡片都已匹配成功
+   */
+  checkAllCardsMatched() {
+    // 检查第一列所有卡片是否都已永久选中
+    const column1AllMatched = this.cards.column1.every(card => card.permanentlySelected);
+    // 检查第二列所有卡片是否都已永久选中
+    const column2AllMatched = this.cards.column2.every(card => card.permanentlySelected);
+    
+    return column1AllMatched && column2AllMatched;
+  }
+
+  /**
    * 取消选中的卡片
    * @param {Object} card1 - 第一列选中的卡片
    * @param {Object} card2 - 第二列选中的卡片
@@ -836,33 +849,35 @@ export default class VideoLearningPage {
     if (touchX >= x && touchX <= x + width &&
         touchY >= y && touchY <= y + height) {
       
-      this.handleSubmit();
+      // 检查是否所有卡片都已匹配成功
+      if (this.checkAllCardsMatched()) {
+        // 所有卡片都已匹配成功，返回首页
+        console.log("所有卡片匹配成功，返回首页");
+        showSuccessToast("恭喜您完成所有连线！");
+        
+        // 延迟一下再返回首页，让用户看到成功提示
+        setTimeout(() => {
+          try {
+            if (GameGlobal && GameGlobal.pageManager && typeof GameGlobal.pageManager.switchToPage === 'function') {
+              GameGlobal.pageManager.switchToPage('home');
+            } else {
+              console.error('页面管理器不可用');
+              showErrorToast('返回首页失败');
+            }
+          } catch (error) {
+            console.error('返回首页时出错:', error);
+            showErrorToast('返回首页失败');
+          }
+        }, 1500);
+      } else {
+        // 还有卡片未匹配成功，显示提示
+        console.log("还有卡片未匹配成功");
+        showToast("还没有连线成功，快去学习吧");
+      }
     }
   }
 
-  /**
-   * 处理提交
-   */
-  handleSubmit() {
-    const { column1, column2 } = this.selectedCardIds;
-    
-    if (!column1 || !column2) {
-      showToast('请选择所有卡片');
-      return;
-    }
-    
-    // 检查匹配
-    const selectedImageCard = this.cards.column1.find(c => c.id === column1);
-    const selectedTextCard = this.cards.column2.find(c => c.id === column2);
-    
-    if (selectedImageCard && selectedTextCard && 
-        selectedImageCard.id === selectedTextCard.refId) {
-      showSuccessToast('匹配正确！');
-      // 这里可以添加更多逻辑，比如解锁下一个模块
-    } else {
-      showToast('匹配错误，请重试');
-    }
-  }
+
 
   /**
    * 格式化时间
@@ -883,7 +898,14 @@ export default class VideoLearningPage {
     }
     
     if (this.video) {
-      this.video.show();
+      try {
+        // 检查视频对象是否有show方法
+        if (typeof this.video.show === 'function') {
+          this.video.show();
+        }
+      } catch (error) {
+        console.warn('视频显示时出错:', error);
+      }
     }
   }
 
@@ -892,9 +914,20 @@ export default class VideoLearningPage {
    */
   hide() {
     if (this.video) {
-      this.video.hide();
-      // 隐藏时销毁视频组件以释放资源
-      this.video.destroy();
+      try {
+        // 检查视频对象是否有hide方法
+        if (typeof this.video.hide === 'function') {
+          this.video.hide();
+        }
+        
+        // 检查视频对象是否有destroy方法
+        if (typeof this.video.destroy === 'function') {
+          this.video.destroy();
+        }
+      } catch (error) {
+        console.warn('视频隐藏时出错:', error);
+      }
+      
       this.video = null;
     }
   }
@@ -911,7 +944,15 @@ export default class VideoLearningPage {
    */
   destroy() {
     if (this.video) {
-      this.video.destroy();
+      try {
+        // 检查视频对象是否有destroy方法
+        if (typeof this.video.destroy === 'function') {
+          this.video.destroy();
+        }
+      } catch (error) {
+        console.warn('视频销毁时出错:', error);
+      }
+      
       this.video = null;
     }
   }

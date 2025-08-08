@@ -2,12 +2,16 @@ import './render'; // 初始化Canvas
 import DataBus from './databus'; // 导入数据类，用于管理游戏状态和数据
 import PageManager from './pages/PageManager'; // 导入页面管理器
 import WechatAPI from './utils/wechat'; // 导入微信API工具
+import errorHandler from './utils/errorHandler'; // 导入错误处理工具
+import logger from './utils/logger'; // 导入日志系统
 
 const ctx = canvas.getContext('2d'); // 获取canvas的2D绘图上下文
 
 GameGlobal.databus = new DataBus(); // 全局数据管理，用于管理游戏状态和数据
 GameGlobal.pageManager = new PageManager(); // 全局页面管理器
 GameGlobal.wechatAPI = new WechatAPI(); // 全局微信API管理实例
+GameGlobal.errorHandler = errorHandler; // 全局错误处理器
+GameGlobal.logger = logger; // 全局日志系统
 
 /**
  * 游戏主函数
@@ -26,14 +30,18 @@ export default class Main {
    */
   init() {
     try {
+      logger.info('游戏开始初始化', null, 'main');
+      
       // 检查登录状态
       this.checkLoginStatus();
       
       // 开始游戏循环
       this.start();
+      
+      logger.info('游戏初始化完成', null, 'main');
     } catch (error) {
-      console.error('游戏初始化失败:', error);
-      this.handleError(error);
+      logger.error('游戏初始化失败', error, 'main');
+      errorHandler.handleError(error, 'game-init');
     }
   }
 
@@ -42,17 +50,22 @@ export default class Main {
    */
   checkLoginStatus() {
     try {
+      logger.info('检查登录状态', null, 'main');
+      
       // 检查本地存储的登录状态
       const loginInfo = wx.getStorageSync('loginInfo');
       if (loginInfo && loginInfo.isLoggedIn) {
         // 已登录，直接进入主页
+        logger.info('用户已登录，进入主页', null, 'main');
         GameGlobal.pageManager.switchToPage('home');
       } else {
         // 未登录，进入登录页
+        logger.info('用户未登录，进入登录页', null, 'main');
         GameGlobal.pageManager.switchToPage('login');
       }
     } catch (error) {
-      console.error('检查登录状态失败:', error);
+      logger.error('检查登录状态失败', error, 'main');
+      errorHandler.handleError(error, 'login-check');
       // 出错时默认进入登录页
       GameGlobal.pageManager.switchToPage('login');
     }
@@ -98,6 +111,8 @@ export default class Main {
         this.renderErrorPage(ctx);
       }
     } catch (error) {
+      logger.error('渲染失败', error, 'main');
+      errorHandler.handleError(error, 'render');
       console.error('渲染失败:', error);
       this.renderErrorPage(ctx);
     }

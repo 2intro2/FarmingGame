@@ -5,7 +5,6 @@ import { showToast, showSuccessToast, showErrorToast } from '../utils/toast';
  * 主页面
  */
 export default class HomePage {
-  backgroundImage = null;
   modules = [];
   buttons = {};
   infoBar = {};
@@ -14,7 +13,6 @@ export default class HomePage {
     this.initModules();
     this.initButtons();
     this.initInfoBar();
-    this.loadResources();
   }
 
   /**
@@ -95,35 +93,25 @@ export default class HomePage {
    */
   initButtons() {
     this.buttons = {
-      // 左上角用户信息
+      // 左上角用户信息（粉色圆角矩形）
       userInfo: {
         x: 20,
         y: 20,
         width: 200,
         height: 60,
-        avatar: null,
-        nickname: '用户'
+        nickname: '可心'
       },
-      // 奖杯按钮（在用户信息右边）
-      trophy: {
-        x: 240, // 用户信息右边一点点的距离
-        y: 20,
-        width: 100,
-        height: 40,
-        icon: '🏆',
-        count: 10
-      },
-      // 右上角消息按钮（文字+图标）
+      // 右上角消息按钮（圆形+文字）
       message: {
         x: SCREEN_WIDTH - 200,
         y: 20,
         width: 80,
         height: 40,
         text: '消息',
-        icon: '💬',
-        unreadCount: 0
+        icon: '🔔',
+        unreadCount: 1
       },
-      // 右上角设置按钮（文字+图标）
+      // 右上角设置按钮（圆形+文字）
       settings: {
         x: SCREEN_WIDTH - 120,
         y: 20,
@@ -132,7 +120,7 @@ export default class HomePage {
         text: '设置',
         icon: '⚙️'
       },
-      // 页面右边圆形按钮
+      // 右侧圆形导航按钮
       nextPage: {
         x: SCREEN_WIDTH - 80,
         y: SCREEN_HEIGHT / 2 - 30,
@@ -144,35 +132,16 @@ export default class HomePage {
   }
 
   /**
-   * 加载资源
-   */
-  loadResources() {
-    // 加载背景图片
-    this.backgroundImage = wx.createImage();
-    this.backgroundImage.src = 'images/bg01.png';
-    
-    // 加载水印图片
-    this.watermarkImage = wx.createImage();
-    this.watermarkImage.src = 'images/003.png';
-    
-    // 加载左下角图标
-    this.characterImage = wx.createImage();
-    this.characterImage.src = 'images/bg05.png';
-  }
-
-  /**
    * 渲染主页面
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
   render(ctx) {
-    // 绘制背景
-    if (this.backgroundImage && this.backgroundImage.complete) {
-      ctx.drawImage(this.backgroundImage, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    } else {
-      // 如果图片未加载完成，绘制默认背景
-      ctx.fillStyle = '#90EE90';
-      ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    }
+    // 绘制绿色渐变背景
+    const gradient = ctx.createLinearGradient(0, 0, 0, SCREEN_HEIGHT);
+    gradient.addColorStop(0, '#90EE90');
+    gradient.addColorStop(1, '#98FB98');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     // 绘制信息栏
     this.renderInfoBar(ctx);
@@ -197,12 +166,18 @@ export default class HomePage {
     const bar = this.infoBar;
     const statWidth = bar.width / bar.stats.length;
 
-    // 绘制信息栏背景
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
-
     bar.stats.forEach((stat, index) => {
       const x = bar.x + index * statWidth;
+      
+      // 绘制白色卡片背景（带圆角和阴影）
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(x + 5, bar.y + 5, statWidth - 10, bar.height - 10);
+      
+      // 添加阴影效果
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowBlur = 5;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
       
       // 绘制图标
       ctx.font = '20px Arial';
@@ -220,6 +195,12 @@ export default class HomePage {
       ctx.fillStyle = '#666666';
       ctx.font = '12px Arial';
       ctx.fillText(stat.label, x + statWidth / 2, bar.y + 50);
+      
+      // 重置阴影
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     });
   }
 
@@ -229,28 +210,28 @@ export default class HomePage {
    */
   renderModules(ctx) {
     this.modules.forEach(module => {
-      // 绘制模块背景
+      // 绘制白色卡片背景（带阴影）
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(module.x, module.y, module.width, module.height);
-
-      // 绘制水印（003.png）
-      if (this.watermarkImage && this.watermarkImage.complete) {
-        const watermarkSize = 40;
-        ctx.drawImage(
-          this.watermarkImage, 
-          module.x + 10, 
-          module.y + 10, 
-          watermarkSize, 
-          watermarkSize
-        );
-      }
+      
+      // 添加阴影效果
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowBlur = 5;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
 
       // 绘制模块名称
       ctx.fillStyle = '#333333';
       ctx.font = 'bold 16px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillText(module.name, module.x + module.width / 2, module.y + 60);
+      ctx.fillText(module.name, module.x + module.width / 2, module.y + 20);
+      
+      // 重置阴影
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     });
   }
 
@@ -263,9 +244,9 @@ export default class HomePage {
       if (key === 'userInfo') {
         // 渲染用户信息
         this.renderUserInfo(ctx, button);
-      } else if (key === 'trophy') {
-        // 渲染奖杯按钮
-        this.renderTrophyButton(ctx, button);
+      } else if (key === 'nextPage') {
+        // 渲染下一页按钮
+        this.renderNextPageButton(ctx, button);
       } else {
         // 渲染普通按钮
         this.renderNormalButton(ctx, button);
@@ -279,57 +260,48 @@ export default class HomePage {
    * @param {Object} userInfo - 用户信息对象
    */
   renderUserInfo(ctx, userInfo) {
-    // 绘制用户信息背景
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    // 绘制粉色圆角矩形背景
+    ctx.fillStyle = '#FFB6C1';
     ctx.fillRect(userInfo.x, userInfo.y, userInfo.width, userInfo.height);
-
-    // 绘制头像（默认圆形）
-    ctx.fillStyle = '#87CEEB';
-    ctx.beginPath();
-    ctx.arc(userInfo.x + 30, userInfo.y + 30, 25, 0, 2 * Math.PI);
-    ctx.fill();
-
-    // 绘制头像边框
-    ctx.strokeStyle = '#FFFFFF';
+    
+    // 绘制边框
+    ctx.strokeStyle = '#87CEEB';
     ctx.lineWidth = 2;
-    ctx.stroke();
+    ctx.strokeRect(userInfo.x, userInfo.y, userInfo.width, userInfo.height);
 
-    // 绘制头像内部装饰
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '20px Arial';
+    // 绘制小猪图标
+    ctx.fillStyle = '#FF69B4';
+    ctx.font = '24px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('👤', userInfo.x + 30, userInfo.y + 30);
+    ctx.fillText('🐷', userInfo.x + 30, userInfo.y + 30);
 
     // 绘制昵称
     ctx.fillStyle = '#333333';
-    ctx.font = 'bold 14px Arial';
+    ctx.font = 'bold 16px Arial';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillText(userInfo.nickname, userInfo.x + 70, userInfo.y + 30);
   }
 
   /**
-   * 渲染奖杯按钮
+   * 渲染下一页按钮（绿色圆形）
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
-   * @param {Object} trophy - 奖杯按钮对象
+   * @param {Object} button - 按钮对象
    */
-  renderTrophyButton(ctx, trophy) {
-    // 绘制奖杯按钮背景
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.fillRect(trophy.x, trophy.y, trophy.width, trophy.height);
+  renderNextPageButton(ctx, button) {
+    // 绘制绿色圆形按钮
+    ctx.fillStyle = '#4CAF50';
+    ctx.beginPath();
+    ctx.arc(button.x + button.width / 2, button.y + button.height / 2, button.width / 2, 0, 2 * Math.PI);
+    ctx.fill();
 
-    // 绘制奖杯图标
-    ctx.font = '20px Arial';
+    // 绘制白色箭头
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '24px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(trophy.icon, trophy.x + 20, trophy.y + 20);
-
-    // 绘制奖杯数量
-    ctx.fillStyle = '#333333';
-    ctx.font = 'bold 12px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(trophy.count.toString(), trophy.x + 60, trophy.y + 20);
+    ctx.fillText(button.icon, button.x + button.width / 2, button.y + button.height / 2);
   }
 
   /**
@@ -339,31 +311,41 @@ export default class HomePage {
    */
   renderNormalButton(ctx, button) {
     if (button.text) {
-      // 绘制文字+图标按钮
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      ctx.fillRect(button.x, button.y, button.width, button.height);
-
-      ctx.fillStyle = '#333333';
-      ctx.font = '14px Arial';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(button.text, button.x + 10, button.y + button.height / 2);
+      // 绘制白色圆形按钮
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(button.x + button.width / 2, button.y + button.height / 2, button.width / 2, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // 绘制边框
+      ctx.strokeStyle = '#CCCCCC';
+      ctx.lineWidth = 1;
+      ctx.stroke();
 
       // 绘制图标
+      ctx.fillStyle = '#333333';
       ctx.font = '16px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText(button.icon, button.x + button.width - 20, button.y + button.height / 2);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(button.icon, button.x + button.width / 2, button.y + button.height / 2);
+
+      // 绘制文字
+      ctx.fillStyle = '#333333';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(button.text, button.x + button.width / 2, button.y + button.height + 5);
 
       // 如果有未读消息，绘制红点
       if (button.unreadCount && button.unreadCount > 0) {
         ctx.fillStyle = '#FF0000';
         ctx.beginPath();
-        ctx.arc(button.x + button.width - 25, button.y + 5, 8, 0, 2 * Math.PI);
+        ctx.arc(button.x + button.width / 2 + 10, button.y + button.height / 2 - 10, 8, 0, 2 * Math.PI);
         ctx.fill();
 
         ctx.fillStyle = '#FFFFFF';
         ctx.font = '10px Arial';
-        ctx.fillText(button.unreadCount.toString(), button.x + button.width - 25, button.y + 5);
+        ctx.fillText(button.unreadCount.toString(), button.x + button.width / 2 + 10, button.y + button.height / 2 - 10);
       }
     } else {
       // 绘制圆形按钮（如nextPage）
@@ -386,26 +368,21 @@ export default class HomePage {
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
   renderCharacter(ctx) {
-    // 绘制角色图标（icon.png）
-    if (this.characterImage && this.characterImage.complete) {
-      ctx.drawImage(this.characterImage, 20, SCREEN_HEIGHT - 100, 60, 80);
-    } else {
-      // 如果图片未加载完成，绘制默认图标
-      ctx.fillStyle = '#87CEEB';
-      ctx.fillRect(20, SCREEN_HEIGHT - 100, 60, 80);
-    }
+    // 绘制角色（小男孩）
+    ctx.fillStyle = '#87CEEB';
+    ctx.fillRect(20, SCREEN_HEIGHT - 120, 60, 80);
 
     // 绘制对话气泡
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(90, SCREEN_HEIGHT - 120, 200, 60);
+    ctx.fillStyle = '#90EE90';
+    ctx.fillRect(90, SCREEN_HEIGHT - 140, 250, 60);
 
     // 绘制对话文字
     ctx.fillStyle = '#333333';
     ctx.font = '14px Arial';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText('Hello, 小朋友早上好!', 100, SCREEN_HEIGHT - 110);
-    ctx.fillText('快来农耕小天地探索吧', 100, SCREEN_HEIGHT - 90);
+    ctx.fillText('Hello, 小朋友早上好!', 100, SCREEN_HEIGHT - 130);
+    ctx.fillText('快来农耕小天地探索吧', 100, SCREEN_HEIGHT - 110);
   }
 
   /**
@@ -469,9 +446,6 @@ export default class HomePage {
       case 'userInfo':
         this.showUserInfoDialog();
         break;
-      case 'trophy':
-        this.showTrophyDialog();
-        break;
       case 'message':
         this.showMessageDialog();
         break;
@@ -506,6 +480,7 @@ export default class HomePage {
    */
   showMessageDialog() {
     console.log('显示消息对话框');
+    this.showToast('消息功能开发中...');
   }
 
   /**
@@ -517,18 +492,11 @@ export default class HomePage {
   }
 
   /**
-   * 显示奖杯对话框
-   */
-  showTrophyDialog() {
-    console.log('显示奖杯对话框');
-    this.showToast(`当前奖杯数：${this.buttons.trophy.count}`);
-  }
-
-  /**
    * 显示设置对话框
    */
   showSettingsDialog() {
     console.log('显示设置对话框');
+    this.showToast('设置功能开发中...');
   }
 
   /**
@@ -544,11 +512,11 @@ export default class HomePage {
    */
   update() {
     // 更新未读消息数量
-    this.buttons.message.unreadCount = GameGlobal.databus.unreadCount;
+    this.buttons.message.unreadCount = GameGlobal.databus.unreadCount || 1;
     
     // 更新用户信息
     if (GameGlobal.databus.userInfo) {
-      this.buttons.userInfo.nickname = GameGlobal.databus.userInfo.nickName || '用户';
+      this.buttons.userInfo.nickname = GameGlobal.databus.userInfo.nickName || '可心';
     }
   }
 }

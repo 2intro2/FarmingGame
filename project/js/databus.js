@@ -42,7 +42,7 @@ export default class DataBus {
   unreadCount = 1; // 未读消息数量
 
   // 页面状态
-  currentPage = 'login'; // 当前页面
+  currentPage = 'login'; // 当前页面，默认为登录页
   pageHistory = []; // 页面历史
 
   constructor() {
@@ -55,7 +55,7 @@ export default class DataBus {
   // 重置游戏状态
   reset() {
     this.frame = 0;
-    this.currentPage = 'login';
+    this.currentPage = 'login'; // 重置时回到登录页
     this.pageHistory = [];
   }
 

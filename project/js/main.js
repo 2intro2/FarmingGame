@@ -46,15 +46,14 @@ export default class Main {
       const loginInfo = wx.getStorageSync('loginInfo');
       console.log('检查登录状态:', loginInfo);
       
+      // 每次启动都默认显示登录页面，不自动跳转到主页
+      console.log('默认显示登录页面');
+      GameGlobal.pageManager.switchToPage('login');
+      
+      // 如果有登录信息，设置到数据总线但不切换页面
       if (loginInfo && loginInfo.isLoggedIn && loginInfo.userInfo) {
-        // 已登录且有用户信息，进入主页
-        console.log('用户已登录，切换到主页');
+        console.log('检测到已登录用户信息，设置到数据总线');
         GameGlobal.databus.setUserInfo(loginInfo.userInfo);
-        GameGlobal.pageManager.switchToPage('home');
-      } else {
-        // 未登录或登录信息不完整，进入登录页
-        console.log('用户未登录，切换到登录页');
-        GameGlobal.pageManager.switchToPage('login');
       }
     } catch (error) {
       console.error('检查登录状态失败:', error);

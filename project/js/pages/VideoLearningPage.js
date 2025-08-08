@@ -21,14 +21,14 @@ export default class VideoLearningPage {
   // 卡片数据
   cards = {
     column1: [
-      { id: 'yuan', image: 'images/qylPic1.png', selected: false, label: '犁辕' },
-      { id: 'jian', image: 'images/qylpic2.png', selected: false, label: '犁箭' },
-      { id: 'hua', image: 'images/qylpic3.png', selected: false, label: '犁铧' }
+      { id: 'yuan', image: 'images/qylPic1.png', selected: false, permanentlySelected: false, label: '犁辕' },
+      { id: 'jian', image: 'images/qylpic2.png', selected: false, permanentlySelected: false, label: '犁箭' },
+      { id: 'hua', image: 'images/qylpic3.png', selected: false, permanentlySelected: false, label: '犁铧' }
     ],
     column2: [
-      { id: 'liyuan', pinyin: 'lí yuán', chinese: '犁辕', selected: false, refId: 'yuan' },
-      { id: 'lijian', pinyin: 'lí jiàn', chinese: '犁箭', selected: false, refId: 'jian' },
-      { id: 'lihua', pinyin: 'lí huá', chinese: '犁铧', selected: false, refId: 'hua' }
+      { id: 'liyuan', pinyin: 'lí yuán', chinese: '犁辕', selected: false, permanentlySelected: false, refId: 'yuan' },
+      { id: 'lijian', pinyin: 'lí jiàn', chinese: '犁箭', selected: false, permanentlySelected: false, refId: 'jian' },
+      { id: 'lihua', pinyin: 'lí huá', chinese: '犁铧', selected: false, permanentlySelected: false, refId: 'hua' }
     ]
   };
 
@@ -97,21 +97,14 @@ export default class VideoLearningPage {
     wx.setStorage({
       key:"犁辕",
       data:"liyuan",
-      success(){
-        console.log("缓存成功")
-      }
-    },{
+    })
+    wx.setStorage({
       key:"犁箭",
       data:"lijian"
-    },{
+    })
+    wx.setStorage({
       key:"犁铧",
       data:"lihua"
-    })
-    wx.getStorage({
-      key: "犁辕",
-      success (res) {
-        console.log("取缓存成功",res.data)
-      }
     })
   }
 
@@ -488,14 +481,34 @@ export default class VideoLearningPage {
     this.cards.column1.forEach((card, index) => {
       const cardY = y + index * (height + gap);
       
-      // 绘制卡片背景
-      ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
+      // 绘制卡片背景 - 永久选中的卡片使用特殊颜色
+      if (card.permanentlySelected) {
+        ctx.fillStyle = '#4CAF50'; // 深绿色表示永久选中
+      } else {
+        ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
+      }
       ctx.fillRect(x, cardY, width, height);
       
-      // 绘制边框
-      ctx.strokeStyle = '#CCCCCC';
-      ctx.lineWidth = 2;
+      // 绘制边框 - 永久选中的卡片使用特殊边框
+      if (card.permanentlySelected) {
+        ctx.strokeStyle = '#2E7D32';
+        ctx.lineWidth = 3;
+      } else {
+        ctx.strokeStyle = '#CCCCCC';
+        ctx.lineWidth = 2;
+      }
       ctx.strokeRect(x, cardY, width, height);
+      
+      // 如果永久选中，绘制选中指示器
+      if (card.permanentlySelected) {
+        ctx.fillStyle = '#2E7D32';
+        ctx.fillRect(x + width - 15, cardY, 15, 15);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✓', x + width - 7.5, cardY + 7.5);
+      }
       
       // 绘制图片
       ImageLoader.safeDrawImage(
@@ -542,17 +555,37 @@ export default class VideoLearningPage {
     this.cards.column2.forEach((card, index) => {
       const cardY = y + index * (height + gap);
       
-      // 绘制卡片背景
-      ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
+      // 绘制卡片背景 - 永久选中的卡片使用特殊颜色
+      if (card.permanentlySelected) {
+        ctx.fillStyle = '#4CAF50'; // 深绿色表示永久选中
+      } else {
+        ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
+      }
       ctx.fillRect(x, cardY, width, height);
       
-      // 绘制边框
-      ctx.strokeStyle = '#CCCCCC';
-      ctx.lineWidth = 2;
+      // 绘制边框 - 永久选中的卡片使用特殊边框
+      if (card.permanentlySelected) {
+        ctx.strokeStyle = '#2E7D32';
+        ctx.lineWidth = 3;
+      } else {
+        ctx.strokeStyle = '#CCCCCC';
+        ctx.lineWidth = 2;
+      }
       ctx.strokeRect(x, cardY, width, height);
       
+      // 如果永久选中，绘制选中指示器
+      if (card.permanentlySelected) {
+        ctx.fillStyle = '#2E7D32';
+        ctx.fillRect(x + width - 15, cardY, 15, 15);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✓', x + width - 7.5, cardY + 7.5);
+      }
+      
       // 绘制拼音
-      ctx.fillStyle = '#333333';
+      ctx.fillStyle = card.permanentlySelected ? '#FFFFFF' : '#333333';
       ctx.font = '16px Arial';
       ctx.textAlign = 'center';
       ctx.fillText(card.pinyin, x + width / 2, cardY + height / 2 - 10);
@@ -676,14 +709,25 @@ export default class VideoLearningPage {
         
         // 检查当前卡片是否已经被选中
         if (card.selected) {
-          // 如果已经选中，则取消选中
+          // 如果卡片是永久选中的，则不允许取消选中
+          if (card.permanentlySelected) {
+            console.log(`卡片${columnKey}已永久选中，无法取消选中:`, card);
+            showToast("该卡片已匹配成功，无法取消选中");
+            return;
+          }
+          
+          // 如果已经选中且不是永久选中，则取消选中
           card.selected = false;
           this.selectedCardIds[columnKey] = null;
           console.log(`取消选中${columnKey}卡片:`, card);
         } else {
           // 如果未选中，则选中当前卡片
-          // 清除同列其他卡片的选择
-          this.cards[columnKey].forEach(c => c.selected = false);
+          // 清除同列其他非永久选中卡片的选择
+          this.cards[columnKey].forEach(c => {
+            if (!c.permanentlySelected) {
+              c.selected = false;
+            }
+          });
           
           // 选中当前卡片
           card.selected = true;
@@ -729,6 +773,14 @@ export default class VideoLearningPage {
             if (res.data === selectedCard2.id) {
               console.log("恭喜您，卡片成功匹配！");
               showSuccessToast("恭喜您，卡片成功匹配！");
+              
+              // 设置两张卡片为永久选中状态
+              selectedCard1.permanentlySelected = true;
+              selectedCard2.permanentlySelected = true;
+              selectedCard1.selected = true;
+              selectedCard2.selected = true;
+              
+              console.log("卡片已设置为永久选中状态");
             } else {
               console.log("卡片匹配失败，请重试");
               showToast("卡片匹配失败，请重试");

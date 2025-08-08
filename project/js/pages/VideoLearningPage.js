@@ -90,6 +90,20 @@ export default class VideoLearningPage {
     
     // 测试图片文件
     this.testImages();
+    this.store();
+  }
+
+  store(){
+    wx.setStorage({
+      key:"犁辕",
+      data:"liyuan"
+    },{
+      key:"犁箭",
+      data:"lijian"
+    },{
+      key:"犁铧",
+      data:"lihua"
+    })
   }
 
   /**

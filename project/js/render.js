@@ -12,8 +12,6 @@ export const SCREEN_HEIGHT = windowInfo.screenHeight;
 let Toast = null;
 
 // 扩展Canvas渲染上下文，添加Toast渲染
-const originalRender = GameGlobal.pageManager ? GameGlobal.pageManager.render : null;
-
 if (GameGlobal.pageManager) {
   const originalPageManagerRender = GameGlobal.pageManager.render;
   GameGlobal.pageManager.render = function(ctx) {
@@ -22,15 +20,20 @@ if (GameGlobal.pageManager) {
     
     // 延迟加载并渲染Toast
     if (!Toast) {
-      import('./components/Toast').then(module => {
-        Toast = module.default;
-      }).catch(error => {
+      try {
+        Toast = require('./components/Toast').default;
+        console.log('Toast组件加载成功');
+      } catch (error) {
         console.error('Toast组件加载失败:', error);
-      });
+      }
     }
     
     if (Toast) {
-      Toast.render(ctx);
+      try {
+        Toast.render(ctx);
+      } catch (error) {
+        console.error('Toast渲染失败:', error);
+      }
     }
   };
 }

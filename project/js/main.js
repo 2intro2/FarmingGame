@@ -44,16 +44,22 @@ export default class Main {
     try {
       // 检查本地存储的登录状态
       const loginInfo = wx.getStorageSync('loginInfo');
-      if (loginInfo && loginInfo.isLoggedIn) {
-        // 已登录，直接进入主页
+      console.log('检查登录状态:', loginInfo);
+      
+      if (loginInfo && loginInfo.isLoggedIn && loginInfo.userInfo) {
+        // 已登录且有用户信息，进入主页
+        console.log('用户已登录，切换到主页');
+        GameGlobal.databus.setUserInfo(loginInfo.userInfo);
         GameGlobal.pageManager.switchToPage('home');
       } else {
-        // 未登录，进入登录页
+        // 未登录或登录信息不完整，进入登录页
+        console.log('用户未登录，切换到登录页');
         GameGlobal.pageManager.switchToPage('login');
       }
     } catch (error) {
       console.error('检查登录状态失败:', error);
       // 出错时默认进入登录页
+      console.log('登录状态检查出错，默认进入登录页');
       GameGlobal.pageManager.switchToPage('login');
     }
   }

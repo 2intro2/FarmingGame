@@ -685,7 +685,19 @@ export default class VideoLearningPage {
     
     if (touchX >= x && touchX <= x + width &&
         touchY >= y && touchY <= y + height) {
-      GameGlobal.pageManager.switchToPage('home');
+      console.log('点击返回按钮，返回首页');
+      
+      try {
+        if (GameGlobal && GameGlobal.pageManager && typeof GameGlobal.pageManager.switchToPage === 'function') {
+          GameGlobal.pageManager.switchToPage('home');
+        } else {
+          console.error('页面管理器不可用');
+          showErrorToast('返回首页失败');
+        }
+      } catch (error) {
+        console.error('返回首页时出错:', error);
+        showErrorToast('返回首页失败');
+      }
     }
   }
 

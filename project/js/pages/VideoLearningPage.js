@@ -2,6 +2,7 @@ import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
 import { showToast, showSuccessToast, showErrorToast } from '../utils/toast';
 import ImageLoader from '../utils/imageLoader';
 import ImageTest from '../utils/imageTest';
+import Toast from '../components/Toast';
 
 /**
  * 视频学习页面
@@ -250,6 +251,9 @@ export default class VideoLearningPage {
     
     // 绘制提交按钮
     this.renderSubmitButton(ctx);
+    
+    // 渲染Toast提示
+    Toast.render(ctx);
   }
 
   /**
@@ -772,7 +776,7 @@ export default class VideoLearningPage {
             // 检查缓存中的值是否与selectedCard2.id相等
             if (res.data === selectedCard2.id) {
               console.log("恭喜您，卡片成功匹配！");
-              showSuccessToast("恭喜您，卡片成功匹配！");
+              showSuccessToast("连线成功，再接再厉！");
               
               // 设置两张卡片为永久选中状态
               selectedCard1.permanentlySelected = true;
@@ -783,7 +787,7 @@ export default class VideoLearningPage {
               console.log("卡片已设置为永久选中状态");
             } else {
               console.log("卡片匹配失败，请重试");
-              showToast("卡片匹配失败，请重试");
+              showToast("连线失败，再去学习一下吧");
               
               // 匹配失败时，取消两个选中卡片
               this.cancelSelectedCards(selectedCard1, selectedCard2);

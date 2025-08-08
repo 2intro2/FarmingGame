@@ -613,8 +613,10 @@ export default class VideoLearningPage {
    * @param {Object} event - 触摸事件对象
    */
   handleTouch(event) {
+    console.log("处理触摸事件",event.touches[0])
     const touch = event.touches[0];
-    const { x, y } = touch;
+    const x = touch.clientX
+    const y = touch.clientY
     
     // 检查返回按钮点击
     this.checkBackButtonClick(x, y);
@@ -642,9 +644,9 @@ export default class VideoLearningPage {
    * 检查卡片选择
    */
   checkCardSelection(touchX, touchY) {
+    console.log(touchX,touchY)
     // 检查第一列卡片
     this.checkColumnCards(touchX, touchY, 'column1', this.layout.cards.column1);
-    
     // 检查第二列卡片
     this.checkColumnCards(touchX, touchY, 'column2', this.layout.cards.column2);
   }
@@ -654,13 +656,14 @@ export default class VideoLearningPage {
    */
   checkColumnCards(touchX, touchY, columnKey, layout) {
     const { x, y, width, height, gap } = layout;
-    
+    console.log("layout数据",x,y,width,height)
+    console.log("touch数据",touchX,touchX)
     this.cards[columnKey].forEach((card, index) => {
       const cardY = y + index * (height + gap);
       
       if (touchX >= x && touchX <= x + width &&
           touchY >= cardY && touchY <= cardY + height) {
-        
+            console.log("图片呗点击了")
         // 清除同列其他卡片的选择
         this.cards[columnKey].forEach(c => c.selected = false);
         

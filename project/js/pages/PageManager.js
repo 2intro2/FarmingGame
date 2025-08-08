@@ -1,7 +1,6 @@
 import LoginPage from './LoginPage';
 import HomePage from './HomePage';
 import ToolAssemblyNavPage from './ToolAssemblyNavPage';
-import ToolAssemblyPage from './ToolAssemblyPage';
 import animationManager from '../utils/animationManager';
 
 /**
@@ -14,14 +13,14 @@ export default class PageManager {
   pageHistory = []; // 页面历史栈
   maxHistorySize = 10; // 最大历史栈大小
   isAnimating = false; // 是否正在动画中
+  lastTouchPosition = null; // 记录最后一次触摸位置
 
   constructor() {
     // 初始化所有页面
     this.pages = {
       login: new LoginPage(),
       home: new HomePage(),
-      toolAssemblyNav: new ToolAssemblyNavPage(),
-      toolAssembly: new ToolAssemblyPage()
+      toolAssemblyNav: new ToolAssemblyNavPage()
     };
     
     // 设置默认页面
@@ -34,9 +33,25 @@ export default class PageManager {
    * @param {Object} options - 可选参数
    */
   switchToPage(pageName, options = {}) {
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info(`PageManager.switchToPage被调用`, { 
+        pageName, 
+        options,
+        pagesAvailable: Object.keys(this.pages),
+        currentPage: this.currentPage ? this.currentPage.constructor.name : 'none'
+      }, 'pageManager');
+    }
+    
     if (this.pages[pageName]) {
       const fromPage = this.currentPage;
       const toPage = this.pages[pageName];
+      
+      if (GameGlobal.logger) {
+        GameGlobal.logger.info(`页面切换开始`, { 
+          from: fromPage ? fromPage.constructor.name : 'none',
+          to: toPage.constructor.name
+        }, 'pageManager');
+      }
       
       // 保存当前页面到历史栈
       if (this.currentPage && options.addToHistory !== false) {
@@ -50,6 +65,12 @@ export default class PageManager {
         // 直接切换页面
         this.currentPage = toPage;
         GameGlobal.databus.switchPage(pageName);
+        
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info(`页面直接切换完成`, { 
+            newCurrentPage: this.currentPage.constructor.name
+          }, 'pageManager');
+        }
       }
       
       // 记录导航日志
@@ -59,6 +80,12 @@ export default class PageManager {
           to: pageName,
           withAnimation: options.animation !== false
         }, 'navigation');
+      }
+    } else {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error(`页面不存在: ${pageName}`, { 
+          availablePages: Object.keys(this.pages)
+        }, 'pageManager');
       }
     }
   }
@@ -167,7 +194,7 @@ export default class PageManager {
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
   render(ctx) {
-    if (this.isAnimating && GameGlobal.animationManager) {
+    if (this.isAnimating) {
       // 渲染动画中的页面
       GameGlobal.animationManager.update();
       
@@ -177,6 +204,16 @@ export default class PageManager {
       }
     } else if (this.currentPage && this.currentPage.render) {
       this.currentPage.render(ctx);
+    }
+
+    // 渲染Toast提示
+    try {
+      const Toast = require('../components/Toast').default;
+      Toast.render(ctx);
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.warn('Toast渲染失败', { error: error.message }, 'pageManager');
+      }
     }
   }
 
@@ -197,6 +234,13 @@ export default class PageManager {
     // 动画期间禁用触摸事件
     if (this.isAnimating) return;
     
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug('PageManager处理触摸事件', { 
+        currentPage: this.currentPage ? this.currentPage.constructor.name : 'none',
+        isAnimating: this.isAnimating 
+      }, 'pageManager');
+    }
+    
     if (this.currentPage && this.currentPage.handleTouch) {
       this.currentPage.handleTouch(event);
     }
@@ -210,6 +254,12 @@ export default class PageManager {
     // 动画期间禁用触摸事件
     if (this.isAnimating) return;
     
+    // 记录触摸位置
+    if (event.touches && event.touches.length > 0) {
+      const touch = event.touches[0];
+      this.lastTouchPosition = { x: touch.clientX, y: touch.clientY };
+    }
+    
     if (this.currentPage && this.currentPage.handleTouchStart) {
       this.currentPage.handleTouchStart(event);
     }
@@ -222,6 +272,12 @@ export default class PageManager {
   handleTouchMove(event) {
     // 动画期间禁用触摸事件
     if (this.isAnimating) return;
+    
+    // 更新触摸位置
+    if (event.touches && event.touches.length > 0) {
+      const touch = event.touches[0];
+      this.lastTouchPosition = { x: touch.clientX, y: touch.clientY };
+    }
     
     if (this.currentPage && this.currentPage.handleTouchMove) {
       this.currentPage.handleTouchMove(event);
@@ -238,6 +294,19 @@ export default class PageManager {
     
     if (this.currentPage && this.currentPage.handleTouchEnd) {
       this.currentPage.handleTouchEnd(event);
+    }
+    
+    // 在触摸结束时也调用handleTouch方法，使用记录的触摸位置
+    if (this.currentPage && this.currentPage.handleTouch && this.lastTouchPosition) {
+      // 创建一个模拟的触摸事件，包含触摸位置
+      const simulatedEvent = {
+        ...event,
+        touches: [{
+          clientX: this.lastTouchPosition.x,
+          clientY: this.lastTouchPosition.y
+        }]
+      };
+      this.currentPage.handleTouch(simulatedEvent);
     }
   }
 }

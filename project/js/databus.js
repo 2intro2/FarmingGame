@@ -23,7 +23,7 @@ export default class DataBus {
 
   // 游戏模块状态
   modules = {
-    toolAssembly: { unlocked: true, name: '农具拼装' },
+    toolAssemblyNav: { unlocked: true, name: '农具拼装' },
     noodleLife: { unlocked: false, name: '面条的一生' },
     emergencyChallenge: { unlocked: false, name: '突发状况挑战' },
     cornGrowth: { unlocked: false, name: '玉米生长过程' }

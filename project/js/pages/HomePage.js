@@ -1,8 +1,9 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
 import BasePage from './BasePage';
+import Toast from '../components/Toast';
 
 /**
- * 主页面
+ * 主页
  */
 export default class HomePage extends BasePage {
   backgroundImage = null;
@@ -19,7 +20,7 @@ export default class HomePage extends BasePage {
   }
 
   /**
-   * 初始化游戏模块
+   * 初始化模块
    */
   initModules() {
     const moduleWidth = SCREEN_WIDTH * 0.4;
@@ -29,7 +30,7 @@ export default class HomePage extends BasePage {
 
     this.modules = [
       {
-        key: 'toolAssembly',
+        key: 'toolAssemblyNav',
         name: '农具拼装',
         x: startX,
         y: startY,
@@ -278,14 +279,33 @@ export default class HomePage extends BasePage {
    * @param {Object} event - 触摸事件对象
    */
   handleTouch(event) {
+    // 检查是否有触摸点
+    if (!event.touches || event.touches.length === 0) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.debug('触摸事件没有触摸点', { event }, 'homepage');
+      }
+      return;
+    }
+
     const touch = event.touches[0];
     const x = touch.clientX;
     const y = touch.clientY;
+
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug(`触摸事件: (${x}, ${y})`, null, 'homepage');
+    }
 
     // 检查游戏模块点击
     this.modules.forEach(module => {
       if (x >= module.x && x <= module.x + module.width &&
           y >= module.y && y <= module.y + module.height) {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info(`点击模块: ${module.name}`, {
+            module: module.key,
+            position: { x: module.x, y: module.y, width: module.width, height: module.height },
+            touch: { x, y }
+          }, 'homepage');
+        }
         this.handleModuleClick(module);
       }
     });
@@ -294,6 +314,9 @@ export default class HomePage extends BasePage {
     Object.entries(this.buttons).forEach(([key, button]) => {
       if (x >= button.x && x <= button.x + button.width &&
           y >= button.y && y <= button.y + button.height) {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info(`点击按钮: ${key}`, null, 'homepage');
+        }
         this.handleButtonClick(key);
       }
     });
@@ -304,10 +327,47 @@ export default class HomePage extends BasePage {
    * @param {Object} module - 模块对象
    */
   handleModuleClick(module) {
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info(`模块点击: ${module.key} - ${module.name}`, null, 'homepage');
+    }
+    
     if (module.unlocked) {
-      if (module.key === 'toolAssembly') {
-        GameGlobal.pageManager.switchToPage('toolAssemblyNav');
-        this.showToast('进入农具拼装');
+      if (module.key === 'toolAssemblyNav') {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('尝试切换到农具拼装导航页', null, 'homepage');
+        }
+        
+        // 检查PageManager是否存在
+        if (!GameGlobal.pageManager) {
+          if (GameGlobal.logger) {
+            GameGlobal.logger.error('PageManager不存在', null, 'homepage');
+          }
+          this.showToast('页面管理器未初始化');
+          return;
+        }
+        
+        // 检查目标页面是否存在
+        if (!GameGlobal.pageManager.pages.toolAssemblyNav) {
+          if (GameGlobal.logger) {
+            GameGlobal.logger.error('toolAssemblyNav页面不存在', null, 'homepage');
+          }
+          this.showToast('目标页面未找到');
+          return;
+        }
+        
+        try {
+          // 直接切换页面，不使用动画
+          GameGlobal.pageManager.switchToPage('toolAssemblyNav', { animation: false });
+          this.showToast('进入农具拼装');
+          if (GameGlobal.logger) {
+            GameGlobal.logger.info('页面切换成功', null, 'homepage');
+          }
+        } catch (error) {
+          if (GameGlobal.logger) {
+            GameGlobal.logger.error('页面切换失败', error, 'homepage');
+          }
+          this.showToast('页面切换失败');
+        }
       }
     } else {
       this.showToast('活动未开启');
@@ -335,16 +395,7 @@ export default class HomePage extends BasePage {
    */
   showToast(message) {
     // 调用Toast组件显示提示
-    import('../components/Toast').then(module => {
-      const Toast = module.default;
-      Toast.show(message);
-    }).catch(error => {
-      console.error('Toast加载失败:', error);
-      // 降级到微信原生Toast
-      if (GameGlobal.wechatAPI) {
-        GameGlobal.wechatAPI.showToast(message);
-      }
-    });
+    Toast.show(message);
   }
 
   /**

@@ -19,13 +19,40 @@ export default class WechatAPI {
   }
 
   /**
+   * 处理触摸事件
+   * @param {Object} event - 触摸事件对象
+   */
+  handleTouch(event) {
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug('微信触摸事件接收', { event }, 'wechat');
+    }
+    
+    // 将触摸事件传递给当前页面
+    if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
+      GameGlobal.pageManager.handleTouch(event);
+    } else {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.warn('PageManager或当前页面不存在', null, 'wechat');
+      }
+    }
+  }
+
+  /**
    * 处理触摸开始事件
    * @param {Object} event - 触摸事件对象
    */
   handleTouchStart(event) {
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug('微信触摸开始事件接收', { event }, 'wechat');
+    }
+    
     // 将触摸事件传递给当前页面
     if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
       GameGlobal.pageManager.handleTouchStart(event);
+    } else {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.warn('PageManager或当前页面不存在', null, 'wechat');
+      }
     }
   }
 
@@ -34,9 +61,17 @@ export default class WechatAPI {
    * @param {Object} event - 触摸事件对象
    */
   handleTouchMove(event) {
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug('微信触摸移动事件接收', { event }, 'wechat');
+    }
+    
     // 将触摸事件传递给当前页面
     if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
       GameGlobal.pageManager.handleTouchMove(event);
+    } else {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.warn('PageManager或当前页面不存在', null, 'wechat');
+      }
     }
   }
 
@@ -45,9 +80,17 @@ export default class WechatAPI {
    * @param {Object} event - 触摸事件对象
    */
   handleTouchEnd(event) {
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug('微信触摸结束事件接收', { event }, 'wechat');
+    }
+    
     // 将触摸事件传递给当前页面
     if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
       GameGlobal.pageManager.handleTouchEnd(event);
+    } else {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.warn('PageManager或当前页面不存在', null, 'wechat');
+      }
     }
   }
 

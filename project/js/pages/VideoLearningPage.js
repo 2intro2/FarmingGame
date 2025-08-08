@@ -672,8 +672,33 @@ export default class VideoLearningPage {
         this.selectedCardIds[columnKey] = card.id;
         
         console.log(`选中${columnKey}卡片:`, card);
+        
+        // 检查是否两列都有卡片被选中
+        this.checkBothColumnsSelected();
       }
     });
+  }
+
+  /**
+   * 检查两列是否都有卡片被选中
+   */
+  checkBothColumnsSelected() {
+    const { column1, column2 } = this.selectedCardIds;
+    
+    if (column1 && column2) {
+      console.log(`两列都有卡片被选中！`);
+      console.log(`Column1 选中卡片ID: ${column1}`);
+      console.log(`Column2 选中卡片ID: ${column2}`);
+      
+      // 获取选中的卡片对象
+      const selectedCard1 = this.cards.column1.find(c => c.id === column1);
+      const selectedCard2 = this.cards.column2.find(c => c.id === column2);
+      
+      if (selectedCard1 && selectedCard2) {
+        console.log(`Column1 卡片详情:`, selectedCard1);
+        console.log(`Column2 卡片详情:`, selectedCard2);
+      }
+    }
   }
 
   /**

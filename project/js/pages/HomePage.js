@@ -303,7 +303,7 @@ export default class HomePage extends BasePage {
   handleModuleClick(module) {
     if (module.unlocked) {
       if (module.key === 'toolAssembly') {
-        GameGlobal.pageManager.switchToPage('toolAssembly');
+        GameGlobal.pageManager.switchToPage('toolAssemblyNav');
         this.showToast('进入农具拼装');
       }
     } else {

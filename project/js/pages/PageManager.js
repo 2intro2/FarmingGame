@@ -1,5 +1,6 @@
 import LoginPage from './LoginPage';
 import HomePage from './HomePage';
+import ToolAssemblyNavPage from './ToolAssemblyNavPage';
 import ToolAssemblyPage from './ToolAssemblyPage';
 import animationManager from '../utils/animationManager';
 
@@ -19,6 +20,7 @@ export default class PageManager {
     this.pages = {
       login: new LoginPage(),
       home: new HomePage(),
+      toolAssemblyNav: new ToolAssemblyNavPage(),
       toolAssembly: new ToolAssemblyPage()
     };
     
@@ -197,6 +199,45 @@ export default class PageManager {
     
     if (this.currentPage && this.currentPage.handleTouch) {
       this.currentPage.handleTouch(event);
+    }
+  }
+
+  /**
+   * 处理触摸开始事件
+   * @param {Object} event - 触摸事件对象
+   */
+  handleTouchStart(event) {
+    // 动画期间禁用触摸事件
+    if (this.isAnimating) return;
+    
+    if (this.currentPage && this.currentPage.handleTouchStart) {
+      this.currentPage.handleTouchStart(event);
+    }
+  }
+
+  /**
+   * 处理触摸移动事件
+   * @param {Object} event - 触摸事件对象
+   */
+  handleTouchMove(event) {
+    // 动画期间禁用触摸事件
+    if (this.isAnimating) return;
+    
+    if (this.currentPage && this.currentPage.handleTouchMove) {
+      this.currentPage.handleTouchMove(event);
+    }
+  }
+
+  /**
+   * 处理触摸结束事件
+   * @param {Object} event - 触摸事件对象
+   */
+  handleTouchEnd(event) {
+    // 动画期间禁用触摸事件
+    if (this.isAnimating) return;
+    
+    if (this.currentPage && this.currentPage.handleTouchEnd) {
+      this.currentPage.handleTouchEnd(event);
     }
   }
 }

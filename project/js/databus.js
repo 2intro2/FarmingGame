@@ -31,10 +31,63 @@ export default class DataBus {
 
   // 农具拼接游戏数据
   currentToolIndex = 0; // 当前农具索引
+  currentTool = null; // 当前选中的农具
   toolSteps = {
     step1: { status: 'in_progress', name: '第一步' },
     step2: { status: 'locked', name: '第二步' },
     step3: { status: 'locked', name: '第三步' }
+  };
+
+  // 农具数据
+  toolsData = {
+    hoe: {
+      id: 'hoe',
+      name: '锄头',
+      unlocked: true,
+      completed: false,
+      progress: 0,
+      steps: [
+        { id: 'step1', name: '选择锄头头', status: 'in_progress' },
+        { id: 'step2', name: '选择木柄', status: 'locked' },
+        { id: 'step3', name: '组装完成', status: 'locked' }
+      ]
+    },
+    shovel: {
+      id: 'shovel',
+      name: '铁锹',
+      unlocked: true,
+      completed: false,
+      progress: 0,
+      steps: [
+        { id: 'step1', name: '选择铁锹头', status: 'in_progress' },
+        { id: 'step2', name: '选择手柄', status: 'locked' },
+        { id: 'step3', name: '组装完成', status: 'locked' }
+      ]
+    },
+    sickle: {
+      id: 'sickle',
+      name: '镰刀',
+      unlocked: false,
+      completed: false,
+      progress: 0,
+      steps: [
+        { id: 'step1', name: '选择镰刀头', status: 'locked' },
+        { id: 'step2', name: '选择刀柄', status: 'locked' },
+        { id: 'step3', name: '组装完成', status: 'locked' }
+      ]
+    },
+    rake: {
+      id: 'rake',
+      name: '耙子',
+      unlocked: false,
+      completed: false,
+      progress: 0,
+      steps: [
+        { id: 'step1', name: '选择耙子头', status: 'locked' },
+        { id: 'step2', name: '选择手柄', status: 'locked' },
+        { id: 'step3', name: '组装完成', status: 'locked' }
+      ]
+    }
   };
 
   // 通知系统
@@ -166,12 +219,97 @@ export default class DataBus {
     }
   }
 
-  // 更新农具步骤状态
-  updateToolStep(stepIndex, status) {
-    const stepKeys = Object.keys(this.toolSteps);
-    if (stepKeys[stepIndex]) {
-      this.toolSteps[stepKeys[stepIndex]].status = status;
+  // 获取当前农具信息
+  getCurrentTool() {
+    const toolList = Object.keys(this.modules).filter(key => this.modules[key].unlocked);
+    const currentToolKey = toolList[this.currentToolIndex];
+    return {
+      key: currentToolKey,
+      ...this.modules[currentToolKey]
+    };
+  }
+
+  // 获取农具数据
+  getToolData(toolId) {
+    return this.toolsData[toolId] || null;
+  }
+
+  // 更新农具进度
+  updateToolProgress(toolId, progress) {
+    if (this.toolsData[toolId]) {
+      this.toolsData[toolId].progress = Math.min(100, Math.max(0, progress));
+      
+      // 如果进度达到100%，标记为完成
+      if (this.toolsData[toolId].progress >= 100) {
+        this.toolsData[toolId].completed = true;
+        this.unlockNextTool(toolId);
+      }
+      
+      // 记录日志
+      if (GameGlobal.logger) {
+        GameGlobal.logger.info(`更新农具进度: ${toolId}`, {
+          toolId: toolId,
+          progress: progress,
+          completed: this.toolsData[toolId].completed
+        }, 'databus');
+      }
     }
+  }
+
+  // 解锁下一个农具
+  unlockNextTool(completedToolId) {
+    const toolOrder = ['hoe', 'shovel', 'sickle', 'rake'];
+    const currentIndex = toolOrder.indexOf(completedToolId);
+    
+    if (currentIndex >= 0 && currentIndex < toolOrder.length - 1) {
+      const nextToolId = toolOrder[currentIndex + 1];
+      if (this.toolsData[nextToolId]) {
+        this.toolsData[nextToolId].unlocked = true;
+        
+        // 记录解锁日志
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info(`解锁农具: ${nextToolId}`, {
+            unlockedTool: nextToolId,
+            completedTool: completedToolId
+          }, 'databus');
+        }
+      }
+    }
+  }
+
+  // 更新农具步骤状态
+  updateToolStep(toolId, stepId, status) {
+    if (this.toolsData[toolId]) {
+      const step = this.toolsData[toolId].steps.find(s => s.id === stepId);
+      if (step) {
+        step.status = status;
+        
+        // 计算总体进度
+        const totalSteps = this.toolsData[toolId].steps.length;
+        const completedSteps = this.toolsData[toolId].steps.filter(s => s.status === 'completed').length;
+        const progress = (completedSteps / totalSteps) * 100;
+        
+        this.updateToolProgress(toolId, progress);
+      }
+    }
+  }
+
+  // 设置当前选中的农具
+  setCurrentTool(tool) {
+    this.currentTool = tool;
+    
+    // 记录日志
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info(`设置当前农具: ${tool.name}`, {
+        toolId: tool.id,
+        toolName: tool.name
+      }, 'databus');
+    }
+  }
+
+  // 获取所有农具数据
+  getAllToolsData() {
+    return this.toolsData;
   }
 
   // 添加通知
@@ -192,15 +330,5 @@ export default class DataBus {
       notification.isRead = true;
       this.unreadCount = Math.max(0, this.unreadCount - 1);
     }
-  }
-
-  // 获取当前农具信息
-  getCurrentTool() {
-    const toolList = Object.keys(this.modules).filter(key => this.modules[key].unlocked);
-    const currentToolKey = toolList[this.currentToolIndex];
-    return {
-      key: currentToolKey,
-      ...this.modules[currentToolKey]
-    };
   }
 }

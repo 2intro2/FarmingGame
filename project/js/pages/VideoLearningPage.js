@@ -26,9 +26,9 @@ export default class VideoLearningPage {
       { id: 'hua', image: 'images/qylpic3.png', selected: false, label: '犁铧' }
     ],
     column2: [
-      { id: 'yuan_text', pinyin: 'lí yuán', chinese: '犁辕', selected: false, refId: 'yuan' },
-      { id: 'jian_text', pinyin: 'lí jiàn', chinese: '犁箭', selected: false, refId: 'jian' },
-      { id: 'hua_text', pinyin: 'lí huá', chinese: '犁铧', selected: false, refId: 'hua' }
+      { id: 'liyuan', pinyin: 'lí yuán', chinese: '犁辕', selected: false, refId: 'yuan' },
+      { id: 'lijian', pinyin: 'lí jiàn', chinese: '犁箭', selected: false, refId: 'jian' },
+      { id: 'lihua', pinyin: 'lí huá', chinese: '犁铧', selected: false, refId: 'hua' }
     ]
   };
 
@@ -96,13 +96,22 @@ export default class VideoLearningPage {
   store(){
     wx.setStorage({
       key:"犁辕",
-      data:"liyuan"
+      data:"liyuan",
+      success(){
+        console.log("缓存成功")
+      }
     },{
       key:"犁箭",
       data:"lijian"
     },{
       key:"犁铧",
       data:"lihua"
+    })
+    wx.getStorage({
+      key: "犁辕",
+      success (res) {
+        console.log("取缓存成功",res.data)
+      }
     })
   }
 
@@ -706,7 +715,30 @@ export default class VideoLearningPage {
       
       if (selectedCard1 && selectedCard2) {
         console.log(`Column1 卡片详情:`, selectedCard1);
+        console.log(`Column1 label:`, selectedCard1.label);
         console.log(`Column2 卡片详情:`, selectedCard2);
+        
+        // 从缓存中获取数据，key为selectedCard1.label
+        wx.getStorage({
+          key: selectedCard1.label,
+          success: (res) => {
+            console.log("从缓存获取的数据:", res.data);
+            console.log("Column2卡片ID:", selectedCard2.id);
+            
+            // 检查缓存中的值是否与selectedCard2.id相等
+            if (res.data === selectedCard2.id) {
+              console.log("恭喜您，卡片成功匹配！");
+              showSuccessToast("恭喜您，卡片成功匹配！");
+            } else {
+              console.log("卡片匹配失败，请重试");
+              showToast("卡片匹配失败，请重试");
+            }
+          },
+          fail: (error) => {
+            console.log("获取缓存失败:", error);
+            showErrorToast("获取缓存数据失败");
+          }
+        });
       }
     }
   }

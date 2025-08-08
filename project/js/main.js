@@ -10,6 +10,12 @@ import animationDebug from './utils/animationDebug'; // 导入动画调试工具
 
 const ctx = canvas.getContext('2d'); // 获取canvas的2D绘图上下文
 
+// 在Canvas上下文创建后立即添加roundRect polyfill
+if (GameGlobal.addRoundRectPolyfill) {
+  GameGlobal.addRoundRectPolyfill();
+  GameGlobal.addRoundRectPolyfill = null; // 只添加一次
+}
+
 GameGlobal.databus = new DataBus(); // 全局数据管理，用于管理游戏状态和数据
 GameGlobal.pageManager = new PageManager(); // 全局页面管理器
 GameGlobal.wechatAPI = new WechatAPI(); // 全局微信API管理实例

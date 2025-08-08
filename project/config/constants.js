@@ -171,18 +171,22 @@ export const AUDIO = {
 export const IMAGES = {
   // 背景图片
   BACKGROUNDS: {
-    MAIN: 'images/bg.jpg'
+    MAIN: 'images/bg_main.jpg'
   },
   
   // 工具图片
   TOOLS: {
-    TOOL1: 'images/tool1.png'
+    TOOL_HOE: 'images/tool_hoe.png',
+    TOOL_SHOVEL: 'images/tool_shovel.png',
+    TOOL_SICKLE: 'images/tool_sickle.png',
+    TOOL_RAKE: 'images/tool_rake.png'
   },
   
   // 游戏图片
   GAME: {
-    IMG_002: 'images/002.png',
-    IMG_004: 'images/004.png'
+    RESOURCE_001: 'images/resource_001.png',
+    RESOURCE_002: 'images/resource_002.png',
+    DESIGN_REFERENCE: 'images/design_reference.png'
   }
 };
 

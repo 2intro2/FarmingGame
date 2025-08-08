@@ -31,7 +31,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         description: '曲辕犁是中国古代农业技术的巅峰之作，体现了"天人合一"的哲学思想。牛或人力拉动犁辕，犁铧切入土壤并翻动，犁箭调节深度以适应不同土质。',
         difficulty: 2, // 星级
         reward: 10,
-        image: 'images/tool1.png',
+        image: 'images/tool_hoe.png',
         unlocked: true,
         completed: false,
         progress: 0,
@@ -44,7 +44,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         description: '粉末从边',
         difficulty: 2,
         reward: 20,
-        image: 'images/tool2.png',
+        image: 'images/tool_shovel.png',
         unlocked: true,
         completed: false,
         progress: 0,
@@ -57,7 +57,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         description: '起,升',
         difficulty: 1,
         reward: 10,
-        image: 'images/tool3.png',
+        image: 'images/tool_sickle.png',
         unlocked: true,
         completed: false,
         progress: 0,
@@ -70,7 +70,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         description: '用于松土和除草的重要农具，是农业生产的基础工具。',
         difficulty: 1,
         reward: 5,
-        image: 'images/tool1.png',
+        image: 'images/tool_hoe.png',
         unlocked: true,
         completed: false,
         progress: 0,
@@ -83,7 +83,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         description: '用于挖土和翻地的农具，适合各种土壤类型。',
         difficulty: 2,
         reward: 8,
-        image: 'images/tool2.png',
+        image: 'images/tool_shovel.png',
         unlocked: true,
         completed: false,
         progress: 0,
@@ -120,12 +120,25 @@ export default class ToolAssemblyNavPage extends BasePage {
     // 加载农具图片
     this.tools.forEach(tool => {
       if (tool.image) {
-        const img = new Image();
-        img.onload = () => {
-          tool.imageLoaded = true;
-          tool.imageElement = img;
-        };
-        img.src = tool.image;
+        try {
+          // 使用微信小游戏的图片创建API
+          const img = wx.createImage();
+          img.onload = () => {
+            tool.imageLoaded = true;
+            tool.imageElement = img;
+          };
+          img.onerror = (error) => {
+            console.warn(`图片加载失败: ${tool.image}，将使用占位符`, error);
+            // 图片加载失败时使用占位符
+            tool.imageLoaded = false;
+            tool.usePlaceholder = true;
+          };
+          img.src = tool.image;
+        } catch (error) {
+          console.error(`创建图片对象失败: ${tool.image}`, error);
+          tool.imageLoaded = false;
+          tool.usePlaceholder = true;
+        }
       }
     });
   }
@@ -223,6 +236,29 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.globalAlpha = tool.unlocked ? 1 : 0.5;
       ctx.drawImage(tool.imageElement, imgX, imgY, imgSize, imgSize);
       ctx.globalAlpha = 1;
+    } else if (tool.usePlaceholder) {
+      // 绘制占位符
+      const placeholderSize = this.cardWidth * 0.3;
+      const placeholderX = x + (this.cardWidth - placeholderSize) / 2;
+      const placeholderY = y + 50;
+      
+      // 绘制占位符背景
+      ctx.fillStyle = '#F0F0F0';
+      ctx.beginPath();
+      ctx.roundRect(placeholderX, placeholderY, placeholderSize, placeholderSize, 8);
+      ctx.fill();
+      
+      // 绘制占位符图标
+      ctx.fillStyle = '#CCCCCC';
+      ctx.font = '24px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🛠️', placeholderX + placeholderSize / 2, placeholderY + placeholderSize / 2);
+      
+      // 绘制占位符文字
+      ctx.fillStyle = '#999999';
+      ctx.font = '12px Arial';
+      ctx.fillText('农具图片', placeholderX + placeholderSize / 2, placeholderY + placeholderSize + 20);
     }
 
     // 绘制农具名称

@@ -23,33 +23,42 @@ export default class ToolAssemblyPage extends BasePage {
   initTools() {
     this.tools = [
       {
+        id: 'hoe',
         name: '锄头',
-        description: '用于松土和除草的重要农具，由锄头和木柄组成。',
-        image: 'images/tool1.png',
+        image: 'images/tool_hoe.png',
+        unlocked: true,
+        completed: false,
+        progress: 0,
         steps: [
-          { name: '第一步：选择锄头头', status: 'in_progress' },
-          { name: '第二步：选择木柄', status: 'locked' },
-          { name: '第三步：组装完成', status: 'locked' }
+          { id: 'step1', name: '选择锄头头', status: 'in_progress' },
+          { id: 'step2', name: '选择木柄', status: 'locked' },
+          { id: 'step3', name: '组装完成', status: 'locked' }
         ]
       },
       {
+        id: 'shovel',
         name: '铁锹',
-        description: '用于挖土和翻地的农具，适合深翻土壤。',
-        image: 'images/tool2.png',
+        image: 'images/tool_shovel.png',
+        unlocked: true,
+        completed: false,
+        progress: 0,
         steps: [
-          { name: '第一步：选择铁锹头', status: 'in_progress' },
-          { name: '第二步：选择手柄', status: 'locked' },
-          { name: '第三步：组装完成', status: 'locked' }
+          { id: 'step1', name: '选择铁锹头', status: 'in_progress' },
+          { id: 'step2', name: '选择手柄', status: 'locked' },
+          { id: 'step3', name: '组装完成', status: 'locked' }
         ]
       },
       {
+        id: 'sickle',
         name: '镰刀',
-        description: '用于收割庄稼的农具，刀刃锋利，使用需小心。',
-        image: 'images/tool3.png',
+        image: 'images/tool_sickle.png',
+        unlocked: false,
+        completed: false,
+        progress: 0,
         steps: [
-          { name: '第一步：选择镰刀头', status: 'in_progress' },
-          { name: '第二步：选择刀柄', status: 'locked' },
-          { name: '第三步：组装完成', status: 'locked' }
+          { id: 'step1', name: '选择镰刀头', status: 'locked' },
+          { id: 'step2', name: '选择刀柄', status: 'locked' },
+          { id: 'step3', name: '组装完成', status: 'locked' }
         ]
       }
     ];

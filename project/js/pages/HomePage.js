@@ -116,9 +116,12 @@ export default class HomePage extends BasePage {
    * 加载资源
    */
   loadResources() {
-    // 加载背景图片（需要用户提供002.png）
+    // 加载背景图片
     this.backgroundImage = wx.createImage();
-    this.backgroundImage.src = 'images/002.png';
+    this.backgroundImage.onload = () => {
+      this.backgroundLoaded = true;
+    };
+    this.backgroundImage.src = 'images/resource_001.png';
   }
 
   /**

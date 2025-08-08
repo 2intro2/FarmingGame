@@ -23,7 +23,10 @@ export default class LoginPage {
   loadResources() {
     // 加载背景图片
     this.backgroundImage = wx.createImage();
-    this.backgroundImage.src = 'images/004.png';
+    this.backgroundImage.onload = () => {
+      this.backgroundLoaded = true;
+    };
+    this.backgroundImage.src = 'images/resource_002.png';
     
     // 添加图片加载错误处理
     this.backgroundImage.onerror = () => {

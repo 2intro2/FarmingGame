@@ -9,7 +9,7 @@ export default class ToolsData {
       id: 'hoe',
       name: '锄头',
       description: '用于松土和除草的重要农具，由锄头和木柄组成。',
-      image: 'images/tool1.png',
+      image: 'images/tool_hoe.png',
       steps: [
         {
           id: 'step1',
@@ -43,7 +43,7 @@ export default class ToolsData {
       id: 'shovel',
       name: '铁锹',
       description: '用于挖土和翻地的农具，适合深翻土壤。',
-      image: 'images/tool2.png',
+      image: 'images/tool_shovel.png',
       steps: [
         {
           id: 'step1',
@@ -77,7 +77,7 @@ export default class ToolsData {
       id: 'sickle',
       name: '镰刀',
       description: '用于收割庄稼的农具，刀刃锋利，使用需小心。',
-      image: 'images/tool3.png',
+      image: 'images/tool_sickle.png',
       steps: [
         {
           id: 'step1',
@@ -290,5 +290,43 @@ export default class ToolsData {
    */
   static getRecommendedTools(userLevel) {
     return this.tools.filter(tool => tool.difficulty <= userLevel);
+  }
+
+  static getToolsData() {
+    return [
+      {
+        id: 'hoe',
+        name: '锄头',
+        description: '用于松土和除草的重要农具',
+        image: 'images/tool_hoe.png',
+        unlocked: true,
+        completed: false,
+        progress: 0,
+        difficulty: '简单',
+        timeRequired: '5分钟'
+      },
+      {
+        id: 'shovel',
+        name: '铁锹',
+        description: '用于挖土和翻地的农具',
+        image: 'images/tool_shovel.png',
+        unlocked: true,
+        completed: false,
+        progress: 0,
+        difficulty: '中等',
+        timeRequired: '8分钟'
+      },
+      {
+        id: 'sickle',
+        name: '镰刀',
+        description: '用于收割庄稼的农具',
+        image: 'images/tool_sickle.png',
+        unlocked: false,
+        completed: false,
+        progress: 0,
+        difficulty: '困难',
+        timeRequired: '12分钟'
+      }
+    ];
   }
 }

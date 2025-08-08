@@ -80,15 +80,60 @@ export default class DataBus {
 
   // 切换页面
   switchPage(pageName) {
-    this.pageHistory.push(this.currentPage);
+    // 记录页面切换历史
+    if (this.currentPage && this.currentPage !== pageName) {
+      this.pageHistory.push({
+        page: this.currentPage,
+        timestamp: Date.now()
+      });
+      
+      // 限制历史栈大小
+      if (this.pageHistory.length > 10) {
+        this.pageHistory.shift();
+      }
+    }
+    
     this.currentPage = pageName;
+    
+    // 记录导航日志
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info(`DataBus页面切换: ${pageName}`, { 
+        from: this.pageHistory.length > 0 ? this.pageHistory[this.pageHistory.length - 1].page : 'none',
+        to: pageName 
+      }, 'databus');
+    }
   }
 
   // 返回上一页
   goBack() {
     if (this.pageHistory.length > 0) {
-      this.currentPage = this.pageHistory.pop();
+      const lastEntry = this.pageHistory.pop();
+      this.currentPage = lastEntry.page;
+      
+      // 记录返回日志
+      if (GameGlobal.logger) {
+        GameGlobal.logger.info(`DataBus返回上一页: ${lastEntry.page}`, { 
+          from: this.currentPage,
+          to: lastEntry.page 
+        }, 'databus');
+      }
+      
+      return true;
     }
+    return false;
+  }
+
+  // 获取导航历史信息
+  getNavigationInfo() {
+    return {
+      currentPage: this.currentPage,
+      historySize: this.pageHistory.length,
+      canGoBack: this.pageHistory.length > 0,
+      history: this.pageHistory.map(entry => ({
+        page: entry.page,
+        timestamp: entry.timestamp
+      }))
+    };
   }
 
   // 更新任务进度

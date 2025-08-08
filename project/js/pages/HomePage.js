@@ -92,13 +92,21 @@ export default class HomePage {
    */
   initButtons() {
     this.buttons = {
+      back: {
+        x: 20,
+        y: 20,
+        width: 60,
+        height: 40,
+        text: '返回',
+        visible: false // 默认隐藏，只有在有历史时才显示
+      },
       message: {
         x: SCREEN_WIDTH * 0.8,
         y: 20,
         width: 40,
         height: 40,
         text: '消息',
-        unreadCount: GameGlobal.databus.unreadCount
+        unreadCount: 0
       },
       settings: {
         x: SCREEN_WIDTH * 0.9,
@@ -215,25 +223,35 @@ export default class HomePage {
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
   renderButtons(ctx) {
-    Object.values(this.buttons).forEach(button => {
+    Object.entries(this.buttons).forEach(([key, button]) => {
+      // 检查按钮是否应该显示
+      if (key === 'back' && !button.visible) {
+        return; // 跳过隐藏的返回按钮
+      }
+      
       // 绘制按钮背景
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(button.x, button.y, button.width, button.height);
 
+      // 绘制按钮边框
+      ctx.strokeStyle = '#CCCCCC';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(button.x, button.y, button.width, button.height);
+
       // 绘制按钮文字
       ctx.fillStyle = '#333333';
-      ctx.font = '12px Arial';
+      ctx.font = '14px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(button.text, button.x + button.width / 2, button.y + button.height / 2);
 
-      // 如果有未读消息，绘制红点
-      if (button.unreadCount && button.unreadCount > 0) {
+      // 绘制未读消息数量（仅对消息按钮）
+      if (key === 'message' && button.unreadCount > 0) {
         ctx.fillStyle = '#FF0000';
         ctx.beginPath();
         ctx.arc(button.x + button.width - 5, button.y + 5, 8, 0, 2 * Math.PI);
         ctx.fill();
-
+        
         ctx.fillStyle = '#FFFFFF';
         ctx.font = '10px Arial';
         ctx.fillText(button.unreadCount.toString(), button.x + button.width - 5, button.y + 5);
@@ -310,12 +328,26 @@ export default class HomePage {
    */
   handleButtonClick(buttonKey) {
     switch (buttonKey) {
+      case 'back':
+        this.handleBackButton();
+        break;
       case 'message':
         this.showMessageDialog();
         break;
       case 'settings':
         this.showSettingsDialog();
         break;
+    }
+  }
+
+  /**
+   * 处理返回按钮点击
+   */
+  handleBackButton() {
+    if (GameGlobal.pageManager && GameGlobal.pageManager.goBack()) {
+      this.showToast('返回上一页');
+    } else {
+      this.showToast('没有更多历史页面');
     }
   }
 
@@ -357,5 +389,11 @@ export default class HomePage {
   update() {
     // 更新未读消息数量
     this.buttons.message.unreadCount = GameGlobal.databus.unreadCount;
+    
+    // 更新返回按钮可见性
+    if (GameGlobal.pageManager) {
+      const historyInfo = GameGlobal.pageManager.getHistoryInfo();
+      this.buttons.back.visible = historyInfo.canGoBack;
+    }
   }
 }

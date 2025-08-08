@@ -4,6 +4,7 @@ import PageManager from './pages/PageManager'; // 导入页面管理器
 import WechatAPI from './utils/wechat'; // 导入微信API工具
 import errorHandler from './utils/errorHandler'; // 导入错误处理工具
 import logger from './utils/logger'; // 导入日志系统
+import navigationDebug from './utils/navigationDebug'; // 导入导航调试工具
 
 const ctx = canvas.getContext('2d'); // 获取canvas的2D绘图上下文
 
@@ -12,6 +13,7 @@ GameGlobal.pageManager = new PageManager(); // 全局页面管理器
 GameGlobal.wechatAPI = new WechatAPI(); // 全局微信API管理实例
 GameGlobal.errorHandler = errorHandler; // 全局错误处理器
 GameGlobal.logger = logger; // 全局日志系统
+GameGlobal.navigationDebug = navigationDebug; // 全局导航调试工具
 
 /**
  * 游戏主函数

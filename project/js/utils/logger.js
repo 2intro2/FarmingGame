@@ -230,8 +230,9 @@ class Logger {
 // 创建全局日志实例
 const logger = new Logger();
 
-// 在开发环境下启用调试日志
-if (process.env.NODE_ENV === 'development') {
+// 在开发环境下启用调试日志（兼容无 process 的环境）
+const isDev = (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development');
+if (isDev) {
   logger.setLevel('debug');
 }
 

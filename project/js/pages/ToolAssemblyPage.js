@@ -326,7 +326,7 @@ export default class ToolAssemblyPage {
   handleButtonClick(buttonKey) {
     switch (buttonKey) {
       case 'back':
-        GameGlobal.pageManager.switchToPage('home');
+        this.handleBackButton();
         break;
       case 'prev':
         this.switchTool('prev');
@@ -339,6 +339,19 @@ export default class ToolAssemblyPage {
       case 'step3':
         this.handleStepClick(buttonKey);
         break;
+    }
+  }
+
+  /**
+   * 处理返回按钮点击
+   */
+  handleBackButton() {
+    if (GameGlobal.pageManager && GameGlobal.pageManager.goBack()) {
+      this.showToast('返回上一页');
+    } else {
+      // 如果没有历史，直接返回主页
+      GameGlobal.pageManager.switchToPage('home', { addToHistory: false });
+      this.showToast('返回主页');
     }
   }
 

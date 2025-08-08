@@ -168,10 +168,10 @@ export default class VideoLearningPage {
       showErrorToast('视频加载失败');
     });
 
-    this.video.onFullScreenChange((res) => {
-      this.videoState.isFullScreen = res.fullScreen;
-      console.log('全屏状态变化:', res.fullScreen);
-    });
+    // this.video.onFullScreenChange((res) => {
+    //   this.videoState.isFullScreen = res.fullScreen;
+    //   console.log('全屏状态变化:', res.fullScreen);
+    // });
   }
 
   /**
@@ -286,7 +286,6 @@ export default class VideoLearningPage {
     // const currentTime = this.formatTime(this.videoState.position);
     const currentTime = this.videoState.currentTime;
     const duration = this.videoState.duration;
-    console.log('绘制播放进度文字：',currentTime);
     const progressPercent = this.videoState.duration > 0 ? 
       Math.round((this.videoState.currentTime / this.videoState.duration) * 100) : 0;
     ctx.fillText(`播放进度: ${currentTime} / ${duration} (${progressPercent}%)`, x, y + 70);

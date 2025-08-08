@@ -22,6 +22,7 @@ src: 'https://www.w3schools.com/html/mov_bbb.mp4'
 - `images/002.png` (犁辕图片)
 - `images/003.png` (犁箭图片) 
 - `images/004.png` (犁铧图片)
+- `images/confirmSubmission.png` (确认提交按钮图片)
 - `images/bg01.jpeg` (背景图片)
 
 如果图片文件不存在或损坏，系统会自动显示占位符。

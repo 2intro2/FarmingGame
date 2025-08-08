@@ -31,6 +31,9 @@ export default class VideoLearningPage {
     ]
   };
 
+  // 确认提交按钮图片
+  submitButtonImage = null;
+
   selectedCardIds = {
     column1: null,
     column2: null
@@ -157,6 +160,9 @@ export default class VideoLearningPage {
     this.cards.column1.forEach(card => {
       this.loadImage(card);
     });
+    
+    // 加载确认提交按钮图片
+    this.loadSubmitButtonImage();
   }
 
   /**
@@ -165,6 +171,8 @@ export default class VideoLearningPage {
   testImages() {
     // 测试卡片图片
     const cardImages = this.cards.column1.map(card => card.image);
+    // 测试确认提交按钮图片
+    cardImages.push('images/confirmSubmission.png');
     ImageTest.testImages(cardImages);
   }
 
@@ -181,6 +189,21 @@ export default class VideoLearningPage {
         console.warn('图片加载失败:', card.image, error);
         card.loaded = false;
         card.imageObj = null;
+      });
+  }
+
+  /**
+   * 加载确认提交按钮图片
+   */
+  loadSubmitButtonImage() {
+    ImageLoader.loadImage('images/confirmSubmission.png', { timeout: 5000 })
+      .then(img => {
+        this.submitButtonImage = img;
+        console.log('确认提交按钮图片加载成功');
+      })
+      .catch(error => {
+        console.warn('确认提交按钮图片加载失败:', error);
+        this.submitButtonImage = null;
       });
   }
 
@@ -395,13 +418,34 @@ export default class VideoLearningPage {
   renderSubmitButton(ctx) {
     const { x, y, width, height } = this.layout.submitButton;
     
+    // 如果有按钮图片且加载完成，绘制图片
+    if (this.submitButtonImage && ImageLoader.isValidImage(this.submitButtonImage)) {
+      try {
+        ctx.drawImage(this.submitButtonImage, x, y, width, height);
+      } catch (error) {
+        console.warn('确认提交按钮图片绘制失败:', error);
+        this.renderSubmitButtonFallback(ctx, x, y, width, height);
+      }
+    } else {
+      // 没有图片或图片加载失败，使用备用按钮
+      this.renderSubmitButtonFallback(ctx, x, y, width, height);
+    }
+  }
+
+  /**
+   * 绘制备用提交按钮（当图片加载失败时）
+   */
+  renderSubmitButtonFallback(ctx, x, y, width, height) {
+    // 绘制按钮背景
     ctx.fillStyle = '#4CAF50';
     ctx.fillRect(x, y, width, height);
     
+    // 绘制按钮文字
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '20px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('确认提交', x + width / 2, y + height / 2 + 7);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('确认提交', x + width / 2, y + height / 2);
   }
 
   /**

@@ -86,6 +86,9 @@ export default class VideoLearningPage {
   };
 
   constructor() {
+    // 初始化时重置卡片状态
+    this.resetCardStates();
+    
     this.loadResources();
     // 延迟初始化视频，只在页面显示时才创建
     
@@ -889,9 +892,72 @@ export default class VideoLearningPage {
   }
 
   /**
+   * 重置卡片状态
+   */
+  resetCardStates() {
+    console.log('重置卡片状态');
+    
+    // 重置卡片状态
+    this.cards.column1.forEach(card => {
+      card.selected = false;
+      card.permanentlySelected = false;
+    });
+    
+    this.cards.column2.forEach(card => {
+      card.selected = false;
+      card.permanentlySelected = false;
+    });
+    
+    // 重置选中状态记录
+    this.selectedCardIds = {
+      column1: null,
+      column2: null
+    };
+    
+    console.log('卡片状态已重置');
+  }
+
+  /**
+   * 重置所有状态
+   */
+  resetAllStates() {
+    console.log('重置所有状态');
+    
+    // 重置视频状态
+    this.videoState = {
+      currentTime: 0,
+      duration: 0,
+      isPlaying: false,
+      isFullScreen: false,
+      volume: 1,
+      lastModuleIndex: -1
+    };
+    
+    // 重置卡片状态
+    this.resetCardStates();
+    
+    // 销毁现有视频组件
+    if (this.video) {
+      try {
+        if (typeof this.video.destroy === 'function') {
+          this.video.destroy();
+        }
+      } catch (error) {
+        console.warn('销毁视频时出错:', error);
+      }
+      this.video = null;
+    }
+    
+    console.log('所有状态已重置');
+  }
+
+  /**
    * 显示页面
    */
   show() {
+    // 重置所有状态
+    this.resetAllStates();
+    
     // 延迟初始化视频组件
     if (!this.video) {
       this.initVideo();
@@ -913,6 +979,8 @@ export default class VideoLearningPage {
    * 隐藏页面
    */
   hide() {
+    console.log('隐藏页面，清理资源');
+    
     if (this.video) {
       try {
         // 检查视频对象是否有hide方法
@@ -930,6 +998,12 @@ export default class VideoLearningPage {
       
       this.video = null;
     }
+    
+    // 清理选中状态
+    this.selectedCardIds = {
+      column1: null,
+      column2: null
+    };
   }
 
   /**

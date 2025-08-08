@@ -1,15 +1,17 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
+import BasePage from './BasePage';
 
 /**
  * 农具拼接页面
  */
-export default class ToolAssemblyPage {
+export default class ToolAssemblyPage extends BasePage {
   tools = [];
   currentToolIndex = 0;
   toolImage = null;
   buttons = {};
 
   constructor() {
+    super();
     this.initTools();
     this.initButtons();
     this.loadResources();
@@ -123,27 +125,27 @@ export default class ToolAssemblyPage {
   }
 
   /**
-   * 渲染农具拼接页面
+   * 渲染页面内容
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
-  render(ctx) {
+  renderContent(ctx) {
     // 绘制背景
-    ctx.fillStyle = '#F0F8FF';
+    ctx.fillStyle = '#F5F5F5';
     ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    // 绘制返回按钮
+    // 渲染返回按钮
     this.renderBackButton(ctx);
 
-    // 绘制农具信息
+    // 渲染农具信息
     this.renderToolInfo(ctx);
 
-    // 绘制农具图片
+    // 渲染农具图片
     this.renderToolImage(ctx);
 
-    // 绘制切换按钮
+    // 渲染导航按钮
     this.renderNavigationButtons(ctx);
 
-    // 绘制步骤按钮
+    // 渲染步骤按钮
     this.renderStepButtons(ctx);
   }
 

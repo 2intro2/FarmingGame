@@ -5,6 +5,8 @@ import WechatAPI from './utils/wechat'; // 导入微信API工具
 import errorHandler from './utils/errorHandler'; // 导入错误处理工具
 import logger from './utils/logger'; // 导入日志系统
 import navigationDebug from './utils/navigationDebug'; // 导入导航调试工具
+import animationManager from './utils/animationManager'; // 导入动画管理器
+import animationDebug from './utils/animationDebug'; // 导入动画调试工具
 
 const ctx = canvas.getContext('2d'); // 获取canvas的2D绘图上下文
 
@@ -14,6 +16,9 @@ GameGlobal.wechatAPI = new WechatAPI(); // 全局微信API管理实例
 GameGlobal.errorHandler = errorHandler; // 全局错误处理器
 GameGlobal.logger = logger; // 全局日志系统
 GameGlobal.navigationDebug = navigationDebug; // 全局导航调试工具
+GameGlobal.animationManager = animationManager; // 全局动画管理器
+GameGlobal.animationDebug = animationDebug; // 全局动画调试工具
+GameGlobal.canvas = canvas; // 设置Canvas引用供动画管理器使用
 
 /**
  * 游戏主函数
@@ -150,21 +155,29 @@ export default class Main {
     }
   }
 
-  // 实现游戏帧循环
+  /**
+   * 游戏主循环
+   */
   loop() {
-    if (!this.isRunning) {
-      return;
-    }
-
     try {
-      this.update(); // 更新游戏逻辑
-      this.render(); // 渲染游戏画面
-
-      // 请求下一帧动画
-      this.aniId = requestAnimationFrame(this.loop.bind(this));
+      // 更新游戏状态
+      this.update();
+      
+      // 更新动画管理器
+      if (GameGlobal.animationManager) {
+        GameGlobal.animationManager.update();
+      }
+      
+      // 渲染游戏画面
+      this.render();
+      
+      // 继续循环
+      if (this.isRunning) {
+        this.aniId = requestAnimationFrame(this.loop.bind(this));
+      }
     } catch (error) {
-      console.error('游戏循环错误:', error);
-      this.handleError(error);
+      logger.error('游戏循环错误', error, 'main');
+      errorHandler.handleError(error, 'game-loop');
     }
   }
 

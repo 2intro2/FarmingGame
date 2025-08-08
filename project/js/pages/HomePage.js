@@ -1,15 +1,17 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
+import BasePage from './BasePage';
 
 /**
  * 主页面
  */
-export default class HomePage {
+export default class HomePage extends BasePage {
   backgroundImage = null;
   modules = [];
   statusBar = {};
   buttons = {};
 
   constructor() {
+    super();
     this.initModules();
     this.initStatusBar();
     this.initButtons();
@@ -128,29 +130,28 @@ export default class HomePage {
   }
 
   /**
-   * 渲染主页面
+   * 渲染页面内容
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
-  render(ctx) {
+  renderContent(ctx) {
     // 绘制背景
-    if (this.backgroundImage && this.backgroundImage.complete) {
+    if (this.backgroundImage) {
       ctx.drawImage(this.backgroundImage, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     } else {
-      // 如果图片未加载完成，绘制默认背景
-      ctx.fillStyle = '#90EE90';
+      ctx.fillStyle = '#87CEEB';
       ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 
-    // 绘制状态栏
+    // 渲染状态栏
     this.renderStatusBar(ctx);
 
-    // 绘制游戏模块
+    // 渲染游戏模块
     this.renderModules(ctx);
 
-    // 绘制按钮
+    // 渲染按钮
     this.renderButtons(ctx);
 
-    // 绘制角色和对话气泡
+    // 渲染角色
     this.renderCharacter(ctx);
   }
 

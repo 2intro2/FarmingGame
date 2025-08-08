@@ -1,6 +1,7 @@
 import LoginPage from './LoginPage';
 import HomePage from './HomePage';
 import ToolAssemblyPage from './ToolAssemblyPage';
+import animationManager from '../utils/animationManager';
 
 /**
  * 页面管理器
@@ -11,6 +12,7 @@ export default class PageManager {
   currentPage = null;
   pageHistory = []; // 页面历史栈
   maxHistorySize = 10; // 最大历史栈大小
+  isAnimating = false; // 是否正在动画中
 
   constructor() {
     // 初始化所有页面
@@ -25,31 +27,67 @@ export default class PageManager {
   }
 
   /**
-   * 切换到指定页面（添加到历史栈）
+   * 切换到指定页面（带动画）
    * @param {string} pageName - 页面名称
    * @param {Object} options - 可选参数
    */
   switchToPage(pageName, options = {}) {
     if (this.pages[pageName]) {
+      const fromPage = this.currentPage;
+      const toPage = this.pages[pageName];
+      
       // 保存当前页面到历史栈
       if (this.currentPage && options.addToHistory !== false) {
         this.pushToHistory(this.currentPage, pageName);
       }
       
-      // 切换到新页面
-      this.currentPage = this.pages[pageName];
-      
-      // 通知数据总线页面切换
-      GameGlobal.databus.switchPage(pageName);
+      // 如果启用了动画且不是首次加载
+      if (options.animation !== false && fromPage !== toPage) {
+        this.animatePageTransition(fromPage, toPage, options.animationType || 'fade');
+      } else {
+        // 直接切换页面
+        this.currentPage = toPage;
+        GameGlobal.databus.switchPage(pageName);
+      }
       
       // 记录导航日志
       if (GameGlobal.logger) {
         GameGlobal.logger.info(`页面切换: ${pageName}`, { 
           from: this.pageHistory.length > 0 ? this.pageHistory[this.pageHistory.length - 1].pageName : 'none',
-          to: pageName 
+          to: pageName,
+          withAnimation: options.animation !== false
         }, 'navigation');
       }
     }
+  }
+
+  /**
+   * 执行页面切换动画
+   * @param {Object} fromPage - 源页面
+   * @param {Object} toPage - 目标页面
+   * @param {string} animationType - 动画类型
+   */
+  animatePageTransition(fromPage, toPage, animationType = 'fade') {
+    this.isAnimating = true;
+    
+    // 创建动画
+    const animation = GameGlobal.animationManager.createPresetAnimation(animationType, {
+      fromPage: fromPage,
+      toPage: toPage,
+      onComplete: () => {
+        this.isAnimating = false;
+        this.currentPage = toPage;
+        GameGlobal.databus.switchPage(toPage.constructor.name.toLowerCase().replace('page', ''));
+      },
+      onCancel: () => {
+        this.isAnimating = false;
+        this.currentPage = toPage;
+        GameGlobal.databus.switchPage(toPage.constructor.name.toLowerCase().replace('page', ''));
+      }
+    });
+    
+    // 开始动画
+    GameGlobal.animationManager.startAnimation(animation);
   }
 
   /**
@@ -73,16 +111,17 @@ export default class PageManager {
   }
 
   /**
-   * 返回上一页
+   * 返回上一页（带动画）
    * @returns {boolean} 是否成功返回
    */
   goBack() {
     if (this.pageHistory.length > 0) {
       const lastEntry = this.pageHistory.pop();
-      this.currentPage = lastEntry.page;
+      const fromPage = this.currentPage;
+      const toPage = lastEntry.page;
       
-      // 通知数据总线页面切换
-      GameGlobal.databus.switchPage(lastEntry.pageName);
+      // 执行返回动画
+      this.animatePageTransition(fromPage, toPage, 'slideRight');
       
       // 记录返回日志
       if (GameGlobal.logger) {
@@ -106,7 +145,8 @@ export default class PageManager {
       currentPage: this.currentPage ? this.currentPage.constructor.name : 'none',
       historySize: this.pageHistory.length,
       maxSize: this.maxHistorySize,
-      canGoBack: this.pageHistory.length > 0
+      canGoBack: this.pageHistory.length > 0,
+      isAnimating: this.isAnimating
     };
   }
 
@@ -125,7 +165,15 @@ export default class PageManager {
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
   render(ctx) {
-    if (this.currentPage && this.currentPage.render) {
+    if (this.isAnimating && GameGlobal.animationManager) {
+      // 渲染动画中的页面
+      GameGlobal.animationManager.update();
+      
+      // 渲染当前页面和目标页面
+      if (this.currentPage && this.currentPage.render) {
+        this.currentPage.render(ctx);
+      }
+    } else if (this.currentPage && this.currentPage.render) {
       this.currentPage.render(ctx);
     }
   }
@@ -144,6 +192,9 @@ export default class PageManager {
    * @param {Object} event - 触摸事件对象
    */
   handleTouch(event) {
+    // 动画期间禁用触摸事件
+    if (this.isAnimating) return;
+    
     if (this.currentPage && this.currentPage.handleTouch) {
       this.currentPage.handleTouch(event);
     }

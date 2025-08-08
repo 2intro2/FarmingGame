@@ -511,6 +511,20 @@ export default class HomePage {
   }
 
   /**
+   * 显示页面
+   */
+  show() {
+    // 主页面显示逻辑
+  }
+
+  /**
+   * 隐藏页面
+   */
+  hide() {
+    // 主页面隐藏逻辑
+  }
+
+  /**
    * 更新页面
    */
   update() {

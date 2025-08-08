@@ -12,15 +12,12 @@ export default class PageManager {
   currentPage = null;
 
   constructor() {
-    // 初始化所有页面
-    this.pages = {
-      login: new LoginPage(),
-      home: new HomePage(),
-      toolAssembly: new ToolAssemblyPage(),
-      videoLearning: new VideoLearningPage()
-    };
+    // 延迟初始化页面，避免不必要的资源消耗
+    this.pages = {};
+    this.currentPage = null;
     
-    // 设置默认页面
+    // 只初始化默认页面
+    this.pages.login = new LoginPage();
     this.currentPage = this.pages.login;
   }
 
@@ -29,10 +26,52 @@ export default class PageManager {
    * @param {string} pageName - 页面名称
    */
   switchToPage(pageName) {
+    // 如果页面不存在，则创建页面
+    if (!this.pages[pageName]) {
+      this.createPage(pageName);
+    }
+    
     if (this.pages[pageName]) {
+      // 隐藏当前页面
+      if (this.currentPage && this.currentPage.hide) {
+        this.currentPage.hide();
+      }
+      
+      // 切换到新页面
       this.currentPage = this.pages[pageName];
+      
+      // 显示新页面
+      if (this.currentPage && this.currentPage.show) {
+        this.currentPage.show();
+      }
+      
       // 通知数据总线页面切换
       GameGlobal.databus.switchPage(pageName);
+    }
+  }
+
+  /**
+   * 创建页面
+   * @param {string} pageName - 页面名称
+   */
+  createPage(pageName) {
+    switch (pageName) {
+      case 'home':
+        this.pages[pageName] = new HomePage();
+        break;
+      case 'toolAssembly':
+        this.pages[pageName] = new ToolAssemblyPage();
+        break;
+      case 'videoLearning':
+        this.pages[pageName] = new VideoLearningPage();
+        break;
+      case 'login':
+        if (!this.pages[pageName]) {
+          this.pages[pageName] = new LoginPage();
+        }
+        break;
+      default:
+        console.warn('未知页面:', pageName);
     }
   }
 
@@ -42,8 +81,28 @@ export default class PageManager {
    */
   render(ctx) {
     if (this.currentPage && this.currentPage.render) {
-      this.currentPage.render(ctx);
+      try {
+        this.currentPage.render(ctx);
+      } catch (error) {
+        console.error('页面渲染错误:', error);
+        // 渲染错误页面
+        this.renderErrorPage(ctx);
+      }
     }
+  }
+
+  /**
+   * 渲染错误页面
+   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
+   */
+  renderErrorPage(ctx) {
+    ctx.fillStyle = '#FF0000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('页面渲染错误', canvas.width / 2, canvas.height / 2);
   }
 
   /**

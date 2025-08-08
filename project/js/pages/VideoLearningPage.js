@@ -1,5 +1,7 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
 import { showToast, showSuccessToast, showErrorToast } from '../utils/toast';
+import ImageLoader from '../utils/imageLoader';
+import ImageTest from '../utils/imageTest';
 
 /**
  * 视频学习页面
@@ -18,9 +20,9 @@ export default class VideoLearningPage {
   // 卡片数据
   cards = {
     column1: [
-      { id: 'yuan', image: 'images/tool1.png', selected: false, label: '犁辕' },
-      { id: 'jian', image: 'images/tool2.png', selected: false, label: '犁箭' },
-      { id: 'hua', image: 'images/tool3.png', selected: false, label: '犁铧' }
+      { id: 'yuan', image: 'images/002.png', selected: false, label: '犁辕' },
+      { id: 'jian', image: 'images/003.png', selected: false, label: '犁箭' },
+      { id: 'hua', image: 'images/004.png', selected: false, label: '犁铧' }
     ],
     column2: [
       { id: 'yuan_text', pinyin: 'lí yuán', chinese: '犁辕', selected: false, refId: 'yuan' },
@@ -37,36 +39,36 @@ export default class VideoLearningPage {
   // UI布局参数
   layout = {
     video: {
-      x: SCREEN_WIDTH * 0.05,
-      y: SCREEN_HEIGHT * 0.05,
-      width: SCREEN_WIDTH * 0.55,
-      height: SCREEN_WIDTH * 0.55 * (9 / 16) // 16:9比例
+      x: SCREEN_WIDTH * 0.02,
+      y: SCREEN_HEIGHT * 0.12,
+      width: SCREEN_WIDTH * 0.65,
+      height: SCREEN_WIDTH * 0.65 * (9 / 16) // 16:9比例
     },
     progress: {
-      x: SCREEN_WIDTH * 0.05,
-      y: SCREEN_WIDTH * 0.55 * (9 / 16) + SCREEN_HEIGHT * 0.05 + 20,
+      x: SCREEN_WIDTH * 0.02,
+      y: SCREEN_HEIGHT * 0.85 * (9 / 16) + SCREEN_HEIGHT * 0.12 + 20,
       width: SCREEN_WIDTH * 0.55,
       height: 30
     },
     cards: {
       column1: {
-        x: SCREEN_WIDTH * 0.65,
-        y: SCREEN_HEIGHT * 0.05,
-        width: SCREEN_WIDTH * 0.15,
-        height: SCREEN_HEIGHT * 0.18,
+        x: SCREEN_WIDTH * 0.68,
+        y: SCREEN_HEIGHT * 0.20,
+        width: SCREEN_WIDTH * 0.12,
+        height: SCREEN_WIDTH * 0.12,
         gap: 15
       },
       column2: {
-        x: SCREEN_WIDTH * 0.65 + SCREEN_WIDTH * 0.15 + 20,
-        y: SCREEN_HEIGHT * 0.05,
-        width: SCREEN_WIDTH * 0.15,
-        height: SCREEN_HEIGHT * 0.18,
+        x: SCREEN_WIDTH * 0.68 + SCREEN_WIDTH * 0.15 + 20,
+        y: SCREEN_HEIGHT * 0.20,
+        width: SCREEN_WIDTH * 0.12,
+        height: SCREEN_WIDTH * 0.12,
         gap: 15
       }
     },
     submitButton: {
-      x: SCREEN_WIDTH * 0.65,
-      y: SCREEN_HEIGHT - 80,
+      x: SCREEN_WIDTH * 0.68,
+      y: SCREEN_HEIGHT - 200,
       width: SCREEN_WIDTH * 0.3,
       height: 50
     },
@@ -79,8 +81,11 @@ export default class VideoLearningPage {
   };
 
   constructor() {
-    this.initVideo();
     this.loadResources();
+    // 延迟初始化视频，只在页面显示时才创建
+    
+    // 测试图片文件
+    this.testImages();
   }
 
   /**
@@ -150,10 +155,33 @@ export default class VideoLearningPage {
   loadResources() {
     // 预加载卡片图片
     this.cards.column1.forEach(card => {
-      const img = wx.createImage();
-      img.src = card.image;
-      card.imageObj = img;
+      this.loadImage(card);
     });
+  }
+
+  /**
+   * 测试图片文件
+   */
+  testImages() {
+    // 测试卡片图片
+    const cardImages = this.cards.column1.map(card => card.image);
+    ImageTest.testImages(cardImages);
+  }
+
+  /**
+   * 加载图片
+   */
+  loadImage(card) {
+    ImageLoader.loadImage(card.image, { timeout: 5000 })
+      .then(img => {
+        card.imageObj = img;
+        card.loaded = true;
+      })
+      .catch(error => {
+        console.warn('图片加载失败:', card.image, error);
+        card.loaded = false;
+        card.imageObj = null;
+      });
   }
 
   /**
@@ -278,18 +306,39 @@ export default class VideoLearningPage {
       ctx.strokeRect(x, cardY, width, height);
       
       // 绘制图片
-      if (card.imageObj && card.imageObj.complete) {
-        ctx.drawImage(card.imageObj, x + 10, cardY + 10, width - 20, height - 20);
-      } else {
-        // 占位符
-        ctx.fillStyle = '#EEEEEE';
-        ctx.fillRect(x + 10, cardY + 10, width - 20, height - 20);
-        ctx.fillStyle = '#666666';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('图片', x + width / 2, cardY + height / 2);
-      }
+      ImageLoader.safeDrawImage(
+        ctx, 
+        card.imageObj, 
+        x + 10, 
+        cardY + 10, 
+        width - 20, 
+        height - 20,
+        (ctx, x, y, width, height) => {
+          this.drawImagePlaceholder(ctx, x, y, width, height, card.label);
+        }
+      );
     });
+  }
+
+  /**
+   * 绘制图片占位符
+   */
+  drawImagePlaceholder(ctx, x, y, width, height, label) {
+    // 绘制占位符背景
+    ctx.fillStyle = '#EEEEEE';
+    ctx.fillRect(x, y, width, height);
+    
+    // 绘制边框
+    ctx.strokeStyle = '#CCCCCC';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, width, height);
+    
+    // 绘制文字
+    ctx.fillStyle = '#666666';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label || '图片', x + width / 2, y + height / 2);
   }
 
   /**
@@ -470,6 +519,11 @@ export default class VideoLearningPage {
    * 显示页面
    */
   show() {
+    // 延迟初始化视频组件
+    if (!this.video) {
+      this.initVideo();
+    }
+    
     if (this.video) {
       this.video.show();
     }
@@ -481,6 +535,9 @@ export default class VideoLearningPage {
   hide() {
     if (this.video) {
       this.video.hide();
+      // 隐藏时销毁视频组件以释放资源
+      this.video.destroy();
+      this.video = null;
     }
   }
 

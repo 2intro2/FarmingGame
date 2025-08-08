@@ -1,4 +1,5 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
+import { showToast, showSuccessToast, showErrorToast } from '../utils/toast';
 
 /**
  * 登录页面
@@ -168,20 +169,9 @@ export default class LoginPage {
    * @param {string} message - 提示信息
    */
   showToast(message) {
-    try {
-      // 直接导入Toast组件
-      const Toast = require('../components/Toast').default;
-      Toast.show(message);
-    } catch (error) {
-      console.error('Toast加载失败:', error);
-      // 降级到微信原生Toast
-      if (GameGlobal.wechatAPI) {
-        GameGlobal.wechatAPI.showToast(message);
-      } else {
-        // 最后的降级方案：使用console输出
-        console.log('Toast:', message);
-      }
-    }
+    // 使用导入的showToast函数
+    const { showToast: showToastUtil } = require('../utils/toast');
+    showToastUtil(message);
   }
 
   /**

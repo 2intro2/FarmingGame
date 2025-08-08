@@ -67,19 +67,23 @@ export default class Main {
       
       // 检查本地存储的登录状态
       const loginInfo = wx.getStorageSync('loginInfo');
-      if (loginInfo && loginInfo.isLoggedIn) {
-        // 已登录，直接进入主页
-        logger.info('用户已登录，进入主页', null, 'main');
+      logger.info('检查登录状态', { loginInfo }, 'main');
+      
+      if (loginInfo && loginInfo.isLoggedIn && loginInfo.userInfo) {
+        // 已登录且有用户信息，进入主页
+        logger.info('用户已登录，切换到主页', null, 'main');
+        GameGlobal.databus.setUserInfo(loginInfo.userInfo);
         GameGlobal.pageManager.switchToPage('home');
       } else {
-        // 未登录，进入登录页
-        logger.info('用户未登录，进入登录页', null, 'main');
+        // 未登录或登录信息不完整，进入登录页
+        logger.info('用户未登录，切换到登录页', null, 'main');
         GameGlobal.pageManager.switchToPage('login');
       }
     } catch (error) {
       logger.error('检查登录状态失败', error, 'main');
       errorHandler.handleError(error, 'login-check');
       // 出错时默认进入登录页
+      console.log('登录状态检查出错，默认进入登录页');
       GameGlobal.pageManager.switchToPage('login');
     }
   }

@@ -664,14 +664,24 @@ export default class VideoLearningPage {
       if (touchX >= x && touchX <= x + width &&
           touchY >= cardY && touchY <= cardY + height) {
             console.log("图片呗点击了")
-        // 清除同列其他卡片的选择
-        this.cards[columnKey].forEach(c => c.selected = false);
         
-        // 选中当前卡片
-        card.selected = true;
-        this.selectedCardIds[columnKey] = card.id;
-        
-        console.log(`选中${columnKey}卡片:`, card);
+        // 检查当前卡片是否已经被选中
+        if (card.selected) {
+          // 如果已经选中，则取消选中
+          card.selected = false;
+          this.selectedCardIds[columnKey] = null;
+          console.log(`取消选中${columnKey}卡片:`, card);
+        } else {
+          // 如果未选中，则选中当前卡片
+          // 清除同列其他卡片的选择
+          this.cards[columnKey].forEach(c => c.selected = false);
+          
+          // 选中当前卡片
+          card.selected = true;
+          this.selectedCardIds[columnKey] = card.id;
+          
+          console.log(`选中${columnKey}卡片:`, card);
+        }
         
         // 检查是否两列都有卡片被选中
         this.checkBothColumnsSelected();

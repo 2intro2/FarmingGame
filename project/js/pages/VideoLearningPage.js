@@ -784,6 +784,9 @@ export default class VideoLearningPage {
             } else {
               console.log("卡片匹配失败，请重试");
               showToast("卡片匹配失败，请重试");
+              
+              // 匹配失败时，取消两个选中卡片
+              this.cancelSelectedCards(selectedCard1, selectedCard2);
             }
           },
           fail: (error) => {
@@ -793,6 +796,31 @@ export default class VideoLearningPage {
         });
       }
     }
+  }
+
+  /**
+   * 取消选中的卡片
+   * @param {Object} card1 - 第一列选中的卡片
+   * @param {Object} card2 - 第二列选中的卡片
+   */
+  cancelSelectedCards(card1, card2) {
+    // 取消第一列卡片的选择
+    if (card1 && !card1.permanentlySelected) {
+      card1.selected = false;
+      console.log("取消选中第一列卡片:", card1);
+    }
+    
+    // 取消第二列卡片的选择
+    if (card2 && !card2.permanentlySelected) {
+      card2.selected = false;
+      console.log("取消选中第二列卡片:", card2);
+    }
+    
+    // 清除选中状态记录
+    this.selectedCardIds.column1 = null;
+    this.selectedCardIds.column2 = null;
+    
+    console.log("已取消两个选中卡片的状态");
   }
 
   /**

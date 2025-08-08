@@ -14,7 +14,8 @@ export default class VideoLearningPage {
     duration: 0,
     isPlaying: false,
     isFullScreen: false,
-    volume: 1
+    volume: 1,
+    lastModuleIndex: -1 // 记录上次的模块索引，用于检测模块切换
   };
 
   // 卡片数据
@@ -100,7 +101,7 @@ export default class VideoLearningPage {
       y: this.layout.video.y,
       width: this.layout.video.width,
       height: this.layout.video.height,
-      src: 'https://www.w3schools.com/html/mov_bbb.mp4', // 使用测试视频，实际使用时请替换为真实视频URL
+      src: 'https://vdse.bdstatic.com//d3afbab61c9ff23eb2763b42448bf85c.mp4?authorization=bce-auth-v1%2F40f207e648424f47b2e3dfbb1014b1a5%2F2025-07-03T22%3A03%3A09Z%2F-1%2Fhost%2F185763c6468891f73873e7e1eb400846b5d653eb7f03097dddd46e90cc13f52f', // 使用测试视频，实际使用时请替换为真实视频URL
       autoplay: false,
       loop: false,
       muted: false,
@@ -137,8 +138,15 @@ export default class VideoLearningPage {
     });
 
     this.video.onTimeUpdate((res) => {
-      this.videoState.currentTime = res.currentTime;
+      this.videoState.currentTime = res.position;
       this.videoState.duration = res.duration;
+      
+      // 检测模块切换
+      this.checkModuleChange();
+    //   console.error('视频当前时间:', res.position);
+    //   console.error('视频总时长:', res.duration);
+      // 实时更新进度显示
+      console.log(`视频进度: ${this.formatTime(res.position)} / ${this.formatTime(res.duration)} (${Math.round((res.position / res.duration) * 100)}%)`);
     });
 
     this.video.onError((error) => {
@@ -258,15 +266,30 @@ export default class VideoLearningPage {
     ctx.textAlign = 'center';
     ctx.fillText('学习进度', x + width / 2, y + 30);
     
-    // 绘制播放进度
+    // 绘制播放进度文字
     ctx.font = '16px Arial';
     ctx.textAlign = 'left';
-    const currentTime = this.formatTime(this.videoState.currentTime);
-    const duration = this.formatTime(this.videoState.duration);
-    ctx.fillText(`播放进度: ${currentTime} / ${duration}`, x, y + 70);
+    // const currentTime = this.formatTime(this.videoState.position);
+    const currentTime = this.videoState.currentTime;
+    const duration = this.videoState.duration;
+    console.log('绘制播放进度文字：',currentTime);
+    const progressPercent = this.videoState.duration > 0 ? 
+      Math.round((this.videoState.currentTime / this.videoState.duration) * 100) : 0;
+    ctx.fillText(`播放进度: ${currentTime} / ${duration} (${progressPercent}%)`, x, y + 70);
+    
+    // 绘制视频播放进度条
+    this.renderVideoProgressBar(ctx, x, y + 75, width);
+    
+    // 绘制当前学习模块
+    const currentModule = this.getCurrentLearningModule();
+    if (currentModule) {
+      ctx.fillStyle = '#4CAF50';
+      ctx.font = '14px Arial';
+      ctx.fillText(`当前学习: ${currentModule}`, x, y + 95);
+    }
     
     // 绘制学习模块进度条
-    this.renderLearningProgress(ctx, x, y + 100);
+    this.renderLearningProgress(ctx, x, y + 110);
   }
 
   /**
@@ -274,9 +297,15 @@ export default class VideoLearningPage {
    */
   renderLearningProgress(ctx, x, y) {
     const moduleNames = ['曲辕犁的历史', '结构组成', '使用技巧'];
-    const moduleProgress = [0.7, 0, 0]; // 示例进度
     const moduleWidth = (this.layout.progress.width - 40) / 3;
     const moduleHeight = 20;
+    
+    // 计算视频播放进度百分比
+    const videoProgress = this.videoState.duration > 0 ? 
+      this.videoState.currentTime / this.videoState.duration : 0;
+    
+    // 根据视频进度计算各个模块的进度
+    const moduleProgress = this.calculateModuleProgress(videoProgress);
     
     moduleNames.forEach((name, index) => {
       const moduleX = x + 20 + index * moduleWidth;
@@ -296,6 +325,124 @@ export default class VideoLearningPage {
       ctx.font = '14px Arial';
       ctx.textAlign = 'center';
       ctx.fillText(name, moduleX + moduleWidth / 2, y + moduleHeight + 20);
+      
+      // 绘制进度百分比
+      const progressPercent = Math.round(moduleProgress[index] * 100);
+      ctx.fillStyle = '#666666';
+      ctx.font = '12px Arial';
+      ctx.fillText(`${progressPercent}%`, moduleX + moduleWidth / 2, y + moduleHeight + 40);
+    });
+  }
+
+  /**
+   * 根据视频进度计算各个模块的进度
+   * @param {number} videoProgress - 视频播放进度 (0-1)
+   * @returns {Array} 各个模块的进度数组
+   */
+  calculateModuleProgress(videoProgress) {
+    // 定义各个模块的时间段（占总视频时长的比例）
+    const moduleTimeRanges = [
+      { start: 0, end: 0.33 },    // 第一个模块：0-33%
+      { start: 0.33, end: 0.66 }, // 第二个模块：33%-66%
+      { start: 0.66, end: 1.0 }   // 第三个模块：66%-100%
+    ];
+    
+    return moduleTimeRanges.map(range => {
+      if (videoProgress <= range.start) {
+        return 0; // 还没到这个模块
+      } else if (videoProgress >= range.end) {
+        return 1; // 这个模块已完成
+      } else {
+        // 计算当前模块的进度
+        const moduleProgress = (videoProgress - range.start) / (range.end - range.start);
+        return Math.min(moduleProgress, 1);
+      }
+    });
+  }
+
+  /**
+   * 获取当前学习模块名称
+   * @returns {string|null} 当前学习模块名称
+   */
+  getCurrentLearningModule() {
+    const moduleNames = ['曲辕犁的历史', '结构组成', '使用技巧'];
+    const videoProgress = this.videoState.duration > 0 ? 
+      this.videoState.currentTime / this.videoState.duration : 0;
+    
+    if (videoProgress <= 0.33) {
+      return moduleNames[0];
+    } else if (videoProgress <= 0.66) {
+      return moduleNames[1];
+    } else if (videoProgress <= 1.0) {
+      return moduleNames[2];
+    }
+    
+    return null;
+  }
+
+  /**
+   * 检测模块切换
+   */
+  checkModuleChange() {
+    const videoProgress = this.videoState.duration > 0 ? 
+      this.videoState.currentTime / this.videoState.duration : 0;
+    
+    let currentModuleIndex = -1;
+    if (videoProgress <= 0.33) {
+      currentModuleIndex = 0;
+    } else if (videoProgress <= 0.66) {
+      currentModuleIndex = 1;
+    } else if (videoProgress <= 1.0) {
+      currentModuleIndex = 2;
+    }
+    
+    // 如果模块发生变化，显示提示
+    if (currentModuleIndex !== this.videoState.lastModuleIndex && currentModuleIndex !== -1) {
+      const moduleNames = ['曲辕犁的历史', '结构组成', '使用技巧'];
+      const moduleName = moduleNames[currentModuleIndex];
+      console.log(`进入新模块: ${moduleName}`);
+      showToast(`进入学习模块: ${moduleName}`);
+      this.videoState.lastModuleIndex = currentModuleIndex;
+    }
+  }
+
+  /**
+   * 绘制视频播放进度条
+   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
+   * @param {number} x - x坐标
+   * @param {number} y - y坐标
+   * @param {number} width - 宽度
+   */
+  renderVideoProgressBar(ctx, x, y, width) {
+    const barHeight = 8;
+    const progress = this.videoState.duration > 0 ? 
+      this.videoState.currentTime / this.videoState.duration : 0;
+    
+    // 绘制进度条背景
+    ctx.fillStyle = '#E0E0E0';
+    ctx.fillRect(x, y, width, barHeight);
+    
+    // 绘制进度条填充
+    if (progress > 0) {
+      ctx.fillStyle = '#2196F3';
+      ctx.fillRect(x, y, width * progress, barHeight);
+    }
+    
+    // 绘制进度条边框
+    ctx.strokeStyle = '#BDBDBD';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, width, barHeight);
+    
+    // 绘制模块分割线
+    const modulePositions = [0.33, 0.66];
+    ctx.strokeStyle = '#FF9800';
+    ctx.lineWidth = 2;
+    modulePositions.forEach(pos => {
+      const lineX = x + width * pos;
+      ctx.beginPath();
+      ctx.moveTo(lineX, y);
+      ctx.lineTo(lineX, y + barHeight);
+      ctx.stroke();
     });
   }
 

@@ -207,10 +207,10 @@ export default class ToolAssemblyNavPage extends BasePage {
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, SCREEN_WIDTH, 80);
 
-    // 返回按钮（圆形绿色按钮，带渐变和阴影效果）
+    // 返回按钮（圆形绿色按钮，带渐变和阴影效果，稍微增大尺寸）
     const buttonX = 40;
     const buttonY = 40;
-    const buttonRadius = 20;
+    const buttonRadius = 24; // 从20增加到24，稍微大一点
     
     // 绘制阴影
     ctx.save();
@@ -219,15 +219,15 @@ export default class ToolAssemblyNavPage extends BasePage {
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 3;
     
-    // 绘制按钮背景（更亮的渐变效果）
+    // 绘制按钮背景（使用#19C472系列渐变效果）
     const gradient = ctx.createRadialGradient(
       buttonX - 8, buttonY - 8, 0,
       buttonX, buttonY, buttonRadius
     );
-    gradient.addColorStop(0, '#81C784'); // 更亮的绿色（高光）
-    gradient.addColorStop(0.3, '#66BB6A'); // 亮绿色
-    gradient.addColorStop(0.7, '#4CAF50'); // 主绿色
-    gradient.addColorStop(1, '#388E3C'); // 较深的绿色（阴影）
+    gradient.addColorStop(0, '#4DD58A'); // 更亮的绿色（高光，基于#19C472调亮）
+    gradient.addColorStop(0.3, '#2DD071'); // 亮绿色
+    gradient.addColorStop(0.7, '#19C472'); // 主绿色 - 用户指定颜色
+    gradient.addColorStop(1, '#15A862'); // 较深的绿色（阴影，基于#19C472调暗）
     
     ctx.fillStyle = gradient;
     ctx.beginPath();
@@ -925,8 +925,8 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   renderProgressSteps(ctx) {
     const startY = SCREEN_HEIGHT - 120;
-    const stepWidth = 120;
-    const spacing = 20;
+    const stepWidth = 140; // 从120增加到140，增大卡片宽度
+    const spacing = 35; // 从20增加到35，增大卡片间距
     const totalWidth = this.steps.length * stepWidth + (this.steps.length - 1) * spacing;
     const startX = (SCREEN_WIDTH - totalWidth) / 2;
 
@@ -946,21 +946,21 @@ export default class ToolAssemblyNavPage extends BasePage {
       const isCurrent = step.status === 'current';
       const isLocked = step.status === 'locked';
       
-      // 使用绿色圆角卡片样式
-      const cardHeight = 60;
+      // 使用绿色圆角卡片样式，增大高度
+      const cardHeight = 75; // 从60增加到75，增大卡片高度
       const borderRadius = 20; // 大圆角
       
-      // 背景颜色 - 统一使用绿色系渐变色
+      // 背景颜色 - 统一使用绿色背景，文字改为正文颜色
       let bgColor, textColor;
       if (isCompleted) {
         bgColor = '#d9f7be'; // 浅绿色背景
-        textColor = '#52c41a'; // 深绿色文字
+        textColor = '#333333'; // 正文颜色 - 深灰色
       } else if (isCurrent) {
-        bgColor = '#d9f7be'; // 当前步骤也使用绿色
-        textColor = '#52c41a';
+        bgColor = '#d9f7be'; // 当前步骤也使用绿色背景
+        textColor = '#333333'; // 正文颜色 - 深灰色
       } else {
-        bgColor = '#f0f0f0'; // 锁定状态使用灰色
-        textColor = '#999999';
+        bgColor = '#f0f0f0'; // 锁定状态使用灰色背景
+        textColor = '#999999'; // 锁定状态保持灰色文字
       }
       
       // 绘制圆角卡片背景
@@ -972,17 +972,17 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.fillRect(x, y, width, cardHeight);
       }
       
-      // 步骤标题 - 现代化字体
-      ctx.fillStyle = textColor;
-      ctx.font = 'bold 14px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(step.title, x + width / 2, y + 18);
-
-      // 步骤名称 - 现代化字体
+      // 步骤标题（第一行） - 现代化字体，较小
       ctx.fillStyle = textColor;
       ctx.font = '12px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-      ctx.fillText(step.name, x + width / 2, y + 42);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(step.title, x + width / 2, y + 22);
+
+      // 步骤名称（第二行） - 现代化字体，比第一行大且加黑
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+      ctx.fillText(step.name, x + width / 2, y + 50);
 
       // 状态图标
       if (isCompleted) {

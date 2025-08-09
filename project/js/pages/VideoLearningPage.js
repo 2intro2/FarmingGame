@@ -127,10 +127,9 @@ export default class VideoLearningPage {
       muted: false,
       controls: true,
       showCenterPlayBtn: true,
-      showFullscreenBtn: true,
-      showPlayBtn: true,
-      showProgress: true,
+      showProgress: false,
       objectFit: 'contain',
+      enablePlayGesture : true,
       poster: 'images/bg01.jpeg'
     });
 
@@ -166,7 +165,7 @@ export default class VideoLearningPage {
     //   console.error('视频当前时间:', res.position);
     //   console.error('视频总时长:', res.duration);
       // 实时更新进度显示
-      console.log(`视频进度: ${this.formatTime(res.position)} / ${this.formatTime(res.duration)} (${Math.round((res.position / res.duration) * 100)}%)`);
+      // console.log(`视频进度: ${this.formatTime(res.position)} / ${this.formatTime(res.duration)} (${Math.round((res.position / res.duration) * 100)}%)`);
     });
 
     this.video.onError((error) => {
@@ -662,7 +661,6 @@ export default class VideoLearningPage {
    * @param {Object} event - 触摸事件对象
    */
   handleTouch(event) {
-    console.log("处理触摸事件",event.touches[0])
     const touch = event.touches[0];
     const x = touch.clientX
     const y = touch.clientY
@@ -705,7 +703,6 @@ export default class VideoLearningPage {
    * 检查卡片选择
    */
   checkCardSelection(touchX, touchY) {
-    console.log(touchX,touchY)
     // 检查第一列卡片
     this.checkColumnCards(touchX, touchY, 'column1', this.layout.cards.column1);
     // 检查第二列卡片
@@ -717,14 +714,11 @@ export default class VideoLearningPage {
    */
   checkColumnCards(touchX, touchY, columnKey, layout) {
     const { x, y, width, height, gap } = layout;
-    console.log("layout数据",x,y,width,height)
-    console.log("touch数据",touchX,touchX)
     this.cards[columnKey].forEach((card, index) => {
       const cardY = y + index * (height + gap);
       
       if (touchX >= x && touchX <= x + width &&
           touchY >= cardY && touchY <= cardY + height) {
-            console.log("图片呗点击了")
         
         // 检查当前卡片是否已经被选中
         if (card.selected) {
@@ -766,7 +760,7 @@ export default class VideoLearningPage {
    */
   checkBothColumnsSelected() {
     const { column1, column2 } = this.selectedCardIds;
-    
+    console.log(this.selectedCardIds)
     if (column1 && column2) {
       console.log(`两列都有卡片被选中！`);
       console.log(`Column1 选中卡片ID: ${column1}`);
@@ -796,8 +790,11 @@ export default class VideoLearningPage {
               // 设置两张卡片为永久选中状态
               selectedCard1.permanentlySelected = true;
               selectedCard2.permanentlySelected = true;
-              selectedCard1.selected = true;
-              selectedCard2.selected = true;
+              selectedCard1.selected = false;
+              selectedCard2.selected = false;
+              
+              this.selectedCardIds["column1"] = null;
+              this.selectedCardIds["column2"] = null;
               
               console.log("卡片已设置为永久选中状态");
             } else {

@@ -138,39 +138,21 @@ export default class ToolAssemblyNavPage extends BasePage {
       {
         id: 'quyuan_plow',
         name: '曲辕犁',
-        subtitle: '古代农具革新代表',
-        description: '曲辕犁是中国古代农业技术的巅峰之作，体现了"天人合一"的哲学思想。牛或人力拉动犁辕，犁铧切入土壤并翻动，犁箭调节深度以适应不同土质。',
-        difficulty: 2,
-        reward: 20,
-        cardColor: '#e6f4ff', // 新的蓝色背景
-        difficultyColor: '#4096ff', // 蓝色难度标签
-        image: 'images/tool_hoe.png',
+        image: 'images/card_qyl.png',
         unlocked: true,
         completed: false
       },
       {
-        id: 'stone_mill',
+        id: 'stone_mill', 
         name: '石磨',
-        subtitle: '粮食加工重要工具',
-        description: '石磨最早出现于战国时期，是古代粮食加工的重要工具。粮食从进料孔落入磨盘间，通过旋转摩擦被碾碎，粉末从边缘流出。',
-        difficulty: 2,
-        reward: 25,
-        cardColor: '#d9f7be', // 新的绿色背景
-        difficultyColor: '#73d13d', // 绿色难度标签
-        image: 'images/tool_shovel.png',
+        image: 'images/card_sm.png',
         unlocked: true,
         completed: false
       },
       {
         id: 'water_wheel',
         name: '水车',
-        subtitle: '重要水利灌溉工具',
-        description: '水车最早可追溯至汉代，是中国古代重要的水利灌溉工具。水流冲击叶片带动水轮旋转，提水斗将水从低处舀起，升至高处后倒入灌溉渠。',
-        difficulty: 3,
-        reward: 30,
-        cardColor: '#fff1b8', // 新的黄色背景
-        difficultyColor: '#ffc53d', // 黄色难度标签
-        image: 'images/tool_rake.png',
+        image: 'images/card_sc.png',
         unlocked: true,
         completed: false
       }
@@ -544,8 +526,10 @@ export default class ToolAssemblyNavPage extends BasePage {
       const tool = this.tools[cardIndex];
       const isActive = i === 0; // 中心卡片为活跃状态
       
-      // 计算卡片位置和变换
-      const cardX = centerX - this.cardWidth / 2 + i * this.stackOffset;
+      // 计算卡片位置和变换 - 限制在固定范围内
+      const maxOffset = Math.min(this.stackOffset, 100); // 限制最大偏移量
+      const limitedOffset = Math.max(-200, Math.min(200, i * maxOffset)); // 限制在±200px范围内
+      const cardX = centerX - this.cardWidth / 2 + limitedOffset;
       const cardY = centerY - this.cardHeight / 2;
       const scale = isActive ? 1.0 : this.scaleRatio;
       const zIndex = this.maxVisibleCards - Math.abs(i); // Z层级（中央卡片最高）
@@ -576,9 +560,9 @@ export default class ToolAssemblyNavPage extends BasePage {
     ctx.save();
     
     try {
-      // 应用透明度（非活跃卡片降低透明度减少干扰）
+      // 应用透明度（非活跃卡片降低透明度）
       if (!isActive) {
-        ctx.globalAlpha = 0.6; // 非活跃卡片透明度60%
+        ctx.globalAlpha = 0.7; // 非活跃卡片透明度70%
       }
       
       // 应用缩放变换
@@ -588,122 +572,72 @@ export default class ToolAssemblyNavPage extends BasePage {
       
       // 绘制卡片阴影（仅对活跃卡片）
       if (isActive) {
-      ctx.save();
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 增强中央卡片阴影
-        ctx.shadowBlur = 16;
-      ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 8;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 10;
       }
       
-      // 使用纯色背景
-      ctx.fillStyle = tool.cardColor || '#FFFFFF';
-      
-      // 绘制圆角矩形背景 - 使用非常大的圆角半径确保效果明显
-      const borderRadius = Math.min(120, this.cardWidth / 4, this.cardHeight / 4); // 更大的圆角半径
-      
-
-      
-      // 直接使用兼容性最好的手动圆角绘制
-      try {
-        this.drawSimpleRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
-          ctx.fill();
-
-      } catch (rectError) {
-        // 如果圆角绘制失败，使用普通矩形
-        ctx.fillRect(0, 0, this.cardWidth, this.cardHeight);
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('圆角绘制失败，使用普通矩形', { 
-            error: rectError.message,
-            stack: rectError.stack,
-            borderRadius,
-            cardWidth: this.cardWidth,
-            cardHeight: this.cardHeight
-          }, 'toolAssemblyNav');
-        }
-      }
-      
-      if (isActive) {
-        ctx.restore(); // 恢复阴影设置
-      }
-      
-      // 绘制卡片边框（活跃卡片增强边框）
-      if (isActive) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 1.0)';
-        ctx.lineWidth = 3; // 增强中央卡片边框
-      } else {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.lineWidth = 2;
-      }
-      try {
-        this.drawSimpleRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
-          ctx.stroke();
-
-      } catch (rectError) {
-        ctx.strokeRect(0, 0, this.cardWidth, this.cardHeight);
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('圆角边框绘制失败，使用普通边框', { 
-            error: rectError.message,
-            borderRadius 
-          }, 'toolAssemblyNav');
-        }
-      }
-      
-      // 渲染工具图标（左侧，适配最大卡片）
-      const iconSize = 160; // 适配更大卡片的图标尺寸
-      const iconX = 50;
-      const iconY = (this.cardHeight - iconSize) / 2;
-      
+      // 绘制卡片图片
       if (tool.imageLoaded && !tool.usePlaceholder && tool.imageElement) {
         try {
-          ctx.drawImage(tool.imageElement, iconX, iconY, iconSize, iconSize);
+          // 保持图片原始比例，避免拉伸变形
+          const imgWidth = tool.imageElement.naturalWidth;
+          const imgHeight = tool.imageElement.naturalHeight;
+          const imgRatio = imgWidth / imgHeight;
+          const cardRatio = this.cardWidth / this.cardHeight;
+          
+          let drawWidth, drawHeight, drawX, drawY;
+          
+          if (imgRatio > cardRatio) {
+            // 图片更宽，按卡片宽度缩放
+            drawWidth = this.cardWidth;
+            drawHeight = this.cardWidth / imgRatio;
+            drawX = 0;
+            drawY = (this.cardHeight - drawHeight) / 2; // 垂直居中
+          } else {
+            // 图片更高，按卡片高度缩放
+            drawHeight = this.cardHeight;
+            drawWidth = this.cardHeight * imgRatio;
+            drawX = (this.cardWidth - drawWidth) / 2; // 水平居中
+            drawY = 0;
+          }
+          
+          ctx.drawImage(
+            tool.imageElement,
+            drawX, drawY, // 目标位置
+            drawWidth, drawHeight // 目标尺寸
+          );
+          
+          if (GameGlobal.logger && isActive) {
+            GameGlobal.logger.info(`卡片图片渲染成功: ${tool.name}`, {
+              image: tool.image,
+              cardWidth: this.cardWidth,
+              cardHeight: this.cardHeight
+            }, 'toolAssemblyNav');
+          }
         } catch (drawError) {
-          this.renderImagePlaceholder(ctx, iconX, iconY, iconSize, iconSize);
+          if (GameGlobal.logger) {
+            GameGlobal.logger.warn(`卡片图片渲染失败: ${tool.name}`, { 
+              error: drawError.message,
+              image: tool.image
+            }, 'toolAssemblyNav');
+          }
+          // 绘制占位符
+          this.renderCardPlaceholder(ctx, tool);
         }
       } else {
-        this.renderImagePlaceholder(ctx, iconX, iconY, iconSize, iconSize);
+        // 绘制占位符
+        this.renderCardPlaceholder(ctx, tool);
       }
       
-      // 渲染文本内容（右侧，适配最大卡片）
-      const textX = iconX + iconSize + 40;
-      const textY = 60;
-      
-      // 一级标题（工具名称）- 现代化字体，深色，加黑加粗
-      ctx.fillStyle = '#222222';
-      ctx.font = 'bold 28px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体，调整大小
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillText(tool.name, textX, textY);
-      
-      // 二级标题（副标题）- 现代化字体，中等色，加黑加粗但比一级标题小
-      ctx.fillStyle = '#444444';
-      ctx.font = 'bold 20px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体，调整大小
-      ctx.fillText(tool.subtitle, textX, textY + 40);
-      
-      // 描述文字（现代化字体，适配最大空间）
-      ctx.fillStyle = '#666666';
-      ctx.font = '16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体
-      const maxDescWidth = this.cardWidth - textX - 50;
-      this.drawTruncatedText(ctx, tool.description, textX, textY + 80, maxDescWidth, 140);
-      
-      // 渲染难度标签（右上角，向左移动更多以优化视觉平衡）
-      const difficultyTagWidth = 110;
-      const difficultyX = this.cardWidth - difficultyTagWidth - 80; // 增加左移距离到80px
-      this.renderDifficultyTag(ctx, tool.difficulty, difficultyX, 30, tool);
-      
-      if (GameGlobal.logger && isActive) {
-        GameGlobal.logger.debug('标签位置计算', { 
-          cardWidth: this.cardWidth,
-          difficultyX,
-          difficultyRightEdge: difficultyX + difficultyTagWidth,
-          rewardX: this.cardWidth - 120 - 80,
-          rewardRightEdge: (this.cardWidth - 120 - 80) + 120
-        }, 'toolAssemblyNav');
+      // 恢复阴影设置
+      if (isActive) {
+        ctx.restore();
       }
-      
-      // 渲染奖励信息（右下角，向左移动更多以优化视觉平衡）
-      const rewardTagWidth = 120;
-      const rewardX = this.cardWidth - rewardTagWidth - 80; // 增加左移距离到80px
-      this.renderRewardTag(ctx, tool.reward, rewardX, this.cardHeight - 40);
+
+
       
     } catch (error) {
       if (GameGlobal.logger) {
@@ -1577,5 +1511,31 @@ export default class ToolAssemblyNavPage extends BasePage {
       }
     }
     // 如果工具背景未加载，不做任何处理，让主背景显示
+  }
+
+  /**
+   * 渲染卡片占位符
+   */
+  renderCardPlaceholder(ctx, tool) {
+    // 绘制简单的占位符背景
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(0, 0, this.cardWidth, this.cardHeight);
+    
+    // 绘制边框
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, this.cardWidth, this.cardHeight);
+    
+    // 绘制工具名称
+    ctx.fillStyle = '#666';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(tool.name, this.cardWidth / 2, this.cardHeight / 2 - 10);
+    
+    // 绘制加载提示
+    ctx.fillStyle = '#999';
+    ctx.font = '14px Arial';
+    ctx.fillText('图片加载中...', this.cardWidth / 2, this.cardHeight / 2 + 20);
   }
 } 

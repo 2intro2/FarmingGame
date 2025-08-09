@@ -88,8 +88,8 @@ export default class ToolAssemblyNavPage extends BasePage {
     const availableHeight = SCREEN_HEIGHT - 200; // 减去顶部和底部组件
     const availableWidth = SCREEN_WIDTH - 40; // 留出左右边距
     
-    this.cardWidth = Math.min(650, availableWidth);  // 进一步增大宽度，最大650px
-    this.cardHeight = Math.min(400, availableHeight * 0.8); // 增大高度，占可用空间80%
+    this.cardWidth = Math.min(750, availableWidth);  // 再次增大宽度，最大750px
+    this.cardHeight = Math.min(450, availableHeight * 0.85); // 再次增大高度，占可用空间85%
     this.cardSpacing = 60;  // 卡片之间的间距
     this.stackOffset = 130; // 增大堆叠偏移量适配更大卡片
     this.scaleRatio = 0.75; // 进一步调整缩放比例，突出大小对比
@@ -449,23 +449,23 @@ export default class ToolAssemblyNavPage extends BasePage {
       const textX = iconX + iconSize + 40;
       const textY = 60;
       
-      // 一级标题（工具名称）- 最大字体，深色，加黑加粗
+      // 一级标题（工具名称）- 现代化字体，深色，加黑加粗
       ctx.fillStyle = '#222222';
-      ctx.font = 'bold 36px Arial'; // 一级标题，最突出
+      ctx.font = 'bold 28px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体，调整大小
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(tool.name, textX, textY);
       
-      // 二级标题（副标题）- 中等字体，中等色，加黑加粗但比一级标题小
+      // 二级标题（副标题）- 现代化字体，中等色，加黑加粗但比一级标题小
       ctx.fillStyle = '#444444';
-      ctx.font = 'bold 24px Arial'; // 二级标题，加粗但比一级标题小
-      ctx.fillText(tool.subtitle, textX, textY + 55);
+      ctx.font = 'bold 20px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体，调整大小
+      ctx.fillText(tool.subtitle, textX, textY + 40);
       
-      // 描述文字（适配最大空间）
-      ctx.fillStyle = '#888888';
-      ctx.font = '18px Arial'; // 适配最大卡片的字体
+      // 描述文字（现代化字体，适配最大空间）
+      ctx.fillStyle = '#666666';
+      ctx.font = '16px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体
       const maxDescWidth = this.cardWidth - textX - 50;
-      this.drawTruncatedText(ctx, tool.description, textX, textY + 95, maxDescWidth, 140);
+      this.drawTruncatedText(ctx, tool.description, textX, textY + 80, maxDescWidth, 140);
       
       // 渲染难度标签（右上角，增加更大安全边距确保不超出卡片边界）
       const difficultyTagWidth = 110;
@@ -797,9 +797,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       }
     }
     
-    // 绘制星级（适配最大标签）
+    // 绘制星级（适配最大标签，现代化字体）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '18px Arial'; // 适配最大标签的字体
+    ctx.font = '16px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
@@ -843,9 +843,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       }
     }
     
-    // 绘制奖励文本和数值（添加"奖励:"前缀）
+    // 绘制奖励文本和数值（添加"奖励:"前缀，现代化字体）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 18px Arial'; // 适配最大标签的字体
+    ctx.font = 'bold 16px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`奖励:${reward}`, x + tagWidth / 2, y - tagHeight / 2);

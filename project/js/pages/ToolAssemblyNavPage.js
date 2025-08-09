@@ -309,6 +309,29 @@ export default class ToolAssemblyNavPage extends BasePage {
       }
       this.titleImageLoaded = false;
     }
+
+    // 加载背景图片
+    try {
+      this.backgroundImage = wx.createImage();
+      this.backgroundImage.onload = () => {
+        this.backgroundImageLoaded = true;
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('背景图片加载成功: background.png', null, 'toolAssemblyNav');
+        }
+      };
+      this.backgroundImage.onerror = () => {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('背景图片加载失败: background.png', null, 'toolAssemblyNav');
+        }
+        this.backgroundImageLoaded = false;
+      };
+      this.backgroundImage.src = 'images/background.png';
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('背景图片加载异常', { error: error.message }, 'toolAssemblyNav');
+      }
+      this.backgroundImageLoaded = false;
+    }
   }
 
   /**
@@ -354,9 +377,8 @@ export default class ToolAssemblyNavPage extends BasePage {
       // 每次渲染前更新步骤状态，确保状态是最新的
       this.updateStepStatus();
       
-      // 绘制白色背景
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+      // 绘制背景 - 优先使用背景图片，否则使用白色背景
+      this.renderBackground(ctx);
       
       this.renderTopNav(ctx);
       this.renderToolCards(ctx);
@@ -451,8 +473,8 @@ export default class ToolAssemblyNavPage extends BasePage {
     if (this.titleImageLoaded && this.titleImage) {
       // 使用图片渲染标题
       try {
-        // 计算图片尺寸，保持比例并适配导航栏高度
-        const maxHeight = 40; // 最大高度，适配导航栏
+        // 计算图片尺寸，保持比例并与返回按钮高度一致
+        const maxHeight = 48; // 与返回按钮高度一致
         const titleImageRatio = this.titleImage.naturalWidth / this.titleImage.naturalHeight;
         const titleImageHeight = Math.min(maxHeight, this.titleImage.naturalHeight);
         const titleImageWidth = titleImageHeight * titleImageRatio;
@@ -1652,5 +1674,47 @@ export default class ToolAssemblyNavPage extends BasePage {
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillText('农具拼装', titleX, titleY);
+  }
+
+  /**
+   * 渲染背景
+   */
+  renderBackground(ctx) {
+    if (this.backgroundImageLoaded && this.backgroundImage) {
+      // 使用背景图片
+      try {
+        // 计算背景图片尺寸，铺满整个屏幕
+        ctx.drawImage(
+          this.backgroundImage,
+          0,
+          0,
+          SCREEN_WIDTH,
+          SCREEN_HEIGHT
+        );
+        
+        if (GameGlobal.logger) {
+          GameGlobal.logger.debug('背景图片渲染成功', {
+            screenWidth: SCREEN_WIDTH,
+            screenHeight: SCREEN_HEIGHT
+          }, 'toolAssemblyNav');
+        }
+      } catch (drawError) {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('背景图片渲染失败，使用白色背景', { error: drawError.message }, 'toolAssemblyNav');
+        }
+        this.renderFallbackBackground(ctx);
+      }
+    } else {
+      // 降级方案：使用白色背景
+      this.renderFallbackBackground(ctx);
+    }
+  }
+
+  /**
+   * 渲染备用背景（图片加载失败时使用）
+   */
+  renderFallbackBackground(ctx) {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
   }
 } 

@@ -239,20 +239,6 @@ export default class LoginPage {
   }
 
   /**
-   * 显示页面
-   */
-  show() {
-    // 登录页面显示逻辑
-  }
-
-  /**
-   * 隐藏页面
-   */
-  hide() {
-    // 登录页面隐藏逻辑
-  }
-
-  /**
    * 更新页面
    */
   update() {

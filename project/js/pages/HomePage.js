@@ -36,13 +36,13 @@ export default class HomePage {
         image: null
       },
       {
-        key: 'videoLearning',
-        name: '视频学习',
+        key: 'noodleLife',
+        name: '面条的一生',
         x: startX + moduleWidth + 20,
         y: startY,
         width: moduleWidth,
         height: moduleHeight,
-        unlocked: true,
+        unlocked: false,
         image: null
       },
       {
@@ -430,9 +430,6 @@ export default class HomePage {
       if (module.key === 'toolAssembly') {
         GameGlobal.pageManager.switchToPage('toolAssembly');
         this.showToast('进入农具拼装');
-      } else if (module.key === 'videoLearning') {
-        GameGlobal.pageManager.switchToPage('videoLearning');
-        // 移除重复的Toast，页面切换时会有相应的提示
       }
     } else {
       console.log('显示活动未开启提示');
@@ -508,20 +505,6 @@ export default class HomePage {
   showNextPageDialog() {
     console.log('显示下一页对话框');
     this.showToast('敬请期待');
-  }
-
-  /**
-   * 显示页面
-   */
-  show() {
-    // 主页面显示逻辑
-  }
-
-  /**
-   * 隐藏页面
-   */
-  hide() {
-    // 主页面隐藏逻辑
   }
 
   /**

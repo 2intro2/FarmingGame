@@ -6,6 +6,16 @@ import { showToast, showSuccessToast, showErrorToast } from '../utils/toast';
  */
 export default class LoginPage {
   backgroundImage = null;
+  musicButton = {
+    x: SCREEN_WIDTH - 1000, // 右上角位置
+    y: 25,
+    width: 100,
+    height: 100
+  };
+  musicButtonImages = {
+    playing: null,  // icon11.png (音乐播放中)
+    paused: null    // icon12.png (音乐暂停)
+  };
   loginButton = {
     x: SCREEN_WIDTH * 0.5 - 100, // 按钮x轴坐标（居中显示）
     y: SCREEN_HEIGHT * 0.7, // 按钮y轴坐标（与原位置保持一致）
@@ -32,7 +42,7 @@ export default class LoginPage {
       this.backgroundImage = null;
     };
     
-    // 加载按钮图片
+    // 加载登录按钮图片
     this.buttonImage = wx.createImage();
     this.buttonImage.src = 'images/icon01.png';
     
@@ -47,7 +57,24 @@ export default class LoginPage {
       console.warn('按钮图片加载失败，将使用备用按钮');
       this.buttonImage = null;
     };
+
+    // 加载音乐控制按钮图片
+    this.musicButtonImages.playing = wx.createImage();
+    this.musicButtonImages.playing.src = 'images/icon11.png';
+    this.musicButtonImages.playing.onerror = () => {
+      console.warn('音乐播放按钮图片加载失败');
+      this.musicButtonImages.playing = null;
+    };
+
+    this.musicButtonImages.paused = wx.createImage();
+    this.musicButtonImages.paused.src = 'images/icon12.png';
+    this.musicButtonImages.paused.onerror = () => {
+      console.warn('音乐暂停按钮图片加载失败');
+      this.musicButtonImages.paused = null;
+    };
   }
+
+
 
   /**
    * 渲染登录页面
@@ -69,6 +96,9 @@ export default class LoginPage {
 
     // 绘制登录按钮
     this.renderLoginButton(ctx);
+    
+    // 绘制音乐控制按钮
+    this.renderMusicButton(ctx);
   }
 
   /**
@@ -159,6 +189,75 @@ export default class LoginPage {
   }
 
   /**
+   * 渲染音乐控制按钮
+   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
+   */
+  renderMusicButton(ctx) {
+    const btn = this.musicButton;
+    
+    // 从全局数据总线获取音乐播放状态
+    const isMusicPlaying = GameGlobal.databus.isMusicPlaying;
+    
+    // 根据音乐播放状态选择对应的图片
+    const buttonImage = isMusicPlaying 
+      ? this.musicButtonImages.playing 
+      : this.musicButtonImages.paused;
+    
+    // 如果有按钮图片且加载完成，绘制图片
+    if (buttonImage && buttonImage.complete && buttonImage.naturalWidth !== 0) {
+      try {
+        // 保持图片原比例
+        const imgRatio = buttonImage.naturalWidth / buttonImage.naturalHeight;
+        let drawWidth, drawHeight;
+        
+        if (btn.width / btn.height > imgRatio) {
+          // 按钮比图片更宽，以高度为准
+          drawHeight = btn.height;
+          drawWidth = drawHeight * imgRatio;
+        } else {
+          // 按钮比图片更高，以宽度为准
+          drawWidth = btn.width;
+          drawHeight = drawWidth / imgRatio;
+        }
+        
+        const drawX = btn.x + (btn.width - drawWidth) / 2;
+        const drawY = btn.y + (btn.height - drawHeight) / 2;
+        
+        ctx.drawImage(buttonImage, drawX, drawY, drawWidth, drawHeight);
+      } catch (error) {
+        console.warn('音乐按钮图片绘制失败:', error);
+        this.renderFallbackMusicButton(ctx, btn);
+      }
+    } else {
+      // 没有图片或图片加载失败，使用备用按钮
+      this.renderFallbackMusicButton(ctx, btn);
+    }
+  }
+
+  /**
+   * 渲染备用音乐按钮（当图片加载失败时）
+   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
+   * @param {Object} btn - 按钮对象
+   */
+  renderFallbackMusicButton(ctx, btn) {
+    // 从全局数据总线获取音乐播放状态
+    const isMusicPlaying = GameGlobal.databus.isMusicPlaying;
+    
+    // 绘制圆形背景
+    ctx.fillStyle = isMusicPlaying ? '#4CAF50' : '#FF5722';
+    ctx.beginPath();
+    ctx.arc(btn.x + btn.width / 2, btn.y + btn.height / 2, btn.width / 2, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // 绘制音乐图标文字
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(isMusicPlaying ? '♪' : '♫', btn.x + btn.width / 2, btn.y + btn.height / 2);
+  }
+
+  /**
    * 处理触摸事件
    * @param {Object} event - 触摸事件对象
    */
@@ -167,10 +266,20 @@ export default class LoginPage {
     const x = touch.clientX;
     const y = touch.clientY;
 
+    // 优先检查音乐控制按钮
+    const musicBtn = this.musicButton;
+    if (x >= musicBtn.x && x <= musicBtn.x + musicBtn.width &&
+        y >= musicBtn.y && y <= musicBtn.y + musicBtn.height) {
+      console.log('点击音乐控制按钮');
+      const isPlaying = GameGlobal.databus.toggleMusic();
+      this.showToast(isPlaying ? '音乐已播放' : '音乐已暂停');
+      return;
+    }
+
     // 检查是否点击了登录按钮
-    const btn = this.loginButton;
-    if (x >= btn.x && x <= btn.x + btn.width &&
-        y >= btn.y && y <= btn.y + btn.height) {
+    const loginBtn = this.loginButton;
+    if (x >= loginBtn.x && x <= loginBtn.x + loginBtn.width &&
+        y >= loginBtn.y && y <= loginBtn.y + loginBtn.height) {
       this.handleLogin();
     }
   }
@@ -244,4 +353,6 @@ export default class LoginPage {
   update() {
     // 登录页面不需要特殊更新逻辑
   }
+
+
 }

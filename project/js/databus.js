@@ -45,11 +45,17 @@ export default class DataBus {
   currentPage = 'login'; // 当前页面，默认为登录页
   pageHistory = []; // 页面历史
 
+  // 全局音乐管理
+  backgroundMusic = null;
+  isMusicPlaying = false;
+  musicInitialized = false;
+
   constructor() {
     // 确保单例模式
     if (instance) return instance;
 
     instance = this;
+    this.initMusic();
   }
 
   // 重置游戏状态
@@ -157,5 +163,97 @@ export default class DataBus {
       key: currentToolKey,
       ...this.modules[currentToolKey]
     };
+  }
+
+  // 全局音乐管理方法
+  initMusic() {
+    if (this.musicInitialized) return;
+    
+    try {
+      this.backgroundMusic = wx.createInnerAudioContext();
+      this.backgroundMusic.src = 'audio/bgm.mp3';
+      this.backgroundMusic.loop = true;
+      this.backgroundMusic.volume = 0.5; // 设置音量为50%
+      
+      this.backgroundMusic.onPlay(() => {
+        console.log('全局背景音乐开始播放');
+        this.isMusicPlaying = true;
+      });
+      
+      this.backgroundMusic.onPause(() => {
+        console.log('全局背景音乐暂停');
+        this.isMusicPlaying = false;
+      });
+      
+      this.backgroundMusic.onStop(() => {
+        console.log('全局背景音乐停止');
+        this.isMusicPlaying = false;
+      });
+      
+      this.backgroundMusic.onError((error) => {
+        console.warn('全局背景音乐播放错误:', error);
+        this.isMusicPlaying = false;
+      });
+
+      this.musicInitialized = true;
+      
+      // 延迟自动播放背景音乐
+      setTimeout(() => {
+        this.playMusic();
+      }, 1000);
+      
+    } catch (error) {
+      console.warn('全局音乐初始化失败:', error);
+      this.backgroundMusic = null;
+    }
+  }
+
+  // 播放背景音乐
+  playMusic() {
+    if (this.backgroundMusic && !this.isMusicPlaying) {
+      try {
+        this.backgroundMusic.play();
+      } catch (error) {
+        console.warn('播放全局背景音乐失败:', error);
+      }
+    }
+  }
+
+  // 停止背景音乐
+  stopMusic() {
+    if (this.backgroundMusic && this.isMusicPlaying) {
+      try {
+        this.backgroundMusic.pause();
+      } catch (error) {
+        console.warn('停止全局背景音乐失败:', error);
+      }
+    }
+  }
+
+  // 切换背景音乐播放状态
+  toggleMusic() {
+    if (this.isMusicPlaying) {
+      this.stopMusic();
+      return false; // 返回当前状态：停止
+    } else {
+      this.playMusic();
+      return true; // 返回当前状态：播放
+    }
+  }
+
+  // 销毁音乐资源
+  destroyMusic() {
+    if (this.backgroundMusic) {
+      try {
+        this.backgroundMusic.stop();
+        this.backgroundMusic.destroy();
+        this.backgroundMusic = null;
+        this.isMusicPlaying = false;
+        this.musicInitialized = false;
+        console.log('全局背景音乐资源已清理');
+      } catch (error) {
+        console.warn('清理全局音乐资源失败:', error);
+      }
+    }
   }
 }

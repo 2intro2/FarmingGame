@@ -2,6 +2,7 @@ import LoginPage from './LoginPage';
 import HomePage from './HomePage';
 import ToolAssemblyPage from './ToolAssemblyPage';
 import VideoLearningPage from './VideoLearningPage';
+import ThreeDAssemblyPage from './ThreeDAssemblyPage';
 
 /**
  * 页面管理器
@@ -12,12 +13,15 @@ export default class PageManager {
   currentPage = null;
 
   constructor() {
-    // 延迟初始化页面，避免不必要的资源消耗
-    this.pages = {};
-    this.currentPage = null;
+    // 初始化所有页面
+    this.pages = {
+      login: new LoginPage(),
+      home: new HomePage(),
+      toolAssembly: new ToolAssemblyPage(),
+      threeDAssembly: new ThreeDAssemblyPage()
+    };
     
-    // 只初始化默认页面
-    this.pages.login = new LoginPage();
+    // 设置默认页面
     this.currentPage = this.pages.login;
   }
 
@@ -30,21 +34,21 @@ export default class PageManager {
     if (!this.pages[pageName]) {
       this.createPage(pageName);
     }
-    
+
     if (this.pages[pageName]) {
       // 隐藏当前页面
       if (this.currentPage && this.currentPage.hide) {
         this.currentPage.hide();
       }
-      
+
       // 切换到新页面
       this.currentPage = this.pages[pageName];
-      
+
       // 显示新页面
       if (this.currentPage && this.currentPage.show) {
         this.currentPage.show();
       }
-      
+
       // 通知数据总线页面切换
       GameGlobal.databus.switchPage(pageName);
     }
@@ -81,28 +85,8 @@ export default class PageManager {
    */
   render(ctx) {
     if (this.currentPage && this.currentPage.render) {
-      try {
-        this.currentPage.render(ctx);
-      } catch (error) {
-        console.error('页面渲染错误:', error);
-        // 渲染错误页面
-        this.renderErrorPage(ctx);
-      }
+      this.currentPage.render(ctx);
     }
-  }
-
-  /**
-   * 渲染错误页面
-   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
-   */
-  renderErrorPage(ctx) {
-    ctx.fillStyle = '#FF0000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '20px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('页面渲染错误', canvas.width / 2, canvas.height / 2);
   }
 
   /**
@@ -121,6 +105,18 @@ export default class PageManager {
   handleTouch(event) {
     if (this.currentPage && this.currentPage.handleTouch) {
       this.currentPage.handleTouch(event);
+    }
+  }
+
+  handleTouchMove(event) {
+    if (this.currentPage && this.currentPage.handleTouchMove) {
+      this.currentPage.handleTouchMove(event);
+    }
+  }
+
+  handleTouchEnd(event) {
+    if (this.currentPage && this.currentPage.handleTouchEnd) {
+      this.currentPage.handleTouchEnd(event);
     }
   }
 }

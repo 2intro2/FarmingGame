@@ -12,8 +12,11 @@ export default class WechatAPI {
    * 初始化微信API
    */
   init() {
-    // 监听触摸事件
+    // 监听所有触摸事件
     wx.onTouchStart(this.handleTouchStart.bind(this));
+    wx.onTouchMove(this.handleTouchMove.bind(this));
+    wx.onTouchEnd(this.handleTouchEnd.bind(this));
+    wx.onTouchCancel(this.handleTouchEnd.bind(this)); // 触摸取消时也当作结束处理
   }
 
   /**
@@ -21,9 +24,44 @@ export default class WechatAPI {
    * @param {Object} event - 触摸事件对象
    */
   handleTouchStart(event) {
+    console.log('WechatAPI: touchstart');
     // 将触摸事件传递给当前页面
     if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
-      GameGlobal.pageManager.handleTouch(event);
+      // 如果页面有专门的 handleTouchStart 方法，优先使用
+      if (GameGlobal.pageManager.currentPage.handleTouchStart) {
+        GameGlobal.pageManager.currentPage.handleTouchStart(event);
+      } else {
+        // 否则使用通用的 handleTouch 方法
+        GameGlobal.pageManager.currentPage.handleTouch(event);
+      }
+    }
+  }
+
+  /**
+   * 处理触摸移动事件
+   * @param {Object} event - 触摸事件对象
+   */
+  handleTouchMove(event) {
+    console.log('WechatAPI: touchmove');
+    // 将触摸事件传递给当前页面
+    if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
+      if (GameGlobal.pageManager.currentPage.handleTouchMove) {
+        GameGlobal.pageManager.currentPage.handleTouchMove(event);
+      }
+    }
+  }
+
+  /**
+   * 处理触摸结束事件
+   * @param {Object} event - 触摸事件对象
+   */
+  handleTouchEnd(event) {
+    console.log('WechatAPI: touchend');
+    // 将触摸事件传递给当前页面
+    if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
+      if (GameGlobal.pageManager.currentPage.handleTouchEnd) {
+        GameGlobal.pageManager.currentPage.handleTouchEnd(event);
+      }
     }
   }
 

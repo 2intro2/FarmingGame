@@ -36,6 +36,14 @@ export default class VideoLearningPage {
   // 确认提交按钮图片
   submitButtonImage = null;
 
+  // 进度条拖动状态
+  progressDrag = {
+    isDragging: false,
+    dragProgress: 0, // 拖动时的临时进度值 (0-1)
+    startX: 0,
+    startY: 0
+  };
+
   selectedCardIds = {
     column1: null,
     column2: null
@@ -435,24 +443,58 @@ export default class VideoLearningPage {
    * @param {number} width - 宽度
    */
   renderVideoProgressBar(ctx, x, y, width) {
-    const barHeight = 8;
-    const progress = this.videoState.duration > 0 ? 
-      this.videoState.currentTime / this.videoState.duration : 0;
+    const barHeight = 12; // 增加高度便于拖动
     
-    // 绘制进度条背景
+    // 使用拖动进度或实际播放进度
+    const progress = this.progressDrag.isDragging ? 
+      this.progressDrag.dragProgress : 
+      (this.videoState.duration > 0 ? this.videoState.currentTime / this.videoState.duration : 0);
+    
+    // 绘制进度条背景（扩大可点击区域）
+    const trackHeight = barHeight + 8;
+    const trackY = y - 4;
+    ctx.fillStyle = this.progressDrag.isDragging ? '#F5F5F5' : '#E0E0E0';
+    ctx.fillRect(x, trackY, width, trackHeight);
+    
+    // 绘制进度条主体
     ctx.fillStyle = '#E0E0E0';
     ctx.fillRect(x, y, width, barHeight);
     
     // 绘制进度条填充
     if (progress > 0) {
-      ctx.fillStyle = '#2196F3';
+      ctx.fillStyle = this.progressDrag.isDragging ? '#1976D2' : '#2196F3';
       ctx.fillRect(x, y, width * progress, barHeight);
     }
     
     // 绘制进度条边框
-    ctx.strokeStyle = '#BDBDBD';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = this.progressDrag.isDragging ? '#1976D2' : '#BDBDBD';
+    ctx.lineWidth = this.progressDrag.isDragging ? 2 : 1;
     ctx.strokeRect(x, y, width, barHeight);
+    
+    // 绘制拖动滑块
+    if (progress >= 0) {
+      const sliderX = x + width * progress;
+      const sliderRadius = this.progressDrag.isDragging ? 8 : 6;
+      
+      // 滑块阴影
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.beginPath();
+      ctx.arc(sliderX + 1, y + barHeight / 2 + 1, sliderRadius, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // 滑块主体
+      ctx.fillStyle = this.progressDrag.isDragging ? '#1976D2' : '#2196F3';
+      ctx.beginPath();
+      ctx.arc(sliderX, y + barHeight / 2, sliderRadius, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // 拖动时添加外圈效果
+      if (this.progressDrag.isDragging) {
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
     
     // 绘制模块分割线
     const modulePositions = [0.33, 0.66];
@@ -465,6 +507,20 @@ export default class VideoLearningPage {
       ctx.lineTo(lineX, y + barHeight);
       ctx.stroke();
     });
+  }
+
+  /**
+   * 获取进度条的点击区域
+   */
+  getProgressBarRect() {
+    const { x, y, width } = this.layout.progress;
+    const progressY = y + 75; // 对应 renderProgressSection 中调用时的 y + 75
+    return {
+      x: x,
+      y: progressY - 4, // 包含扩展的点击区域
+      width: width,
+      height: 20 // 扩大的点击高度
+    };
   }
 
   /**
@@ -661,18 +717,185 @@ export default class VideoLearningPage {
    * @param {Object} event - 触摸事件对象
    */
   handleTouch(event) {
-    const touch = event.touches[0];
-    const x = touch.clientX
-    const y = touch.clientY
+    this.handleTouchEvent(event, 'touchend');
+  }
+
+  /**
+   * 处理触摸开始事件
+   */
+  handleTouchStart(event) {
+    this.handleTouchEvent(event, 'touchstart');
+  }
+
+  /**
+   * 处理触摸移动事件
+   */
+  handleTouchMove(event) {
+    this.handleTouchEvent(event, 'touchmove');
+  }
+
+  /**
+   * 处理触摸结束事件
+   */
+  handleTouchEnd(event) {
+    this.handleTouchEvent(event, 'touchend');
+  }
+
+  /**
+   * 统一的触摸事件处理
+   */
+  handleTouchEvent(event, eventType) {
+    const touch = event.touches && event.touches[0] || event.changedTouches && event.changedTouches[0];
+    if (!touch) {
+      console.log('没有触摸点信息');
+      return;
+    }
     
-    // 检查返回按钮点击
-    this.checkBackButtonClick(x, y);
+    const x = touch.clientX;
+    const y = touch.clientY;
     
-    // 检查卡片选择
-    this.checkCardSelection(x, y);
+    console.log(`VideoLearningPage 触摸事件: ${eventType} at (${x}, ${y})`);
     
-    // 检查提交按钮点击
-    this.checkSubmitButtonClick(x, y);
+    // 优先检查进度条拖动
+    const progressHandled = this.checkProgressBarDrag(x, y, eventType);
+    console.log(`进度条拖动检查结果: ${progressHandled}`);
+    
+    if (progressHandled) {
+      return;
+    }
+    
+    // 仅在触摸结束时处理其他点击事件，避免拖动过程中误触发
+    if (eventType === 'touchend') {
+      console.log('处理其他点击事件');
+      
+      // 检查返回按钮点击
+      this.checkBackButtonClick(x, y);
+      
+      // 检查卡片选择
+      this.checkCardSelection(x, y);
+      
+      // 检查提交按钮点击
+      this.checkSubmitButtonClick(x, y);
+    }
+  }
+
+  /**
+   * 检查进度条拖动事件
+   */
+  checkProgressBarDrag(touchX, touchY, eventType) {
+    const progressRect = this.getProgressBarRect();
+    
+    console.log('🎯 进度条拖动检查:', {
+      eventType,
+      touchPosition: { x: touchX, y: touchY },
+      progressRect,
+      isDragging: this.progressDrag.isDragging
+    });
+    
+    // 检查是否在进度条区域内或正在拖动中
+    const inProgressArea = touchX >= progressRect.x && touchX <= progressRect.x + progressRect.width &&
+                          touchY >= progressRect.y && touchY <= progressRect.y + progressRect.height;
+    
+    console.log('是否在进度条区域内:', inProgressArea);
+    
+    if (eventType === 'touchstart' && inProgressArea) {
+      // 开始拖动
+      console.log('✅ 开始拖动进度条');
+      this.progressDrag.isDragging = true;
+      this.progressDrag.startX = touchX;
+      this.progressDrag.startY = touchY;
+      
+      // 计算初始进度
+      const progress = Math.max(0, Math.min(1, (touchX - progressRect.x) / progressRect.width));
+      this.progressDrag.dragProgress = progress;
+      
+      console.log('初始进度:', progress);
+      showToast('开始拖动进度条');
+      return true;
+      
+    } else if (eventType === 'touchmove' && this.progressDrag.isDragging) {
+      // 拖动中
+      console.log('🔄 拖动中');
+      const progress = Math.max(0, Math.min(1, (touchX - progressRect.x) / progressRect.width));
+      this.progressDrag.dragProgress = progress;
+      
+      console.log('当前进度:', progress);
+      
+      // 实时显示拖动到的时间
+      if (this.videoState.duration > 0) {
+        const targetTime = progress * this.videoState.duration;
+        console.log('拖动到时间:', this.formatTime(targetTime));
+      }
+      
+      return true;
+      
+    } else if (eventType === 'touchend' && this.progressDrag.isDragging) {
+      // 结束拖动，应用进度
+      console.log('🏁 结束拖动，应用进度');
+      this.applyProgressDrag();
+      return true;
+    }
+    
+    console.log('❌ 进度条拖动未处理');
+    return false;
+  }
+
+  /**
+   * 应用拖动进度到视频
+   */
+  applyProgressDrag() {
+    if (!this.progressDrag.isDragging) {
+      console.log('没有在拖动状态，跳过应用进度');
+      return;
+    }
+    
+    console.log('应用拖动进度:', {
+      dragProgress: this.progressDrag.dragProgress,
+      videoExists: !!this.video,
+      videoDuration: this.videoState.duration
+    });
+    
+    try {
+      if (this.video && this.videoState.duration > 0) {
+        const targetTime = this.progressDrag.dragProgress * this.videoState.duration;
+        
+        console.log('尝试跳转到时间:', targetTime, '秒');
+        
+        // 尝试多种跳转方法，适配微信小游戏的视频API
+        if (typeof this.video.seek === 'function') {
+          console.log('使用 seek 方法');
+          this.video.seek(targetTime);
+          this.videoState.currentTime = targetTime;
+          showToast(`已跳转到: ${this.formatTime(targetTime)}`);
+        } else if (typeof this.video.currentTime !== 'undefined') {
+          console.log('使用 currentTime 属性');
+          this.video.currentTime = targetTime;
+          this.videoState.currentTime = targetTime;
+          showToast(`已跳转到: ${this.formatTime(targetTime)}`);
+        } else {
+          // 如果没有直接的跳转方法，我们可以尝试模拟跳转
+          console.warn('视频组件不支持跳转方法，尝试模拟跳转');
+          this.videoState.currentTime = targetTime;
+          showToast(`已跳转到: ${this.formatTime(targetTime)}`);
+        }
+      } else {
+        console.warn('视频未就绪:', {
+          video: !!this.video,
+          duration: this.videoState.duration
+        });
+        showToast('视频未就绪');
+      }
+    } catch (error) {
+      console.error('视频跳转失败:', error);
+      showErrorToast('视频跳转失败');
+    } finally {
+      // 重置拖动状态
+      console.log('重置拖动状态');
+      this.progressDrag.isDragging = false;
+      this.progressDrag.dragProgress = 0;
+      this.progressDrag.startX = 0;
+      this.progressDrag.startY = 0;
+    }
   }
 
   /**
@@ -944,6 +1167,14 @@ export default class VideoLearningPage {
     
     // 重置卡片状态
     this.resetCardStates();
+    
+    // 重置进度条拖动状态
+    this.progressDrag = {
+      isDragging: false,
+      dragProgress: 0,
+      startX: 0,
+      startY: 0
+    };
     
     // 销毁现有视频组件
     if (this.video) {

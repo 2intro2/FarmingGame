@@ -133,14 +133,14 @@ export default class VideoLearningPage {
       y: this.layout.video.y,
       width: this.layout.video.width,
       height: this.layout.video.height,
-      src: 'https://vdse.bdstatic.com//d3afbab61c9ff23eb2763b42448bf85c.mp4?authorization=bce-auth-v1%2F40f207e648424f47b2e3dfbb1014b1a5%2F2025-07-03T22%3A03%3A09Z%2F-1%2Fhost%2F185763c6468891f73873e7e1eb400846b5d653eb7f03097dddd46e90cc13f52f', // 使用测试视频，实际使用时请替换为真实视频URL
+      src: 'https://bjhnewmda2.bdstatic.com/524741487a706d75434e594d58326e4e/4e527a7a544d6231/b6a22a9db7b090766af99e2075267dff0f7d3b0fe0dcf53d6cbea7a5da877916d8d0d19c1431ce36a7a6ca644020b1d9d7171dedce0ecf50ae64858adee1510d0b43264f57f7702ed5bb7c305b09dd74.mp4?auth_key=1754736534-0-0-2fa40d270154cbaad6e6f1d3311d63a6', // 使用测试视频，实际使用时请替换为真实视频URL
       autoplay: false,
       loop: false,
       muted: false,
       controls: true,
       showCenterPlayBtn: true,
       showProgress: false,
-      objectFit: 'contain',
+      objectFit: 'fill',
       enablePlayGesture : true,
       poster: 'images/bg01.jpeg'
     });
@@ -346,45 +346,55 @@ export default class VideoLearningPage {
    * 绘制学习进度区域
    */
   renderProgressSection(ctx) {
-    const { x, y, width } = this.layout.progress;
+    // 获取圆角方框的实际区域
+    const leftPanelX = this.layout.video.x;
+    const leftPanelY = this.layout.progress.y - 10;
+    const leftPanelWidth = this.layout.video.width;
+    const leftPanelHeight = SCREEN_HEIGHT - (this.layout.progress.y - 10) - this.layout.video.y;
+    
+    // 在圆角方框内居中布局，添加内边距
+    const padding = 20;
+    const contentX = leftPanelX + padding;
+    const contentY = leftPanelY + padding;
+    const contentWidth = leftPanelWidth - padding * 2;
     
     // 绘制标题
     ctx.fillStyle = '#333333';
     ctx.font = '20px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('学习进度', x + width / 2, y + 30);
+    ctx.fillText('学习进度', contentX + contentWidth / 2, contentY + 30);
     
     // 绘制播放进度文字
     ctx.font = '16px Arial';
     ctx.textAlign = 'left';
-    // const currentTime = this.formatTime(this.videoState.position);
     const currentTime = this.videoState.currentTime;
     const duration = this.videoState.duration;
     const progressPercent = this.videoState.duration > 0 ? 
       Math.round((this.videoState.currentTime / this.videoState.duration) * 100) : 0;
-    ctx.fillText(`播放进度: ${currentTime} / ${duration} (${progressPercent}%)`, x, y + 70);
+    ctx.fillText(`播放进度: ${currentTime} / ${duration} (${progressPercent}%)`, contentX, contentY + 70);
     
     // 绘制视频播放进度条
-    this.renderVideoProgressBar(ctx, x, y + 75, width);
+    this.renderVideoProgressBar(ctx, contentX, contentY + 85, contentWidth);
     
     // 绘制当前学习模块
     const currentModule = this.getCurrentLearningModule();
     if (currentModule) {
       ctx.fillStyle = '#4CAF50';
       ctx.font = '14px Arial';
-      ctx.fillText(`当前学习: ${currentModule}`, x, y + 95);
+      ctx.fillText(`当前学习: ${currentModule}`, contentX, contentY + 110);
     }
     
     // 绘制学习模块进度条
-    this.renderLearningProgress(ctx, x, y + 110);
+    this.renderLearningProgress(ctx, contentX, contentY + 130, contentWidth);
   }
 
   /**
    * 绘制学习模块进度条
    */
-  renderLearningProgress(ctx, x, y) {
+  renderLearningProgress(ctx, x, y, width) {
     const moduleNames = ['曲辕犁的历史', '结构组成', '使用技巧'];
-    const moduleWidth = (this.layout.progress.width - 40) / 3;
+    const availableWidth = width || (this.layout.progress.width - 40);
+    const moduleWidth = availableWidth / 3;
     const moduleHeight = 20;
     
     // 计算视频播放进度百分比
@@ -571,12 +581,22 @@ export default class VideoLearningPage {
    * 获取进度条的点击区域
    */
   getProgressBarRect() {
-    const { x, y, width } = this.layout.progress;
-    const progressY = y + 75; // 对应 renderProgressSection 中调用时的 y + 75
+    // 获取圆角方框的实际区域
+    const leftPanelX = this.layout.video.x;
+    const leftPanelY = this.layout.progress.y - 10;
+    const leftPanelWidth = this.layout.video.width;
+    
+    // 在圆角方框内居中布局，添加内边距
+    const padding = 20;
+    const contentX = leftPanelX + padding;
+    const contentY = leftPanelY + padding;
+    const contentWidth = leftPanelWidth - padding * 2;
+    
+    const progressY = contentY + 85; // 对应 renderProgressSection 中调用时的 contentY + 85
     return {
-      x: x,
+      x: contentX,
       y: progressY - 4, // 包含扩展的点击区域
-      width: width,
+      width: contentWidth,
       height: 20 // 扩大的点击高度
     };
   }

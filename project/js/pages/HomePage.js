@@ -10,6 +10,7 @@ export default class HomePage {
   infoBar = {};
 
   constructor() {
+    this.initData();
     this.initModules();
     this.initButtons();
     this.initInfoBar();

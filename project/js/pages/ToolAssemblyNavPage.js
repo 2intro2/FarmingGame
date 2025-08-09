@@ -281,11 +281,11 @@ export default class ToolAssemblyNavPage extends BasePage {
     
     ctx.restore();
 
-    // 标题 - 现代化字体，去掉加粗
+    // 标题 - 现代化字体，去掉加粗，向上调整位置
     ctx.fillStyle = '#333333';
-    ctx.font = '24px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+    ctx.font = '24px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('农具拼装', 80, 45);
+    ctx.fillText('农具拼装', 80, 40);
   }
 
   /**
@@ -445,19 +445,19 @@ export default class ToolAssemblyNavPage extends BasePage {
       
       // 一级标题（工具名称）- 现代化字体，深色，加黑加粗
       ctx.fillStyle = '#222222';
-      ctx.font = 'bold 28px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体，调整大小
+      ctx.font = 'bold 28px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体，调整大小
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(tool.name, textX, textY);
       
       // 二级标题（副标题）- 现代化字体，中等色，加黑加粗但比一级标题小
       ctx.fillStyle = '#444444';
-      ctx.font = 'bold 20px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体，调整大小
+      ctx.font = 'bold 20px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体，调整大小
       ctx.fillText(tool.subtitle, textX, textY + 40);
       
       // 描述文字（现代化字体，适配最大空间）
       ctx.fillStyle = '#666666';
-      ctx.font = '16px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体
+      ctx.font = '16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif'; // 现代化字体
       const maxDescWidth = this.cardWidth - textX - 50;
       this.drawTruncatedText(ctx, tool.description, textX, textY + 80, maxDescWidth, 140);
       
@@ -789,7 +789,7 @@ export default class ToolAssemblyNavPage extends BasePage {
     
     // 绘制星级（适配最大标签，现代化字体）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '16px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+    ctx.font = '16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
@@ -835,7 +835,7 @@ export default class ToolAssemblyNavPage extends BasePage {
     
     // 绘制奖励文本和数值（添加"奖励:"前缀，现代化字体）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 16px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+    ctx.font = 'bold 16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`奖励:${reward}`, x + tagWidth / 2, y - tagHeight / 2);
@@ -930,12 +930,7 @@ export default class ToolAssemblyNavPage extends BasePage {
     const totalWidth = this.steps.length * stepWidth + (this.steps.length - 1) * spacing;
     const startX = (SCREEN_WIDTH - totalWidth) / 2;
 
-    // 绘制虚线边框
-    ctx.strokeStyle = '#CCCCCC';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
-    ctx.strokeRect(startX - 10, startY - 10, totalWidth + 20, 80);
-    ctx.setLineDash([]);
+    // 移除虚线边框，保持简洁的设计
 
     this.steps.forEach((step, index) => {
       this.renderProgressStep(ctx, step, startX + index * (stepWidth + spacing), startY, stepWidth);
@@ -979,14 +974,14 @@ export default class ToolAssemblyNavPage extends BasePage {
       
       // 步骤标题 - 现代化字体
       ctx.fillStyle = textColor;
-      ctx.font = 'bold 14px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+      ctx.font = 'bold 14px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(step.title, x + width / 2, y + 18);
 
       // 步骤名称 - 现代化字体
       ctx.fillStyle = textColor;
-      ctx.font = '12px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+      ctx.font = '12px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
       ctx.fillText(step.name, x + width / 2, y + 42);
 
       // 状态图标
@@ -998,7 +993,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.fill();
         
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 10px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+        ctx.font = 'bold 10px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('✓', x + width - 15, y + 15);
@@ -1010,7 +1005,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.fill();
         
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 10px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+        ctx.font = 'bold 10px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('🔒', x + width - 15, y + 15);

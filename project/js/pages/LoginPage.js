@@ -1,10 +1,11 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
 import { showToast, showSuccessToast, showErrorToast } from '../utils/toast';
+import BasePage from './BasePage';
 
 /**
  * 登录页面
  */
-export default class LoginPage {
+export default class LoginPage extends BasePage {
   backgroundImage = null;
   musicButton = {
     x: SCREEN_WIDTH - 1000, // 右上角位置
@@ -25,6 +26,7 @@ export default class LoginPage {
   };
 
   constructor() {
+    super(); // 调用BasePage的构造函数
     this.loadResources();
   }
 
@@ -77,10 +79,10 @@ export default class LoginPage {
 
 
   /**
-   * 渲染登录页面
+   * 渲染登录页面内容（支持动画）
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
-  render(ctx) {
+  renderContent(ctx) {
     // 绘制背景
     if (this.backgroundImage && this.backgroundImage.complete && this.backgroundImage.naturalWidth !== 0) {
       try {

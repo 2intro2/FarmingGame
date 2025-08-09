@@ -1,10 +1,11 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
 import { showToast, showSuccessToast, showErrorToast } from '../utils/toast';
+import BasePage from './BasePage';
 
 /**
  * 主页面
  */
-export default class HomePage {
+export default class HomePage extends BasePage {
   modules = [];
   buttons = {};
   infoBar = {};
@@ -47,6 +48,7 @@ export default class HomePage {
   userAvatarImage = null; // 登录用户头像
 
   constructor() {
+    super(); // 调用BasePage的构造函数
     this.loadResources();
     this.initModules();
     this.initButtons();
@@ -271,10 +273,10 @@ export default class HomePage {
   }
 
   /**
-   * 渲染主页面
+   * 渲染主页面内容（支持动画）
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
-  render(ctx) {
+  renderContent(ctx) {
     // 绘制首页背景图（失败则使用渐变）
     if (this.homeBgImage && this.homeBgImage.complete && this.homeBgImage.naturalWidth !== 0) {
       try {

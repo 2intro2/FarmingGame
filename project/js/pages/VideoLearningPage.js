@@ -48,6 +48,9 @@ export default class VideoLearningPage {
   // 进度相关图片
   progressImage = null;
   startImage = null;
+  
+  // 选中状态图片
+  checkedImage = null;
 
 
 
@@ -227,6 +230,9 @@ export default class VideoLearningPage {
     // 加载进度相关图片
     this.loadProgressImage();
     this.loadStartImage();
+    
+    // 加载选中状态图片
+    this.loadCheckedImage();
   }
 
   /**
@@ -248,6 +254,8 @@ export default class VideoLearningPage {
     // 测试进度相关图片
     cardImages.push('images/progress.png');
     cardImages.push('images/start.png');
+    // 测试选中状态图片
+    cardImages.push('pages/checked.png');
     ImageTest.testImages(cardImages);
   }
 
@@ -356,6 +364,21 @@ export default class VideoLearningPage {
       .catch(error => {
         console.warn('开始图片加载失败:', error);
         this.startImage = null;
+      });
+  }
+
+  /**
+   * 加载选中状态图片
+   */
+  loadCheckedImage() {
+    ImageLoader.loadImage('pages/checked.png', { timeout: 5000 })
+      .then(img => {
+        this.checkedImage = img;
+        console.log('选中状态图片加载成功');
+      })
+      .catch(error => {
+        console.warn('选中状态图片加载失败:', error);
+        this.checkedImage = null;
       });
   }
 
@@ -591,15 +614,9 @@ export default class VideoLearningPage {
       
       // 不绘制边框
       
-      // 如果永久选中，绘制选中指示器
-      if (card.permanentlySelected) {
-        ctx.fillStyle = '#2E7D32';
-        ctx.fillRect(x + width - 15, cardY, 15, 15);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('✓', x + width - 7.5, cardY + 7.5);
+      // 如果选中（包括普通选中和永久选中），绘制选中指示器
+      if (card.selected || card.permanentlySelected) {
+        this.renderCheckedIcon(ctx, x + width - 20, cardY, 20, 20);
       }
       
       // 绘制图片
@@ -650,6 +667,41 @@ export default class VideoLearningPage {
   }
 
   /**
+   * 绘制选中状态图标
+   */
+  renderCheckedIcon(ctx, x, y, width, height) {
+    if (this.checkedImage && ImageLoader.isValidImage(this.checkedImage)) {
+      try {
+        ctx.drawImage(this.checkedImage, x, y, width, height);
+      } catch (error) {
+        console.warn('选中状态图片绘制失败:', error);
+        this.renderCheckedIconFallback(ctx, x, y, width, height);
+      }
+    } else {
+      // 没有图片或图片加载失败，使用备用图标
+      this.renderCheckedIconFallback(ctx, x, y, width, height);
+    }
+  }
+
+  /**
+   * 绘制备用选中状态图标（当图片加载失败时）
+   */
+  renderCheckedIconFallback(ctx, x, y, width, height) {
+    // 绘制圆形背景
+    ctx.fillStyle = '#4CAF50';
+    ctx.beginPath();
+    ctx.arc(x + width / 2, y + height / 2, width / 2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 绘制白色对号
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `${width * 0.6}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✓', x + width / 2, y + height / 2);
+  }
+
+  /**
    * 绘制第二列图片卡片
    */
   renderTextCards(ctx) {
@@ -666,15 +718,9 @@ export default class VideoLearningPage {
       
       // 不绘制边框
       
-      // 如果永久选中，绘制选中指示器
-      if (card.permanentlySelected) {
-        ctx.fillStyle = '#2E7D32';
-        ctx.fillRect(x + width - 15, cardY, 15, 15);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '12px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('✓', x + width - 7.5, cardY + 7.5);
+      // 如果选中（包括普通选中和永久选中），绘制选中指示器
+      if (card.selected || card.permanentlySelected) {
+        this.renderCheckedIcon(ctx, x + width - 20, cardY, 20, 20);
       }
       
       // 绘制图片内容

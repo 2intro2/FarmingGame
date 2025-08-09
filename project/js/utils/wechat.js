@@ -14,6 +14,13 @@ export default class WechatAPI {
   init() {
     // 监听触摸事件
     wx.onTouchStart(this.handleTouchStart.bind(this));
+    // 拖拽需要的移动与结束事件
+    if (wx.onTouchMove) {
+      wx.onTouchMove(this.handleTouchMove.bind(this));
+    }
+    if (wx.onTouchEnd) {
+      wx.onTouchEnd(this.handleTouchEnd.bind(this));
+    }
   }
 
   /**
@@ -24,6 +31,28 @@ export default class WechatAPI {
     // 将触摸事件传递给当前页面
     if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
       GameGlobal.pageManager.handleTouch(event);
+    }
+  }
+
+  /**
+   * 处理触摸移动事件
+   */
+  handleTouchMove(event) {
+    if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
+      if (GameGlobal.pageManager.handleTouchMove) {
+        GameGlobal.pageManager.handleTouchMove(event);
+      }
+    }
+  }
+
+  /**
+   * 处理触摸结束事件
+   */
+  handleTouchEnd(event) {
+    if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
+      if (GameGlobal.pageManager.handleTouchEnd) {
+        GameGlobal.pageManager.handleTouchEnd(event);
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 import LoginPage from './LoginPage';
 import HomePage from './HomePage';
 import ToolAssemblyPage from './ToolAssemblyPage';
+import ThreeDAssemblyPage from './ThreeDAssemblyPage';
 
 /**
  * 页面管理器
@@ -15,7 +16,8 @@ export default class PageManager {
     this.pages = {
       login: new LoginPage(),
       home: new HomePage(),
-      toolAssembly: new ToolAssemblyPage()
+      toolAssembly: new ToolAssemblyPage(),
+      threeDAssembly: new ThreeDAssemblyPage()
     };
     
     // 设置默认页面
@@ -60,6 +62,18 @@ export default class PageManager {
   handleTouch(event) {
     if (this.currentPage && this.currentPage.handleTouch) {
       this.currentPage.handleTouch(event);
+    }
+  }
+
+  handleTouchMove(event) {
+    if (this.currentPage && this.currentPage.handleTouchMove) {
+      this.currentPage.handleTouchMove(event);
+    }
+  }
+
+  handleTouchEnd(event) {
+    if (this.currentPage && this.currentPage.handleTouchEnd) {
+      this.currentPage.handleTouchEnd(event);
     }
   }
 }

@@ -35,6 +35,7 @@ export default class VideoLearningPage {
 
   // 确认提交按钮图片
   submitButtonImage = null;
+  submitButtonGrayImage = null;
   
   // 返回按钮图片
   backButtonImage = null;
@@ -223,6 +224,7 @@ export default class VideoLearningPage {
     
     // 加载确认提交按钮图片
     this.loadSubmitButtonImage();
+    this.loadSubmitButtonGrayImage();
     
     // 加载返回按钮图片
     this.loadBackButtonImage();
@@ -253,7 +255,8 @@ export default class VideoLearningPage {
     // 测试第二列卡片图片
     cardImages.push(...this.cards.column2.map(card => card.image));
     // 测试确认提交按钮图片
-    cardImages.push('images/confirmSubmission.png');
+    cardImages.push('images/confirm.png');
+    cardImages.push('images/confit_gray.png');
     // 测试返回按钮图片
     cardImages.push('images/left.png');
     // 测试背景图片
@@ -292,7 +295,7 @@ export default class VideoLearningPage {
    * 加载确认提交按钮图片
    */
   loadSubmitButtonImage() {
-    ImageLoader.loadImage('images/confirmSubmission.png', { timeout: 5000 })
+    ImageLoader.loadImage('images/confirm.png', { timeout: 5000 })
       .then(img => {
         this.submitButtonImage = img;
         console.log('确认提交按钮图片加载成功');
@@ -300,6 +303,21 @@ export default class VideoLearningPage {
       .catch(error => {
         console.warn('确认提交按钮图片加载失败:', error);
         this.submitButtonImage = null;
+      });
+  }
+
+  /**
+   * 加载确认提交按钮灰色图片
+   */
+  loadSubmitButtonGrayImage() {
+    ImageLoader.loadImage('images/confit_gray.png', { timeout: 5000 })
+      .then(img => {
+        this.submitButtonGrayImage = img;
+        console.log('确认提交按钮灰色图片加载成功');
+      })
+      .catch(error => {
+        console.warn('确认提交按钮灰色图片加载失败:', error);
+        this.submitButtonGrayImage = null;
       });
   }
 
@@ -916,26 +934,32 @@ export default class VideoLearningPage {
   renderSubmitButton(ctx) {
     const { x, y, width, height } = this.layout.submitButton;
     
-    // 如果有按钮图片且加载完成，绘制图片
-    if (this.submitButtonImage && ImageLoader.isValidImage(this.submitButtonImage)) {
+    // 检查是否所有卡片都已匹配成功
+    const allMatched = this.checkAllCardsMatched();
+    
+    // 根据匹配状态选择图片
+    const buttonImage = allMatched ? this.submitButtonImage : this.submitButtonGrayImage;
+    
+    // 如果有对应的按钮图片且加载完成，绘制图片
+    if (buttonImage && ImageLoader.isValidImage(buttonImage)) {
       try {
-        ctx.drawImage(this.submitButtonImage, x, y, width, height);
+        ctx.drawImage(buttonImage, x, y, width, height);
       } catch (error) {
         console.warn('确认提交按钮图片绘制失败:', error);
-        this.renderSubmitButtonFallback(ctx, x, y, width, height);
+        this.renderSubmitButtonFallback(ctx, x, y, width, height, allMatched);
       }
     } else {
       // 没有图片或图片加载失败，使用备用按钮
-      this.renderSubmitButtonFallback(ctx, x, y, width, height);
+      this.renderSubmitButtonFallback(ctx, x, y, width, height, allMatched);
     }
   }
 
   /**
    * 绘制备用提交按钮（当图片加载失败时）
    */
-  renderSubmitButtonFallback(ctx, x, y, width, height) {
-    // 绘制按钮背景
-    ctx.fillStyle = '#4CAF50';
+  renderSubmitButtonFallback(ctx, x, y, width, height, allMatched = false) {
+    // 根据匹配状态绘制按钮背景
+    ctx.fillStyle = allMatched ? '#4CAF50' : '#CCCCCC';
     ctx.fillRect(x, y, width, height);
     
     // 绘制按钮文字

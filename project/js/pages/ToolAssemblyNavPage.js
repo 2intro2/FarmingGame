@@ -109,13 +109,13 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 初始化布局参数
    */
   initLayout() {
-    // 堆叠卡片布局参数 - 优化尺寸占据屏幕中央
-    this.cardWidth = 480;   // 增大卡片宽度占据更多屏幕空间
-    this.cardHeight = 280;  // 增大卡片高度保持合理比例
+    // 堆叠卡片布局参数 - 大幅增加尺寸占据屏幕主要区域
+    this.cardWidth = 600;   // 大幅增加卡片宽度，接近屏幕宽度的80%
+    this.cardHeight = 350;  // 大幅增加卡片高度，保持16:9的合理比例
     this.cardSpacing = 60;  // 卡片之间的间距
-    this.stackOffset = 100; // 增大堆叠偏移量适配更大卡片
-    this.scaleRatio = 0.82; // 调整非活跃卡片的缩放比例
-    this.maxVisibleCards = 2; // 减少同时显示卡片数量突出中心卡片
+    this.stackOffset = 120; // 进一步增大堆叠偏移量适配更大卡片
+    this.scaleRatio = 0.78; // 调整非活跃卡片的缩放比例，突出大小对比
+    this.maxVisibleCards = 2; // 保持显示2张卡片突出中心卡片
     
     // 滑动手势参数
     this.swipeThreshold = 50; // 滑动触发阈值
@@ -369,7 +369,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillStyle = gradient;
       
       // 绘制圆角矩形背景
-      const borderRadius = 25; // 大圆角
+      const borderRadius = 30; // 适配大卡片的圆角
       try {
         if (ctx.roundRect && typeof ctx.roundRect === 'function') {
           ctx.roundRect(0, 0, this.cardWidth, this.cardHeight, borderRadius);
@@ -402,9 +402,9 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.strokeRect(0, 0, this.cardWidth, this.cardHeight);
       }
       
-      // 渲染工具图标（左侧，更大尺寸）
-      const iconSize = 100; // 增大图标尺寸
-      const iconX = 30;
+      // 渲染工具图标（左侧，进一步增大）
+      const iconSize = 140; // 进一步增大图标尺寸
+      const iconX = 40;
       const iconY = (this.cardHeight - iconSize) / 2;
       
       if (tool.imageLoaded && !tool.usePlaceholder && tool.imageElement) {
@@ -417,33 +417,33 @@ export default class ToolAssemblyNavPage extends BasePage {
         this.renderImagePlaceholder(ctx, iconX, iconY, iconSize, iconSize);
       }
       
-      // 渲染文本内容（右侧，适配更大空间）
-      const textX = iconX + iconSize + 25;
-      const textY = 40;
+      // 渲染文本内容（右侧，适配大卡片）
+      const textX = iconX + iconSize + 35;
+      const textY = 50;
       
-      // 工具名称（更大字体）
+      // 工具名称（大字体）
       ctx.fillStyle = '#333333';
-      ctx.font = 'bold 24px Arial';
+      ctx.font = 'bold 28px Arial'; // 进一步增大字体
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(tool.name, textX, textY);
       
-      // 副标题（更大字体）
+      // 副标题（大字体）
       ctx.fillStyle = '#666666';
-      ctx.font = '18px Arial';
-      ctx.fillText(tool.subtitle, textX, textY + 35);
+      ctx.font = '20px Arial'; // 进一步增大字体
+      ctx.fillText(tool.subtitle, textX, textY + 45);
       
-      // 描述文字（适配更大空间）
+      // 描述文字（适配大空间，增加行数）
       ctx.fillStyle = '#888888';
-      ctx.font = '14px Arial';
-      const maxDescWidth = this.cardWidth - textX - 30;
-      this.drawTruncatedText(ctx, tool.description, textX, textY + 70, maxDescWidth, 100);
+      ctx.font = '16px Arial'; // 进一步增大字体
+      const maxDescWidth = this.cardWidth - textX - 40;
+      this.drawTruncatedText(ctx, tool.description, textX, textY + 85, maxDescWidth, 120);
       
-      // 渲染难度标签（右上角，适配新尺寸）
-      this.renderDifficultyTag(ctx, tool.difficulty, this.cardWidth - 100, 20);
+      // 渲染难度标签（右上角，适配大卡片）
+      this.renderDifficultyTag(ctx, tool.difficulty, this.cardWidth - 110, 25);
       
-      // 渲染奖励信息（右下角，适配新尺寸）
-      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 80, this.cardHeight - 30);
+      // 渲染奖励信息（右下角，适配大卡片）
+      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 90, this.cardHeight - 35);
       
     } catch (error) {
       if (GameGlobal.logger) {
@@ -665,8 +665,8 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染难度标签
    */
   renderDifficultyTag(ctx, difficulty, x, y) {
-    const tagWidth = 85; // 增大标签宽度
-    const tagHeight = 30; // 增大标签高度
+    const tagWidth = 100; // 进一步增大标签宽度
+    const tagHeight = 35;  // 进一步增大标签高度
     
     // 绘制标签背景
     const gradient = ctx.createLinearGradient(x, y, x + tagWidth, y + tagHeight);
@@ -686,9 +686,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillRect(x, y, tagWidth, tagHeight);
     }
     
-    // 绘制星级（更大字体）
+    // 绘制星级（适配大标签）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '14px Arial'; // 增大字体
+    ctx.font = '16px Arial'; // 进一步增大字体
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
@@ -703,8 +703,8 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染奖励标签
    */
   renderRewardTag(ctx, reward, x, y) {
-    const tagWidth = 60; // 增大标签宽度
-    const tagHeight = 25; // 增大标签高度
+    const tagWidth = 70; // 进一步增大标签宽度
+    const tagHeight = 30; // 进一步增大标签高度
     
     // 绘制标签背景
     const gradient = ctx.createLinearGradient(x, y - tagHeight, x + tagWidth, y);
@@ -724,9 +724,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillRect(x, y - tagHeight, tagWidth, tagHeight);
     }
     
-    // 绘制奖励数值（更大字体）
+    // 绘制奖励数值（适配大标签）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 14px Arial'; // 增大字体
+    ctx.font = 'bold 16px Arial'; // 进一步增大字体
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${reward}`, x + tagWidth / 2, y - tagHeight / 2);

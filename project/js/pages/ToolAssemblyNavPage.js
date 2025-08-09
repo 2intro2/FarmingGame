@@ -433,9 +433,7 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染顶部导航栏
    */
   renderTopNav(ctx) {
-    // 背景
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, SCREEN_WIDTH, 80);
+    // 不再绘制独立的白色背景，让全局背景图片显示在标题栏
 
     // 返回按钮 - 使用图片或降级到原始按钮
     const buttonX = 40;
@@ -473,8 +471,8 @@ export default class ToolAssemblyNavPage extends BasePage {
     if (this.titleImageLoaded && this.titleImage) {
       // 使用图片渲染标题
       try {
-        // 计算图片尺寸，保持比例并与返回按钮高度一致
-        const maxHeight = 48; // 与返回按钮高度一致
+        // 计算图片尺寸，保持比例，适当放大以增强视觉效果
+        const maxHeight = 64; // 增大标题图片尺寸，提升视觉效果
         const titleImageRatio = this.titleImage.naturalWidth / this.titleImage.naturalHeight;
         const titleImageHeight = Math.min(maxHeight, this.titleImage.naturalHeight);
         const titleImageWidth = titleImageHeight * titleImageRatio;

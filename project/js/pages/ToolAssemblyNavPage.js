@@ -848,7 +848,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         success: (res) => {
           const status = parseInt(res.data);
           if (status >= 0 && status <= 3) {
-            this.toolQylStatus = status;
+            this.toolQylStatus = status; // 使用读取到的实际值
           } else {
             // 状态值超出范围，使用默认值0
             this.toolQylStatus = 0;
@@ -874,10 +874,14 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   forceRender() {
     // 触发页面重新渲染，确保状态图片位置更新
-    if (this.game && this.game.render) {
-      this.game.render();
-    } else if (GameGlobal && GameGlobal.render) {
-      GameGlobal.render();
+    try {
+      if (GameGlobal && GameGlobal.pageManager && canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        GameGlobal.pageManager.render(ctx);
+      }
+    } catch (error) {
+      console.warn('强制渲染失败:', error);
     }
   }
 

@@ -208,9 +208,11 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
-   * 加载状态图标
+   * 加载状态图标和导航图片
    */
   loadStatusIcons() {
+    // 加载导航栏图片
+    this.loadNavImages();
     // 加载已完成图标
     try {
       this.finishIcon = wx.createImage();
@@ -255,6 +257,57 @@ export default class ToolAssemblyNavPage extends BasePage {
         GameGlobal.logger.error('锁定图标加载异常', { error: error.message }, 'toolAssemblyNav');
       }
       this.lockIconLoaded = false;
+    }
+  }
+
+  /**
+   * 加载导航栏图片
+   */
+  loadNavImages() {
+    // 加载返回按钮图片
+    try {
+      this.backIcon = wx.createImage();
+      this.backIcon.onload = () => {
+        this.backIconLoaded = true;
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('返回按钮图片加载成功: back.png', null, 'toolAssemblyNav');
+        }
+      };
+      this.backIcon.onerror = () => {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('返回按钮图片加载失败: back.png', null, 'toolAssemblyNav');
+        }
+        this.backIconLoaded = false;
+      };
+      this.backIcon.src = 'images/back.png';
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('返回按钮图片加载异常', { error: error.message }, 'toolAssemblyNav');
+      }
+      this.backIconLoaded = false;
+    }
+
+    // 加载标题图片
+    try {
+      this.titleImage = wx.createImage();
+      this.titleImage.onload = () => {
+        this.titleImageLoaded = true;
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('标题图片加载成功: title.png', null, 'toolAssemblyNav');
+        }
+      };
+      this.titleImage.onerror = () => {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('标题图片加载失败: title.png', null, 'toolAssemblyNav');
+        }
+        this.titleImageLoaded = false;
+      };
+      this.titleImage.src = 'images/title.png';
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('标题图片加载异常', { error: error.message }, 'toolAssemblyNav');
+      }
+      this.titleImageLoaded = false;
     }
   }
 
@@ -362,85 +415,72 @@ export default class ToolAssemblyNavPage extends BasePage {
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, SCREEN_WIDTH, 80);
 
-    // 返回按钮（圆形绿色按钮，带渐变和阴影效果，稍微增大尺寸）
+    // 返回按钮 - 使用图片或降级到原始按钮
     const buttonX = 40;
     const buttonY = 40;
-    const buttonRadius = 24; // 从20增加到24，稍微大一点
+    const buttonSize = 48; // 适当的按钮尺寸
     
-    // 绘制阴影
-    ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-    ctx.shadowBlur = 6;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 3;
-    
-    // 绘制按钮背景（使用#19C472系列渐变效果）
-    const gradient = ctx.createRadialGradient(
-      buttonX - 8, buttonY - 8, 0,
-      buttonX, buttonY, buttonRadius
-    );
-    gradient.addColorStop(0, '#4DD58A'); // 更亮的绿色（高光，基于#19C472调亮）
-    gradient.addColorStop(0.3, '#2DD071'); // 亮绿色
-    gradient.addColorStop(0.7, '#19C472'); // 主绿色 - 用户指定颜色
-    gradient.addColorStop(1, '#15A862'); // 较深的绿色（阴影，基于#19C472调暗）
-    
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(buttonX, buttonY, buttonRadius, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    ctx.restore();
+    if (this.backIconLoaded && this.backIcon) {
+      // 使用图片渲染返回按钮
+      try {
+        ctx.drawImage(
+          this.backIcon, 
+          buttonX - buttonSize/2, 
+          buttonY - buttonSize/2, 
+          buttonSize, 
+          buttonSize
+        );
+        if (GameGlobal.logger) {
+          GameGlobal.logger.debug('返回按钮图片渲染成功', null, 'toolAssemblyNav');
+        }
+      } catch (drawError) {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('返回按钮图片渲染失败，使用降级方案', { error: drawError.message }, 'toolAssemblyNav');
+        }
+        this.renderFallbackBackButton(ctx, buttonX, buttonY);
+      }
+    } else {
+      // 降级方案：使用原始的圆形绿色按钮
+      this.renderFallbackBackButton(ctx, buttonX, buttonY);
+    }
 
-    // 绘制高光效果（顶部亮光）
-    ctx.save();
-    const highlightGradient = ctx.createRadialGradient(
-      buttonX - 5, buttonY - 5, 0,
-      buttonX - 5, buttonY - 5, 8
-    );
-    highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-    highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    // 标题 - 使用图片或降级到文字
+    const titleX = 80;
+    const titleY = 40;
     
-    ctx.fillStyle = highlightGradient;
-    ctx.beginPath();
-    ctx.arc(buttonX - 5, buttonY - 5, 8, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.restore();
-
-    // 绘制按钮边框（更细的边框）
-    ctx.strokeStyle = '#2E7D32';
-    ctx.lineWidth = 0.5;
-    ctx.beginPath();
-    ctx.arc(buttonX, buttonY, buttonRadius, 0, 2 * Math.PI);
-    ctx.stroke();
-
-    // 返回箭头（适配按钮尺寸放大，更粗更清晰）
-    ctx.save();
-    ctx.fillStyle = '#FFFFFF';
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 3; // 从2.5增加到3，线条更粗
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    
-    // 绘制箭头主体（放大尺寸）
-    ctx.beginPath();
-    ctx.moveTo(buttonX + 8, buttonY); // 从+6增加到+8
-    ctx.lineTo(buttonX - 6, buttonY); // 从-4增加到-6
-    ctx.stroke();
-    
-    // 绘制箭头头部（放大尺寸）
-    ctx.beginPath();
-    ctx.moveTo(buttonX - 3, buttonY - 4); // 从-2,-3调整到-3,-4
-    ctx.lineTo(buttonX - 6, buttonY);     // 从-4调整到-6
-    ctx.lineTo(buttonX - 3, buttonY + 4); // 从-2,+3调整到-3,+4
-    ctx.stroke();
-    
-    ctx.restore();
-
-    // 标题 - 现代化字体，去掉加粗，向上调整位置
-    ctx.fillStyle = '#333333';
-    ctx.font = '24px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('农具拼装', 80, 40);
+    if (this.titleImageLoaded && this.titleImage) {
+      // 使用图片渲染标题
+      try {
+        // 计算图片尺寸，保持比例并适配导航栏高度
+        const maxHeight = 40; // 最大高度，适配导航栏
+        const titleImageRatio = this.titleImage.naturalWidth / this.titleImage.naturalHeight;
+        const titleImageHeight = Math.min(maxHeight, this.titleImage.naturalHeight);
+        const titleImageWidth = titleImageHeight * titleImageRatio;
+        
+        ctx.drawImage(
+          this.titleImage,
+          titleX,
+          titleY - titleImageHeight/2,
+          titleImageWidth,
+          titleImageHeight
+        );
+        
+        if (GameGlobal.logger) {
+          GameGlobal.logger.debug('标题图片渲染成功', { 
+            width: titleImageWidth, 
+            height: titleImageHeight 
+          }, 'toolAssemblyNav');
+        }
+      } catch (drawError) {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('标题图片渲染失败，使用降级方案', { error: drawError.message }, 'toolAssemblyNav');
+        }
+        this.renderFallbackTitle(ctx, titleX, titleY);
+      }
+    } else {
+      // 降级方案：使用原始的文字标题
+      this.renderFallbackTitle(ctx, titleX, titleY);
+    }
   }
 
   /**
@@ -1525,5 +1565,92 @@ export default class ToolAssemblyNavPage extends BasePage {
         step3: this.steps[2]?.status
       }, 'toolAssemblyNav');
     }
+  }
+
+  /**
+   * 渲染备用返回按钮（图片加载失败时使用）
+   */
+  renderFallbackBackButton(ctx, buttonX, buttonY) {
+    const buttonRadius = 24;
+    
+    // 绘制阴影
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 3;
+    
+    // 绘制按钮背景（使用#19C472系列渐变效果）
+    const gradient = ctx.createRadialGradient(
+      buttonX - 8, buttonY - 8, 0,
+      buttonX, buttonY, buttonRadius
+    );
+    gradient.addColorStop(0, '#4DD58A');
+    gradient.addColorStop(0.3, '#2DD071');
+    gradient.addColorStop(0.7, '#19C472');
+    gradient.addColorStop(1, '#15A862');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(buttonX, buttonY, buttonRadius, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.restore();
+
+    // 绘制高光效果
+    ctx.save();
+    const highlightGradient = ctx.createRadialGradient(
+      buttonX - 5, buttonY - 5, 0,
+      buttonX - 5, buttonY - 5, 8
+    );
+    highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+    highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    
+    ctx.fillStyle = highlightGradient;
+    ctx.beginPath();
+    ctx.arc(buttonX - 5, buttonY - 5, 8, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.restore();
+
+    // 绘制按钮边框
+    ctx.strokeStyle = '#2E7D32';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.arc(buttonX, buttonY, buttonRadius, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    // 返回箭头
+    ctx.save();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    // 绘制箭头主体
+    ctx.beginPath();
+    ctx.moveTo(buttonX + 8, buttonY);
+    ctx.lineTo(buttonX - 6, buttonY);
+    ctx.stroke();
+    
+    // 绘制箭头头部
+    ctx.beginPath();
+    ctx.moveTo(buttonX - 3, buttonY - 4);
+    ctx.lineTo(buttonX - 6, buttonY);
+    ctx.lineTo(buttonX - 3, buttonY + 4);
+    ctx.stroke();
+    
+    ctx.restore();
+  }
+
+  /**
+   * 渲染备用标题（图片加载失败时使用）
+   */
+  renderFallbackTitle(ctx, titleX, titleY) {
+    ctx.fillStyle = '#333333';
+    ctx.font = '24px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('农具拼装', titleX, titleY);
   }
 } 

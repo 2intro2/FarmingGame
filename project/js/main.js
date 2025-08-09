@@ -2,10 +2,12 @@ import './render'; // 初始化Canvas
 import DataBus from './databus'; // 导入数据类，用于管理游戏状态和数据
 import PageManager from './pages/PageManager'; // 导入页面管理器
 import WechatAPI from './utils/wechat'; // 导入微信API工具
+import animationManager from './utils/animationManager'; // 导入动画管理器
 
 const ctx = canvas.getContext('2d'); // 获取canvas的2D绘图上下文
 
 GameGlobal.databus = new DataBus(); // 全局数据管理，用于管理游戏状态和数据
+GameGlobal.animationManager = animationManager; // 全局动画管理器
 GameGlobal.pageManager = new PageManager(); // 全局页面管理器
 GameGlobal.wechatAPI = new WechatAPI(); // 全局微信API管理实例
 

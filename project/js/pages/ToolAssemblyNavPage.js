@@ -493,14 +493,24 @@ export default class ToolAssemblyNavPage extends BasePage {
       const maxDescWidth = this.cardWidth - textX - 50;
       this.drawTruncatedText(ctx, tool.description, textX, textY + 95, maxDescWidth, 140);
       
-      // 渲染难度标签（右上角，确保不超出卡片边界）
+      // 渲染难度标签（右上角，增加更大安全边距确保不超出卡片边界）
       const difficultyTagWidth = 110;
-      const difficultyX = this.cardWidth - difficultyTagWidth - 15; // 增加15px安全边距
+      const difficultyX = this.cardWidth - difficultyTagWidth - 30; // 增加30px安全边距
       this.renderDifficultyTag(ctx, tool.difficulty, difficultyX, 30);
       
-      // 渲染奖励信息（右下角，确保不超出卡片边界）
+      if (GameGlobal.logger && isActive) {
+        GameGlobal.logger.debug('标签位置计算', { 
+          cardWidth: this.cardWidth,
+          difficultyX,
+          difficultyRightEdge: difficultyX + difficultyTagWidth,
+          rewardX: this.cardWidth - 120 - 30,
+          rewardRightEdge: (this.cardWidth - 120 - 30) + 120
+        }, 'toolAssemblyNav');
+      }
+      
+      // 渲染奖励信息（右下角，增加更大安全边距确保不超出卡片边界）
       const rewardTagWidth = 120;
-      const rewardX = this.cardWidth - rewardTagWidth - 15; // 增加15px安全边距
+      const rewardX = this.cardWidth - rewardTagWidth - 30; // 增加30px安全边距
       this.renderRewardTag(ctx, tool.reward, rewardX, this.cardHeight - 40);
       
     } catch (error) {

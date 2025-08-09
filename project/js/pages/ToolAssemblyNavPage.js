@@ -43,7 +43,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         subtitle: '古代农具革新代表',
         description: '曲辕犁是中国古代农业技术的巅峰之作，体现了"天人合一"的哲学思想。牛或人力拉动犁辕，犁铧切入土壤并翻动，犁箭调节深度以适应不同土质。',
         difficulty: 2,
-        reward: 10,
+        reward: 20,
         cardColor: '#E3F2FD',
         gradientColors: ['#E3F2FD', '#BBDEFB', '#90CAF9'], // 蓝色渐变
         image: 'images/tool_hoe.png',
@@ -51,12 +51,12 @@ export default class ToolAssemblyNavPage extends BasePage {
         completed: false
       },
       {
-        id: 'ancient_mill',
-        name: '古代石磨',
-        subtitle: '粮食加工工具',
-        description: '古代石磨是重要的粮食加工工具，用于将谷物磨成面粉。它由上下两个石盘组成，通过旋转运动实现研磨功能。',
+        id: 'stone_mill',
+        name: '石磨',
+        subtitle: '粮食加工重要工具',
+        description: '石磨最早出现于战国时期，是古代粮食加工的重要工具。粮食从进料孔落入磨盘间，通过旋转摩擦被碾碎，粉末从边缘流出。',
         difficulty: 2,
-        reward: 20,
+        reward: 25,
         cardColor: '#E8F5E8',
         gradientColors: ['#E8F5E8', '#C8E6C8', '#A5D6A7'], // 绿色渐变
         image: 'images/tool_shovel.png',
@@ -64,42 +64,16 @@ export default class ToolAssemblyNavPage extends BasePage {
         completed: false
       },
       {
-        id: 'ancient_weight',
-        name: '古代秤',
-        subtitle: '计量工具',
-        description: '古代秤是重要的计量工具，用于称量物品的重量。它体现了古代工匠的智慧和精确的测量技术。',
-        difficulty: 1,
-        reward: 10,
-        cardColor: '#FFF8E1',
-        gradientColors: ['#FFF8E1', '#FFF3C4', '#FFEB9C'], // 黄色渐变
-        image: 'images/tool_sickle.png',
-        unlocked: true,
-        completed: false
-      },
-      {
-        id: 'ancient_waterwheel',
-        name: '古代水车',
-        subtitle: '水利工程',
-        description: '古代水车是重要的水利工程工具，利用水流动力进行灌溉和机械传动，体现了古代工程技术的智慧。',
+        id: 'water_wheel',
+        name: '水车',
+        subtitle: '重要水利灌溉工具',
+        description: '水车最早可追溯至汉代，是中国古代重要的水利灌溉工具。水流冲击叶片带动水轮旋转，提水斗将水从低处舀起，升至高处后倒入灌溉渠。',
         difficulty: 3,
         reward: 30,
         cardColor: '#F3E5F5',
         gradientColors: ['#F3E5F5', '#E1BEE7', '#CE93D8'], // 紫色渐变
         image: 'images/tool_rake.png',
-        unlocked: false,
-        completed: false
-      },
-      {
-        id: 'ancient_sickle',
-        name: '古代镰刀',
-        subtitle: '收割工具',
-        description: '古代镰刀是重要的收割工具，用于收割农作物。它的设计体现了古代工匠对实用性和效率的追求。',
-        difficulty: 2,
-        reward: 15,
-        cardColor: '#E0F2F1',
-        gradientColors: ['#E0F2F1', '#B2DFDB', '#80CBC4'], // 青色渐变
-        image: 'images/tool_hoe.png',
-        unlocked: false,
+        unlocked: true,
         completed: false
       }
     ];
@@ -475,17 +449,17 @@ export default class ToolAssemblyNavPage extends BasePage {
       const textX = iconX + iconSize + 40;
       const textY = 60;
       
-      // 工具名称（最大字体）
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 32px Arial'; // 适配最大卡片的字体
+      // 一级标题（工具名称）- 最大字体，深色，加黑加粗
+      ctx.fillStyle = '#222222';
+      ctx.font = 'bold 36px Arial'; // 一级标题，最突出
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(tool.name, textX, textY);
       
-      // 副标题（大字体）
-      ctx.fillStyle = '#666666';
-      ctx.font = '22px Arial'; // 适配最大卡片的字体
-      ctx.fillText(tool.subtitle, textX, textY + 50);
+      // 二级标题（副标题）- 中等字体，中等色，加黑加粗但比一级标题小
+      ctx.fillStyle = '#444444';
+      ctx.font = 'bold 24px Arial'; // 二级标题，加粗但比一级标题小
+      ctx.fillText(tool.subtitle, textX, textY + 55);
       
       // 描述文字（适配最大空间）
       ctx.fillStyle = '#888888';

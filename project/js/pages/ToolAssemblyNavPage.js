@@ -23,10 +23,10 @@ export default class ToolAssemblyNavPage extends BasePage {
   
   // 状态图片位置配置 - 四个位置供用户指定 (相对于底部导航栏背景的位置)
   starStatusPositions = [
-    { x: 0.2, y: 0.3 }, 
-    { x: 0.8, y: 0.3 }, 
-    { x: 0.2, y: 0.7 }, 
-    { x: 0.8, y: 0.7 }  
+    { x: 0.2, y: 0.4 }, 
+    { x: 0.4, y: 0.4 }, 
+    { x: 0.65, y: 0.4 }, 
+    { x: 0.85, y: 0.4 }  
   ];
 
   constructor() {
@@ -1324,16 +1324,6 @@ export default class ToolAssemblyNavPage extends BasePage {
         }, 'toolAssemblyNav');
       }
     }
-    
-    // 临时强制设置状态值为0，用于测试位置变化
-    // TODO: 测试完成后请删除此行
-    this.toolQylStatus = 0;
-    
-    if (GameGlobal.logger) {
-      GameGlobal.logger.info('临时强制设置toolQylStatus=0，用于测试位置变化', { 
-        finalStatus: this.toolQylStatus 
-      }, 'toolAssemblyNav');
-    }
   }
 
   /**
@@ -1552,10 +1542,6 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   renderStarStatus(ctx, bgX, bgY, bgWidth, bgHeight) {
     try {
-      // 临时强制设置状态值为0，确保每次渲染都使用位置0
-      // TODO: 测试完成后请删除此行
-      this.toolQylStatus = 0;
-      
       if (this.starStatusImageLoaded && this.starStatusImage) {
         // 获取当前状态对应的位置配置
         if (this.toolQylStatus >= 0 && this.toolQylStatus < this.starStatusPositions.length) {

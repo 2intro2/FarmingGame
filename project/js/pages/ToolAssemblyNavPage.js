@@ -45,6 +45,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         difficulty: 2,
         reward: 10,
         cardColor: '#E3F2FD',
+        gradientColors: ['#E3F2FD', '#BBDEFB', '#90CAF9'], // 蓝色渐变
         image: 'images/tool_hoe.png',
         unlocked: true,
         completed: false
@@ -57,6 +58,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         difficulty: 2,
         reward: 20,
         cardColor: '#E8F5E8',
+        gradientColors: ['#E8F5E8', '#C8E6C8', '#A5D6A7'], // 绿色渐变
         image: 'images/tool_shovel.png',
         unlocked: true,
         completed: false
@@ -69,6 +71,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         difficulty: 1,
         reward: 10,
         cardColor: '#FFF8E1',
+        gradientColors: ['#FFF8E1', '#FFF3C4', '#FFEB9C'], // 黄色渐变
         image: 'images/tool_sickle.png',
         unlocked: true,
         completed: false
@@ -81,6 +84,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         difficulty: 3,
         reward: 30,
         cardColor: '#F3E5F5',
+        gradientColors: ['#F3E5F5', '#E1BEE7', '#CE93D8'], // 紫色渐变
         image: 'images/tool_rake.png',
         unlocked: false,
         completed: false
@@ -93,6 +97,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         difficulty: 2,
         reward: 15,
         cardColor: '#E0F2F1',
+        gradientColors: ['#E0F2F1', '#B2DFDB', '#80CBC4'], // 青色渐变
         image: 'images/tool_hoe.png',
         unlocked: false,
         completed: false
@@ -104,9 +109,14 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 初始化布局参数
    */
   initLayout() {
-    this.cardWidth = 800;  // 增加宽度
-    this.cardHeight = 500; // 增加高度
-    this.cardSpacing = 30;
+    // 堆叠卡片布局参数
+    this.cardWidth = 350;   // 调整宽度适配堆叠效果
+    this.cardHeight = 200;  // 调整高度为更扁平的卡片
+    this.cardSpacing = 60;  // 卡片之间的间距
+    this.stackOffset = 80;  // 堆叠偏移量
+    this.scaleRatio = 0.85; // 非活跃卡片的缩放比例
+    this.maxVisibleCards = 3; // 最多同时显示的卡片数量
+    
     this.steps = [
       { id: 'step1', name: '观看视频', status: 'completed', title: '第一步 (已完成)' },
       { id: 'step2', name: '基础认知', status: 'current', title: '第二步 (进行中)' },
@@ -294,23 +304,151 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
-   * 渲染工具卡片
+   * 渲染工具卡片 - 堆叠样式
    */
   renderToolCards(ctx) {
-    const startY = 120; // 调整起始位置，因为卡片变矮了
-    const cardMargin = 30; // 增加卡片之间的间距
+    const centerX = SCREEN_WIDTH / 2; // 屏幕中心X坐标
+    const centerY = SCREEN_HEIGHT / 2 - 50; // 垂直居中偏上一点
     
-    this.tools.forEach((tool, index) => {
-      // 横向排列，每个卡片占一列
-      const cardX = 20 + index * (this.cardWidth + cardMargin); // 水平排列，从左边开始
-      const cardY = startY; // 垂直位置固定
+    // 按Z-order渲染（从后往前）
+    for (let i = -this.maxVisibleCards; i <= this.maxVisibleCards; i++) {
+      const cardIndex = this.selectedToolIndex + i;
       
-      this.renderToolCard(ctx, tool, cardX, cardY, index === this.selectedToolIndex);
-    });
+      // 跳过超出范围的卡片
+      if (cardIndex < 0 || cardIndex >= this.tools.length) continue;
+      
+      const tool = this.tools[cardIndex];
+      const isActive = i === 0; // 中心卡片为活跃状态
+      
+      // 计算卡片位置和变换
+      const cardX = centerX - this.cardWidth / 2 + i * this.stackOffset;
+      const cardY = centerY - this.cardHeight / 2;
+      const scale = isActive ? 1.0 : this.scaleRatio;
+      const zIndex = this.maxVisibleCards - Math.abs(i); // Z层级
+      
+      // 渲染卡片
+      this.renderStackedToolCard(ctx, tool, cardX, cardY, scale, isActive, zIndex);
+    }
   }
 
   /**
-   * 渲染单个工具卡片
+   * 渲染堆叠样式的工具卡片
+   */
+  renderStackedToolCard(ctx, tool, x, y, scale, isActive, zIndex) {
+    ctx.save();
+    
+    try {
+      // 应用缩放变换
+      ctx.translate(x + this.cardWidth / 2, y + this.cardHeight / 2);
+      ctx.scale(scale, scale);
+      ctx.translate(-this.cardWidth / 2, -this.cardHeight / 2);
+      
+      // 绘制卡片阴影（仅对活跃卡片）
+      if (isActive) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 6;
+      }
+      
+      // 创建渐变背景
+      const gradient = ctx.createLinearGradient(0, 0, this.cardWidth, this.cardHeight);
+      const colors = tool.gradientColors || ['#FFFFFF', '#F5F5F5', '#EEEEEE'];
+      gradient.addColorStop(0, colors[0]);
+      gradient.addColorStop(0.5, colors[1]);
+      gradient.addColorStop(1, colors[2]);
+      
+      ctx.fillStyle = gradient;
+      
+      // 绘制圆角矩形背景
+      const borderRadius = 25; // 大圆角
+      try {
+        if (ctx.roundRect && typeof ctx.roundRect === 'function') {
+          ctx.roundRect(0, 0, this.cardWidth, this.cardHeight, borderRadius);
+          ctx.fill();
+        } else {
+          // 降级方案 - 手动绘制圆角矩形
+          this.drawRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
+          ctx.fill();
+        }
+      } catch (rectError) {
+        ctx.fillRect(0, 0, this.cardWidth, this.cardHeight);
+      }
+      
+      if (isActive) {
+        ctx.restore(); // 恢复阴影设置
+      }
+      
+      // 绘制卡片边框
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = 2;
+      try {
+        if (ctx.roundRect && typeof ctx.roundRect === 'function') {
+          ctx.roundRect(0, 0, this.cardWidth, this.cardHeight, borderRadius);
+          ctx.stroke();
+        } else {
+          this.drawRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
+          ctx.stroke();
+        }
+      } catch (rectError) {
+        ctx.strokeRect(0, 0, this.cardWidth, this.cardHeight);
+      }
+      
+      // 渲染工具图标（左侧）
+      const iconSize = 60;
+      const iconX = 20;
+      const iconY = (this.cardHeight - iconSize) / 2;
+      
+      if (tool.imageLoaded && !tool.usePlaceholder && tool.imageElement) {
+        try {
+          ctx.drawImage(tool.imageElement, iconX, iconY, iconSize, iconSize);
+        } catch (drawError) {
+          this.renderImagePlaceholder(ctx, iconX, iconY, iconSize, iconSize);
+        }
+      } else {
+        this.renderImagePlaceholder(ctx, iconX, iconY, iconSize, iconSize);
+      }
+      
+      // 渲染文本内容（右侧）
+      const textX = iconX + iconSize + 15;
+      const textY = 30;
+      
+      // 工具名称
+      ctx.fillStyle = '#333333';
+      ctx.font = 'bold 18px Arial';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(tool.name, textX, textY);
+      
+      // 副标题
+      ctx.fillStyle = '#666666';
+      ctx.font = '14px Arial';
+      ctx.fillText(tool.subtitle, textX, textY + 25);
+      
+      // 描述文字（截断显示）
+      ctx.fillStyle = '#888888';
+      ctx.font = '12px Arial';
+      const maxDescWidth = this.cardWidth - textX - 20;
+      this.drawTruncatedText(ctx, tool.description, textX, textY + 50, maxDescWidth, 80);
+      
+      // 渲染难度标签（右上角）
+      this.renderDifficultyTag(ctx, tool.difficulty, this.cardWidth - 80, 15);
+      
+      // 渲染奖励信息（右下角）
+      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 60, this.cardHeight - 25);
+      
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('渲染堆叠卡片失败', { error: error.message, tool: tool.name }, 'toolAssemblyNav');
+      }
+    }
+    
+    ctx.restore();
+  }
+
+  /**
+   * 渲染单个工具卡片（保留旧方法以备用）
    */
   renderToolCard(ctx, tool, x, y, isSelected) {
     try {
@@ -461,6 +599,133 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
+   * 手动绘制圆角矩形（兼容性方案）
+   */
+  drawRoundedRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  }
+
+  /**
+   * 绘制截断文本
+   */
+  drawTruncatedText(ctx, text, x, y, maxWidth, maxLines = 2) {
+    if (!text || typeof text !== 'string') return;
+    
+    const words = text.split('');
+    let line = '';
+    let lineCount = 0;
+    const lineHeight = 16;
+    
+    for (let i = 0; i < words.length && lineCount < maxLines; i++) {
+      const testLine = line + words[i];
+      const metrics = ctx.measureText(testLine);
+      
+      if (metrics.width > maxWidth && line !== '') {
+        ctx.fillText(line, x, y + lineCount * lineHeight);
+        line = words[i];
+        lineCount++;
+      } else {
+        line = testLine;
+      }
+    }
+    
+    if (lineCount < maxLines && line !== '') {
+      // 如果是最后一行且文本被截断，添加省略号
+      if (lineCount === maxLines - 1 && words.length > 0) {
+        const testWithEllipsis = line + '...';
+        const metrics = ctx.measureText(testWithEllipsis);
+        if (metrics.width <= maxWidth) {
+          line = testWithEllipsis;
+        } else {
+          line = line.substring(0, Math.floor(line.length * 0.8)) + '...';
+        }
+      }
+      ctx.fillText(line, x, y + lineCount * lineHeight);
+    }
+  }
+
+  /**
+   * 渲染难度标签
+   */
+  renderDifficultyTag(ctx, difficulty, x, y) {
+    const tagWidth = 65;
+    const tagHeight = 25;
+    
+    // 绘制标签背景
+    const gradient = ctx.createLinearGradient(x, y, x + tagWidth, y + tagHeight);
+    gradient.addColorStop(0, '#42A5F5');
+    gradient.addColorStop(1, '#1976D2');
+    
+    ctx.fillStyle = gradient;
+    try {
+      if (ctx.roundRect && typeof ctx.roundRect === 'function') {
+        ctx.roundRect(x, y, tagWidth, tagHeight, 12);
+        ctx.fill();
+      } else {
+        this.drawRoundedRect(ctx, x, y, tagWidth, tagHeight, 12);
+        ctx.fill();
+      }
+    } catch (rectError) {
+      ctx.fillRect(x, y, tagWidth, tagHeight);
+    }
+    
+    // 绘制星级
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    let stars = '';
+    for (let i = 0; i < 5; i++) {
+      stars += i < difficulty ? '★' : '☆';
+    }
+    ctx.fillText(stars, x + tagWidth / 2, y + tagHeight / 2);
+  }
+
+  /**
+   * 渲染奖励标签
+   */
+  renderRewardTag(ctx, reward, x, y) {
+    const tagWidth = 50;
+    const tagHeight = 20;
+    
+    // 绘制标签背景
+    const gradient = ctx.createLinearGradient(x, y - tagHeight, x + tagWidth, y);
+    gradient.addColorStop(0, '#FFB74D');
+    gradient.addColorStop(1, '#FF9800');
+    
+    ctx.fillStyle = gradient;
+    try {
+      if (ctx.roundRect && typeof ctx.roundRect === 'function') {
+        ctx.roundRect(x, y - tagHeight, tagWidth, tagHeight, 10);
+        ctx.fill();
+      } else {
+        this.drawRoundedRect(ctx, x, y - tagHeight, tagWidth, tagHeight, 10);
+        ctx.fill();
+      }
+    } catch (rectError) {
+      ctx.fillRect(x, y - tagHeight, tagWidth, tagHeight);
+    }
+    
+    // 绘制奖励数值
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 12px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${reward}`, x + tagWidth / 2, y - tagHeight / 2);
+  }
+
+  /**
    * 渲染图片占位符
    */
   renderImagePlaceholder(ctx, x, y, width, height) {
@@ -474,9 +739,10 @@ export default class ToolAssemblyNavPage extends BasePage {
     
     // 绘制占位符文字
     ctx.fillStyle = '#999999';
-    ctx.font = '14px Arial';
+    ctx.font = '10px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('图片加载中...', x + width / 2, y + height / 2);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('加载中', x + width / 2, y + height / 2);
   }
 
   /**
@@ -688,20 +954,62 @@ export default class ToolAssemblyNavPage extends BasePage {
       return;
     }
 
-    // 检查工具卡片点击
-    const cardY = 100;
+    // 检查堆叠卡片点击
     const centerX = SCREEN_WIDTH / 2;
+    const centerY = SCREEN_HEIGHT / 2 - 50;
     
-    this.tools.forEach((tool, index) => {
-      const cardX = centerX - this.cardWidth / 2 + (index - this.selectedToolIndex) * (this.cardWidth + this.cardSpacing) + this.scrollOffset;
-      
-      if (x >= cardX && x <= cardX + this.cardWidth && 
-          y >= cardY && y <= cardY + this.cardHeight) {
-        this.selectedToolIndex = index;
-        this.scrollOffset = 0;
+    // 检查左右导航区域
+    if (y >= centerY - this.cardHeight / 2 && y <= centerY + this.cardHeight / 2) {
+      if (x < centerX - this.cardWidth / 4) {
+        // 点击左侧，切换到上一张卡片
+        this.navigateToCard(-1);
+        return;
+      } else if (x > centerX + this.cardWidth / 4) {
+        // 点击右侧，切换到下一张卡片
+        this.navigateToCard(1);
         return;
       }
-    });
+    }
+    
+    // 检查中心卡片点击
+    if (x >= centerX - this.cardWidth / 2 && x <= centerX + this.cardWidth / 2 &&
+        y >= centerY - this.cardHeight / 2 && y <= centerY + this.cardHeight / 2) {
+      this.handleCardClick(this.tools[this.selectedToolIndex]);
+    }
+  }
+
+  /**
+   * 导航到指定卡片
+   */
+  navigateToCard(direction) {
+    const newIndex = this.selectedToolIndex + direction;
+    if (newIndex >= 0 && newIndex < this.tools.length) {
+      this.selectedToolIndex = newIndex;
+      if (GameGlobal.logger) {
+        GameGlobal.logger.info(`切换到卡片: ${this.tools[this.selectedToolIndex].name}`, 
+          { index: this.selectedToolIndex }, 'toolAssemblyNav');
+      }
+    }
+  }
+
+  /**
+   * 处理卡片点击
+   */
+  handleCardClick(tool) {
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info(`点击农具卡片: ${tool.name}`, { 
+        toolId: tool.id, 
+        unlocked: tool.unlocked 
+      }, 'toolAssemblyNav');
+    }
+    
+    if (tool.unlocked) {
+      // TODO: 实现跳转到具体的农具拼装场景
+      console.log(`开始 ${tool.name} 的拼装教程`);
+      // GameGlobal.pageManager.switchToPage('toolAssemblyScene', { toolData: tool });
+    } else {
+      console.log(`${tool.name} 尚未解锁`);
+    }
   }
 
   /**

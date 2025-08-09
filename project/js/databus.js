@@ -213,8 +213,7 @@ export default class DataBus {
     if (this.backgroundMusic && !this.isMusicPlaying) {
       try {
         this.backgroundMusic.play();
-        // 立即更新状态，不依赖事件回调的时序
-        this.isMusicPlaying = true;
+        // 状态由onPlay事件回调自动更新，避免重复设置
       } catch (error) {
         console.warn('播放全局背景音乐失败:', error);
         this.isMusicPlaying = false;
@@ -227,8 +226,7 @@ export default class DataBus {
     if (this.backgroundMusic && this.isMusicPlaying) {
       try {
         this.backgroundMusic.pause();
-        // 立即更新状态，不依赖事件回调的时序
-        this.isMusicPlaying = false;
+        // 状态由onPause事件回调自动更新，避免重复设置
       } catch (error) {
         console.warn('停止全局背景音乐失败:', error);
         this.isMusicPlaying = false;
@@ -238,12 +236,13 @@ export default class DataBus {
 
   // 切换背景音乐播放状态
   toggleMusic() {
-    if (this.isMusicPlaying) {
+    const currentState = this.isMusicPlaying;
+    if (currentState) {
       this.stopMusic();
-      return false; // 返回切换后的状态：停止
+      return false; // 切换到停止状态
     } else {
       this.playMusic();
-      return true; // 返回切换后的状态：播放
+      return true; // 切换到播放状态
     }
   }
 

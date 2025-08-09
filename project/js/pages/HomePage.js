@@ -198,10 +198,10 @@ export default class HomePage {
       },
       // 右侧圆形导航按钮
       nextPage: {
-        x: SCREEN_WIDTH - 100,
-        y: SCREEN_HEIGHT / 2 - 30,
-        width: 90,
-        height: 90,
+        x: SCREEN_WIDTH - 123,
+        y: SCREEN_HEIGHT / 2 + 20,
+        width: 110,
+        height: 100,
         icon: '>'
       }
     };
@@ -402,7 +402,7 @@ export default class HomePage {
     ctx.shadowBlur = 2;
     ctx.shadowOffsetX = 1;
     ctx.shadowOffsetY = 1;
-    ctx.fillText(nickname, avatarX + avatarSize + 10, userInfo.y + userInfo.height / 2);
+    ctx.fillText(nickname, avatarX + avatarSize + 25, userInfo.y + userInfo.height / 2);
     // 重置阴影
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
@@ -684,7 +684,7 @@ export default class HomePage {
    */
   showMessageDialog() {
     console.log('显示消息对话框');
-    this.showToast('消息功能开发中...');
+    this.showToast('奖杯系统开发中...');
   }
 
   /**

@@ -7,10 +7,10 @@ import { showToast, showSuccessToast, showErrorToast } from '../utils/toast';
 export default class LoginPage {
   backgroundImage = null;
   musicButton = {
-    x: SCREEN_WIDTH - 80, // 右上角位置
-    y: 20,
-    width: 60,
-    height: 60
+    x: SCREEN_WIDTH - 1000, // 右上角位置
+    y: 25,
+    width: 100,
+    height: 100
   };
   musicButtonImages = {
     playing: null,  // icon11.png (音乐播放中)

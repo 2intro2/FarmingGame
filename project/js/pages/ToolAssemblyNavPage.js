@@ -803,12 +803,13 @@ export default class ToolAssemblyNavPage extends BasePage {
     gradient.addColorStop(1, '#1976D2');
     
     ctx.fillStyle = gradient;
+    const tagRadius = 20; // 增大圆角半径，创造更圆润的标签效果
     try {
       if (ctx.roundRect && typeof ctx.roundRect === 'function') {
-        ctx.roundRect(x, y, tagWidth, tagHeight, 12);
+        ctx.roundRect(x, y, tagWidth, tagHeight, tagRadius);
         ctx.fill();
       } else {
-        this.drawSimpleRoundedRect(ctx, x, y, tagWidth, tagHeight, 12);
+        this.drawSimpleRoundedRect(ctx, x, y, tagWidth, tagHeight, tagRadius);
         ctx.fill();
       }
     } catch (rectError) {
@@ -841,12 +842,13 @@ export default class ToolAssemblyNavPage extends BasePage {
     gradient.addColorStop(1, '#FF9800');
     
     ctx.fillStyle = gradient;
+    const tagRadius = 20; // 增大圆角半径，与难度标签保持一致
     try {
       if (ctx.roundRect && typeof ctx.roundRect === 'function') {
-        ctx.roundRect(x, y - tagHeight, tagWidth, tagHeight, 10);
+        ctx.roundRect(x, y - tagHeight, tagWidth, tagHeight, tagRadius);
         ctx.fill();
       } else {
-        this.drawSimpleRoundedRect(ctx, x, y - tagHeight, tagWidth, tagHeight, 10);
+        this.drawSimpleRoundedRect(ctx, x, y - tagHeight, tagWidth, tagHeight, tagRadius);
         ctx.fill();
       }
     } catch (rectError) {

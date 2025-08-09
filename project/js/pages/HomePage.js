@@ -8,11 +8,63 @@ export default class HomePage {
   modules = [];
   buttons = {};
   infoBar = {};
+  characterImage = null; // 左下角角色图片
 
   constructor() {
+    this.loadResources();
     this.initModules();
     this.initButtons();
     this.initInfoBar();
+  }
+
+  /**
+   * 加载资源
+   */
+  loadResources() {
+    // 加载左下角角色图片
+    this.characterImage = wx.createImage();
+    this.characterImage.src = 'images/bg05.png';
+    
+    // 添加图片加载错误处理
+    this.characterImage.onerror = () => {
+      console.warn('角色图片加载失败，将使用默认矩形');
+      this.characterImage = null;
+    };
+
+    // 加载按钮图片
+    this.buttonImages = {};
+    
+    // 设置按钮图片
+    this.buttonImages.settings = wx.createImage();
+    this.buttonImages.settings.src = 'images/icon02.jpeg';
+    this.buttonImages.settings.onerror = () => {
+      console.warn('设置按钮图片加载失败');
+      this.buttonImages.settings = null;
+    };
+    
+    // 消息按钮图片
+    this.buttonImages.message = wx.createImage();
+    this.buttonImages.message.src = 'images/icon04.png';
+    this.buttonImages.message.onerror = () => {
+      console.warn('消息按钮图片加载失败');
+      this.buttonImages.message = null;
+    };
+    
+    // 右侧导航按钮图片
+    this.buttonImages.nextPage = wx.createImage();
+    this.buttonImages.nextPage.src = 'images/icon05.png';
+    this.buttonImages.nextPage.onerror = () => {
+      console.warn('导航按钮图片加载失败');
+      this.buttonImages.nextPage = null;
+    };
+    
+    // 奖杯图片
+    this.buttonImages.trophy = wx.createImage();
+    this.buttonImages.trophy.src = 'images/icon03.jpeg';
+    this.buttonImages.trophy.onerror = () => {
+      console.warn('奖杯图片加载失败');
+      this.buttonImages.trophy = null;
+    };
   }
 
   /**
@@ -179,12 +231,32 @@ export default class HomePage {
       ctx.shadowOffsetX = 2;
       ctx.shadowOffsetY = 2;
       
-      // 绘制图标
-      ctx.font = '20px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#333333';
-      ctx.fillText(stat.icon, x + statWidth / 2, bar.y + 20);
+      // 绘制图标（如果是奖杯且有图片，使用图片；否则使用文字图标）
+      if (stat.label === '奖杯数' && this.buttonImages && this.buttonImages.trophy && 
+          this.buttonImages.trophy.complete && this.buttonImages.trophy.naturalWidth !== 0) {
+        try {
+          // 绘制奖杯图片
+          const iconSize = 24;
+          const iconX = x + statWidth / 2 - iconSize / 2;
+          const iconY = bar.y + 20 - iconSize / 2;
+          ctx.drawImage(this.buttonImages.trophy, iconX, iconY, iconSize, iconSize);
+        } catch (error) {
+          console.warn('奖杯图片绘制失败，使用默认图标:', error);
+          // 使用默认文字图标
+          ctx.font = '20px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#333333';
+          ctx.fillText(stat.icon, x + statWidth / 2, bar.y + 20);
+        }
+      } else {
+        // 使用默认文字图标
+        ctx.font = '20px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#333333';
+        ctx.fillText(stat.icon, x + statWidth / 2, bar.y + 20);
+      }
 
       // 绘制数值
       ctx.fillStyle = '#333333';
@@ -285,11 +357,33 @@ export default class HomePage {
   }
 
   /**
-   * 渲染下一页按钮（绿色圆形）
+   * 渲染下一页按钮
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    * @param {Object} button - 按钮对象
    */
   renderNextPageButton(ctx, button) {
+    // 如果有导航按钮图片，使用图片；否则使用默认样式
+    if (this.buttonImages && this.buttonImages.nextPage && 
+        this.buttonImages.nextPage.complete && this.buttonImages.nextPage.naturalWidth !== 0) {
+      try {
+        // 绘制导航按钮图片
+        ctx.drawImage(this.buttonImages.nextPage, button.x, button.y, button.width, button.height);
+      } catch (error) {
+        console.warn('导航按钮图片绘制失败，使用默认样式:', error);
+        this.renderDefaultNextPageButton(ctx, button);
+      }
+    } else {
+      // 使用默认样式
+      this.renderDefaultNextPageButton(ctx, button);
+    }
+  }
+
+  /**
+   * 渲染默认下一页按钮样式（绿色圆形）
+   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
+   * @param {Object} button - 按钮对象
+   */
+  renderDefaultNextPageButton(ctx, button) {
     // 绘制绿色圆形按钮
     ctx.fillStyle = '#4CAF50';
     ctx.beginPath();
@@ -310,6 +404,57 @@ export default class HomePage {
    * @param {Object} button - 按钮对象
    */
   renderNormalButton(ctx, button) {
+    // 根据按钮类型获取对应的图片
+    const buttonKey = this.getButtonKey(button);
+    const buttonImage = this.buttonImages && this.buttonImages[buttonKey];
+    
+    if (buttonImage && buttonImage.complete && buttonImage.naturalWidth !== 0) {
+      try {
+        // 绘制按钮图片
+        ctx.drawImage(buttonImage, button.x, button.y, button.width, button.height);
+        
+        // 如果是消息按钮且有未读消息，绘制红点
+        if (buttonKey === 'message' && button.unreadCount && button.unreadCount > 0) {
+          ctx.fillStyle = '#FF0000';
+          ctx.beginPath();
+          ctx.arc(button.x + button.width - 5, button.y + 5, 8, 0, 2 * Math.PI);
+          ctx.fill();
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = '10px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(button.unreadCount.toString(), button.x + button.width - 5, button.y + 5);
+        }
+      } catch (error) {
+        console.warn(`${buttonKey}按钮图片绘制失败，使用默认样式:`, error);
+        this.renderDefaultButton(ctx, button);
+      }
+    } else {
+      // 图片未加载或加载失败，使用默认样式
+      this.renderDefaultButton(ctx, button);
+    }
+  }
+
+  /**
+   * 获取按钮对应的键名
+   * @param {Object} button - 按钮对象
+   * @returns {string} 按钮键名
+   */
+  getButtonKey(button) {
+    // 根据按钮属性判断类型
+    if (button.text === '消息') return 'message';
+    if (button.text === '设置') return 'settings';
+    if (button.icon === '>') return 'nextPage';
+    return 'unknown';
+  }
+
+  /**
+   * 渲染默认按钮样式（当图片加载失败时）
+   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
+   * @param {Object} button - 按钮对象
+   */
+  renderDefaultButton(ctx, button) {
     if (button.text) {
       // 绘制白色圆形按钮
       ctx.fillStyle = '#FFFFFF';
@@ -368,21 +513,46 @@ export default class HomePage {
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
   renderCharacter(ctx) {
-    // 绘制角色（小男孩）
-    ctx.fillStyle = '#87CEEB';
-    ctx.fillRect(20, SCREEN_HEIGHT - 120, 60, 80);
+    // 绘制左下角角色图片
+    if (this.characterImage && this.characterImage.complete && this.characterImage.naturalWidth !== 0) {
+      try {
+        // 图片位置和大小设置
+        const imgX = 6; // 图片X坐标（距离左边20像素）
+        const imgY = SCREEN_HEIGHT - 60; // 图片Y坐标（距离底部120像素）
+        const imgWidth = 400; // 图片宽度
+        const imgHeight = 400; // 图片高度
+        
+        ctx.drawImage(this.characterImage, imgX, imgY, imgWidth, imgHeight);
+      } catch (error) {
+        console.warn('角色图片绘制失败，使用默认矩形:', error);
+        this.renderDefaultCharacter(ctx);
+      }
+    } else {
+      // 图片未加载或加载失败，使用默认矩形
+      this.renderDefaultCharacter(ctx);
+    }
 
     // 绘制对话气泡
     ctx.fillStyle = '#90EE90';
-    ctx.fillRect(90, SCREEN_HEIGHT - 140, 250, 60);
+    ctx.fillRect(110, SCREEN_HEIGHT - 140, 250, 60);
 
     // 绘制对话文字
     ctx.fillStyle = '#333333';
     ctx.font = '14px Arial';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText('Hello, 小朋友早上好!', 100, SCREEN_HEIGHT - 130);
-    ctx.fillText('快来农耕小天地探索吧', 100, SCREEN_HEIGHT - 110);
+    ctx.fillText('Hello, 小朋友早上好!', 120, SCREEN_HEIGHT - 130);
+    ctx.fillText('快来农耕小天地探索吧', 120, SCREEN_HEIGHT - 110);
+  }
+
+  /**
+   * 渲染默认角色（当图片加载失败时）
+   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
+   */
+  renderDefaultCharacter(ctx) {
+    // 绘制角色（蓝色矩形）
+    ctx.fillStyle = '#87CEEB';
+    ctx.fillRect(20, SCREEN_HEIGHT - 120, 60, 80);
   }
 
   /**
@@ -496,7 +666,25 @@ export default class HomePage {
    */
   showSettingsDialog() {
     console.log('显示设置对话框');
-    this.showToast('设置功能开发中...');
+    
+    // 使用微信原生模态框显示退出登录确认
+    GameGlobal.wechatAPI.showModal({
+      title: '设置',
+      content: '是否退出登录？',
+      showCancel: true,
+      cancelText: '取消',
+      confirmText: '确认'
+    }).then((confirmed) => {
+      if (confirmed) {
+        console.log('用户确认退出登录');
+        this.logout();
+      } else {
+        console.log('用户取消退出登录');
+      }
+    }).catch((error) => {
+      console.error('显示设置对话框失败:', error);
+      this.showToast('操作失败，请重试');
+    });
   }
 
   /**
@@ -505,6 +693,37 @@ export default class HomePage {
   showNextPageDialog() {
     console.log('显示下一页对话框');
     this.showToast('敬请期待');
+  }
+
+  /**
+   * 退出登录
+   */
+  logout() {
+    try {
+      console.log('开始退出登录流程...');
+      
+      // 显示退出中提示
+      this.showToast('正在退出登录...');
+      
+      // 清除数据总线中的用户信息
+      GameGlobal.databus.clearUserInfo();
+      
+      // 清除本地存储的登录信息
+      wx.removeStorageSync('loginInfo');
+      
+      // 跳转到登录页面
+      GameGlobal.pageManager.switchToPage('login');
+      
+      // 显示退出成功提示
+      setTimeout(() => {
+        this.showToast('已退出登录');
+      }, 500);
+      
+      console.log('退出登录成功');
+    } catch (error) {
+      console.error('退出登录失败:', error);
+      this.showToast('退出登录失败，请重试');
+    }
   }
 
   /**

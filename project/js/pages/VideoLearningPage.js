@@ -63,9 +63,9 @@ export default class VideoLearningPage {
     },
     progress: {
       x: SCREEN_WIDTH * 0.02,
-      y: SCREEN_HEIGHT * 0.85 * (9 / 16) + SCREEN_HEIGHT * 0.12 + 20,
+      y: SCREEN_HEIGHT * 0.95 * (9 / 16) + SCREEN_HEIGHT * 0.12 + 20,
       width: SCREEN_WIDTH * 0.55,
-      height: 30
+      height: 30,
     },
     cards: {
       column1: {
@@ -300,14 +300,46 @@ export default class VideoLearningPage {
     ctx.fillStyle = '#E0F2F1';
     ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     
-    // 左侧面板背景
-    ctx.fillStyle = '#C8E6C9';
-    ctx.fillRect(
-      this.layout.video.x, 
-      this.layout.progress.y - 10, 
-      this.layout.video.width, 
-      SCREEN_HEIGHT - (this.layout.progress.y - 10) - this.layout.video.y
-    );
+    // 左侧面板背景 - 添加圆角
+    const leftPanelX = this.layout.video.x;
+    const leftPanelY = this.layout.progress.y - 10;
+    const leftPanelWidth = this.layout.video.width;
+    const leftPanelHeight = SCREEN_HEIGHT - (this.layout.progress.y - 10) - this.layout.video.y;
+    
+    this.drawRoundedRect(ctx, leftPanelX, leftPanelY, leftPanelWidth, leftPanelHeight, 20, '#C8E6C9', '#A5D6A7', 2);
+  }
+
+  /**
+   * 绘制圆角矩形带边框
+   */
+  drawRoundedRect(ctx, x, y, width, height, radius, fillColor, strokeColor, strokeWidth) {
+    ctx.save();
+    
+    // 绘制圆角矩形路径
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    
+    // 填充背景
+    ctx.fillStyle = fillColor;
+    ctx.fill();
+    
+    // 绘制边框
+    if (strokeWidth > 0) {
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = strokeWidth;
+      ctx.stroke();
+    }
+    
+    ctx.restore();
   }
 
   /**

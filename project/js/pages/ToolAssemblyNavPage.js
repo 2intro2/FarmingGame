@@ -13,22 +13,120 @@ export default class ToolAssemblyNavPage extends BasePage {
   cardWidth = 300;
   cardHeight = 450;
   cardSpacing = 30;
-  steps = [
-    { id: 'step1', name: '观看视频', status: 'completed', title: '第一步 (已完成)' },
-    { id: 'step2', name: '基础认知', status: 'current', title: '第二步 (进行中)' },
-    { id: 'step3', name: '立体组装', status: 'locked', title: '第三步 (未解锁)' }
-  ];
+  steps = []; // 步骤状态将在构造函数中动态计算
 
   constructor() {
     super();
     try {
       this.initTools();
       this.initLayout();
+      this.updateStepStatus(); // 初始化时动态计算步骤状态
       this.loadResources();
     } catch (error) {
       if (GameGlobal.logger) {
         GameGlobal.logger.error('ToolAssemblyNavPage构造函数错误', { error: error.message }, 'toolAssemblyNav');
       }
+    }
+  }
+
+  /**
+   * 检查第一步是否完成（模拟函数，实际由同事实现）
+   * @returns {boolean} 第一步是否完成
+   */
+  checkStep1Completed() {
+    // 模拟逻辑：这里可以根据需要返回不同值来测试
+    // 实际实现时这里会调用同事提供的函数
+    return true; // 模拟第一步已完成，可改为false测试
+  }
+
+  /**
+   * 检查第二步是否完成（模拟函数，实际由同事实现）
+   * @returns {boolean} 第二步是否完成
+   */
+  checkStep2Completed() {
+    // 模拟逻辑：这里可以根据需要返回不同值来测试
+    // 实际实现时这里会调用同事提供的函数
+    return false; // 模拟第二步未完成，可改为true测试
+  }
+
+  /**
+   * 检查第三步是否完成（模拟函数，实际由同事实现）
+   * @returns {boolean} 第三步是否完成
+   */
+  checkStep3Completed() {
+    // 模拟逻辑：这里可以根据需要返回不同值来测试
+    // 实际实现时这里会调用同事提供的函数
+    return false; // 模拟第三步未完成，可改为true测试
+  }
+
+  /**
+   * 动态计算步骤状态
+   * 根据步骤完成情况返回正确的状态和文案
+   */
+  calculateStepStatus() {
+    const step1Completed = this.checkStep1Completed();
+    const step2Completed = this.checkStep2Completed();
+    const step3Completed = this.checkStep3Completed();
+
+    // 根据完成状态计算每个步骤的状态
+    let step1Status, step2Status, step3Status;
+    let step1Title, step2Title, step3Title;
+
+    if (!step1Completed) {
+      // 第一步未完成：第一步进行中，其余待解锁
+      step1Status = 'current';
+      step1Title = '第一步 (进行中)';
+      step2Status = 'locked';
+      step2Title = '第二步 (待解锁)';
+      step3Status = 'locked';
+      step3Title = '第三步 (待解锁)';
+    } else if (step1Completed && !step2Completed) {
+      // 第一步完成，第二步未完成：第一步已完成，第二步进行中，第三步待解锁
+      step1Status = 'completed';
+      step1Title = '第一步 (已完成)';
+      step2Status = 'current';
+      step2Title = '第二步 (进行中)';
+      step3Status = 'locked';
+      step3Title = '第三步 (待解锁)';
+    } else if (step1Completed && step2Completed && !step3Completed) {
+      // 前两步完成，第三步未完成：前两步已完成，第三步进行中
+      step1Status = 'completed';
+      step1Title = '第一步 (已完成)';
+      step2Status = 'completed';
+      step2Title = '第二步 (已完成)';
+      step3Status = 'current';
+      step3Title = '第三步 (进行中)';
+    } else {
+      // 全部完成：所有步骤都已完成
+      step1Status = 'completed';
+      step1Title = '第一步 (已完成)';
+      step2Status = 'completed';
+      step2Title = '第二步 (已完成)';
+      step3Status = 'completed';
+      step3Title = '第三步 (已完成)';
+    }
+
+    // 返回更新后的步骤数组
+    return [
+      { id: 'step1', name: '观看视频', status: step1Status, title: step1Title },
+      { id: 'step2', name: '基础认知', status: step2Status, title: step2Title },
+      { id: 'step3', name: '立体组装', status: step3Status, title: step3Title }
+    ];
+  }
+
+  /**
+   * 更新步骤状态
+   * 重新计算并更新步骤状态
+   */
+  updateStepStatus() {
+    this.steps = this.calculateStepStatus();
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info('步骤状态已更新', { 
+        step1: this.steps[0].status,
+        step2: this.steps[1].status,
+        step3: this.steps[2].status
+      }, 'toolAssemblyNav');
     }
   }
 
@@ -200,6 +298,9 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   renderContent(ctx) {
     try {
+      // 每次渲染前更新步骤状态，确保状态是最新的
+      this.updateStepStatus();
+      
       // 绘制白色背景
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -1381,5 +1482,48 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   update() {
     // 页面更新逻辑
+  }
+
+  /**
+   * 页面显示时调用
+   */
+  onShow() {
+    super.onShow();
+    // 页面显示时更新步骤状态
+    this.updateStepStatus();
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info('农具拼装导航页显示，步骤状态已更新', {
+        step1: this.steps[0]?.status,
+        step2: this.steps[1]?.status,
+        step3: this.steps[2]?.status
+      }, 'toolAssemblyNav');
+    }
+  }
+
+  /**
+   * 页面隐藏时调用
+   */
+  onHide() {
+    super.onHide();
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info('农具拼装导航页隐藏', null, 'toolAssemblyNav');
+    }
+  }
+
+  /**
+   * 强制刷新步骤状态
+   * 可供外部调用，当知道步骤状态可能发生变化时使用
+   */
+  refreshStepStatus() {
+    this.updateStepStatus();
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info('步骤状态已强制刷新', {
+        step1: this.steps[0]?.status,
+        step2: this.steps[1]?.status,
+        step3: this.steps[2]?.status
+      }, 'toolAssemblyNav');
+    }
   }
 } 

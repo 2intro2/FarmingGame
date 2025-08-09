@@ -15,6 +15,19 @@ export default class ToolAssemblyNavPage extends BasePage {
   cardHeight = 450;
   cardSpacing = 30;
   steps = []; // 步骤状态将在构造函数中动态计算
+  
+  // 状态相关属性
+  toolQylStatus = 0; // 存储中的tool_qyl状态值 (0,1,2,3)
+  starStatusImage = null; // star_status.png图片对象
+  starStatusImageLoaded = false; // 状态图片是否加载完成
+  
+  // 状态图片位置配置 - 四个位置供用户指定 (相对于底部导航栏背景的位置)
+  starStatusPositions = [
+    { x: 0.2, y: 0.3 }, // 位置0 - 左上 (相对比例位置，需要用户调整)
+    { x: 0.8, y: 0.3 }, // 位置1 - 右上 (相对比例位置，需要用户调整)
+    { x: 0.2, y: 0.7 }, // 位置2 - 左下 (相对比例位置，需要用户调整)
+    { x: 0.8, y: 0.7 }  // 位置3 - 右下 (相对比例位置，需要用户调整)
+  ];
 
   constructor() {
     super();
@@ -301,6 +314,29 @@ export default class ToolAssemblyNavPage extends BasePage {
         GameGlobal.logger.error('底部导航栏背景图片加载异常', { error: error.message }, 'toolAssemblyNav');
       }
       this.bottomNavBgImageLoaded = false;
+    }
+
+    // 加载状态图片
+    try {
+      this.starStatusImage = wx.createImage();
+      this.starStatusImage.onload = () => {
+        this.starStatusImageLoaded = true;
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('状态图片加载成功: star_status.png', null, 'toolAssemblyNav');
+        }
+      };
+      this.starStatusImage.onerror = () => {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('状态图片加载失败: star_status.png', null, 'toolAssemblyNav');
+        }
+        this.starStatusImageLoaded = false;
+      };
+      this.starStatusImage.src = 'images/star_status.png';
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('状态图片加载异常', { error: error.message }, 'toolAssemblyNav');
+      }
+      this.starStatusImageLoaded = false;
     }
   }
 
@@ -892,12 +928,16 @@ export default class ToolAssemblyNavPage extends BasePage {
             renderWidth, renderHeight // 保持比例的尺寸
           );
           
+          // 渲染状态图片
+          this.renderStarStatus(ctx, navX, navY, renderWidth, renderHeight);
+          
           if (GameGlobal.logger) {
             GameGlobal.logger.debug('底部导航栏背景图片渲染成功', {
               originalSize: `${imgOriginalWidth}x${imgOriginalHeight}`,
               renderSize: `${Math.round(renderWidth)}x${Math.round(renderHeight)}`,
               position: `${Math.round(navX)}, ${Math.round(navY)}`,
-              scale: scale.toFixed(3)
+              scale: scale.toFixed(3),
+              toolQylStatus: this.toolQylStatus
             }, 'toolAssemblyNav');
           }
         } else {
@@ -1230,8 +1270,59 @@ export default class ToolAssemblyNavPage extends BasePage {
   onShow() {
     super.onShow();
     
+    // 读取微信存储中的tool_qyl状态
+    this.loadToolQylStatus();
+    
     if (GameGlobal.logger) {
       GameGlobal.logger.info('农具拼装导航页显示', null, 'toolAssemblyNav');
+    }
+  }
+
+  /**
+   * 读取tool_qyl状态值
+   */
+  loadToolQylStatus() {
+    try {
+      wx.getStorage({
+        key: 'tool_qyl',
+        success: (res) => {
+          const status = parseInt(res.data);
+          if (status >= 0 && status <= 3) {
+            this.toolQylStatus = status;
+            if (GameGlobal.logger) {
+              GameGlobal.logger.info('tool_qyl状态读取成功', { status: this.toolQylStatus }, 'toolAssemblyNav');
+            }
+          } else {
+            // 状态值超出范围，使用默认值0
+            this.toolQylStatus = 0;
+            if (GameGlobal.logger) {
+              GameGlobal.logger.warn('tool_qyl状态值超出范围，使用默认值', { 
+                originalValue: res.data, 
+                defaultValue: this.toolQylStatus 
+              }, 'toolAssemblyNav');
+            }
+          }
+        },
+        fail: (error) => {
+          // 读取失败，使用默认值0
+          this.toolQylStatus = 0;
+          if (GameGlobal.logger) {
+            GameGlobal.logger.warn('tool_qyl状态读取失败，使用默认值', { 
+              error: error.errMsg, 
+              defaultValue: this.toolQylStatus 
+            }, 'toolAssemblyNav');
+          }
+        }
+      });
+    } catch (error) {
+      // 异常情况，使用默认值0
+      this.toolQylStatus = 0;
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('tool_qyl状态读取异常，使用默认值', { 
+          error: error.message, 
+          defaultValue: this.toolQylStatus 
+        }, 'toolAssemblyNav');
+      }
     }
   }
 
@@ -1439,5 +1530,62 @@ export default class ToolAssemblyNavPage extends BasePage {
     ctx.fillStyle = '#999';
     ctx.font = '14px Arial';
     ctx.fillText('图片加载中...', this.cardWidth / 2, this.cardHeight / 2 + 20);
+  }
+
+  /**
+   * 渲染状态图片
+   * @param {CanvasRenderingContext2D} ctx - 画布上下文
+   * @param {number} bgX - 背景图片X坐标
+   * @param {number} bgY - 背景图片Y坐标  
+   * @param {number} bgWidth - 背景图片宽度
+   * @param {number} bgHeight - 背景图片高度
+   */
+  renderStarStatus(ctx, bgX, bgY, bgWidth, bgHeight) {
+    try {
+      if (this.starStatusImageLoaded && this.starStatusImage) {
+        // 获取当前状态对应的位置配置
+        if (this.toolQylStatus >= 0 && this.toolQylStatus < this.starStatusPositions.length) {
+          const position = this.starStatusPositions[this.toolQylStatus];
+          
+          // 计算状态图片的实际位置（相对于背景图片）
+          const starSize = Math.min(bgWidth * 0.1, bgHeight * 0.2, 40); // 状态图片大小，最大40px
+          const starX = bgX + bgWidth * position.x - starSize / 2; // 以位置为中心
+          const starY = bgY + bgHeight * position.y - starSize / 2; // 以位置为中心
+          
+          // 绘制状态图片
+          ctx.drawImage(
+            this.starStatusImage,
+            starX, starY,
+            starSize, starSize
+          );
+          
+          if (GameGlobal.logger) {
+            GameGlobal.logger.debug('状态图片渲染成功', {
+              status: this.toolQylStatus,
+              position: position,
+              starPosition: `${Math.round(starX)}, ${Math.round(starY)}`,
+              starSize: Math.round(starSize)
+            }, 'toolAssemblyNav');
+          }
+        } else {
+          if (GameGlobal.logger) {
+            GameGlobal.logger.warn('tool_qyl状态值超出位置配置范围', { 
+              status: this.toolQylStatus,
+              maxPositions: this.starStatusPositions.length 
+            }, 'toolAssemblyNav');
+          }
+        }
+      } else {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.debug('状态图片未加载，跳过渲染', { 
+            imageLoaded: this.starStatusImageLoaded 
+          }, 'toolAssemblyNav');
+        }
+      }
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('渲染状态图片失败', { error: error.message }, 'toolAssemblyNav');
+      }
+    }
   }
 } 

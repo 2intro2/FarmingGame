@@ -135,7 +135,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.backgroundImage.onerror = () => {
         this.backgroundImageLoaded = false;
       };
-      this.backgroundImage.src = 'images/background.png';
+      this.backgroundImage.src = 'images/background-main.png';
     } catch (error) {
       this.backgroundImageLoaded = false;
     }
@@ -793,7 +793,10 @@ export default class ToolAssemblyNavPage extends BasePage {
     // 检查返回按钮
     const distance = Math.sqrt((x - 40) * (x - 40) + (y - 40) * (y - 40));
     if (distance <= 20) {
-      GameGlobal.pageManager.goBack();
+      // 点击返回按钮，直接跳转到首页
+      if (GameGlobal && GameGlobal.pageManager && typeof GameGlobal.pageManager.switchToPage === 'function') {
+        GameGlobal.pageManager.switchToPage('home', { addToHistory: false });
+      }
       return;
     }
 
@@ -836,12 +839,10 @@ export default class ToolAssemblyNavPage extends BasePage {
   /**
    * 页面显示时调用
    */
-  onShow() {
-    super.onShow();
-    
+  show() {
+    console.log('ToolAssemblyNavPage.show');
     // 读取微信存储中的tool_qyl状态
     this.loadToolQylStatus();
-    
   }
 
   /**
@@ -873,6 +874,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.toolQylStatus = 0;
       this.forceRender();
     }
+    console.log(this.toolQylStatus)
   }
 
   /**
@@ -894,8 +896,8 @@ export default class ToolAssemblyNavPage extends BasePage {
   /**
    * 页面隐藏时调用
    */
-  onHide() {
-    super.onHide();
+  hide() {
+    // 暂无隐藏时需要处理的逻辑
   }
 
   /**

@@ -340,7 +340,9 @@ export default class PageManager {
     }
 
     // 在触摸结束时也调用handleTouch方法，使用记录的触摸位置
-    if (this.currentPage && this.currentPage.handleTouch && this.lastTouchPosition) {
+    // 仅当页面需要模拟点击时才触发（默认需要；页面可通过将 expectsSimulatedClick 设为 false 来关闭）
+    const needSimulatedClick = this.currentPage && (this.currentPage.expectsSimulatedClick !== false);
+    if (needSimulatedClick && this.currentPage && this.currentPage.handleTouch && this.lastTouchPosition) {
       // 创建一个模拟的触摸事件，包含触摸位置
       const simulatedEvent = {
         ...event,

@@ -9,6 +9,8 @@ import Toast from '../components/Toast';
  * 包含视频播放器、学习进度和卡片匹配功能
  */
 export default class VideoLearningPage {
+  // 该页面内部在 touchend 自行处理点击判定，不需要 PageManager 再模拟一次点击
+  expectsSimulatedClick = false;
   video = null;
   videoState = {
     currentTime: 0,
@@ -27,8 +29,8 @@ export default class VideoLearningPage {
       { id: 'hua', image: 'images/liyuanPic.png', selected: false, permanentlySelected: false, label: '犁铧' }
     ],
     column2: [
-      { id: 'liyuan', image: 'images/lichanWord.png', selected: false, permanentlySelected: false, label: 'yuan' },
-      { id: 'lijian', image: 'images/liyuanWord.png', selected: false, permanentlySelected: false, label: 'jian' },
+      { id: 'lijian', image: 'images/lichanWord.png', selected: false, permanentlySelected: false, label: 'yuan' },
+      { id: 'liyuan', image: 'images/liyuanWord.png', selected: false, permanentlySelected: false, label: 'jian' },
       { id: 'lihua', image: 'images/lishaoWord.png', selected: false, permanentlySelected: false, label: 'hua' }
     ]
   };
@@ -189,6 +191,10 @@ export default class VideoLearningPage {
       this.videoState.isPlaying = false;
       this.videoState.isCompleted = true;
       console.log('视频播放结束，卡片已解锁');
+      wx.setStorage({
+        key: 'tool_qyl',
+        data: 1
+      });
       showToast('视频播放完成，现在可以进行连线了！');
     });
 
@@ -657,8 +663,8 @@ export default class VideoLearningPage {
     this.cards.column1.forEach((card, index) => {
       const cardY = y + index * (height + gap);
       
-      // 判断卡片是否可用（视频完成或已永久选中）
-      const isCardEnabled = isVideoCompleted || card.permanentlySelected;
+      // 左列卡片在视频未完成时也允许选择与正常显示
+      const isCardEnabled = true;
       
       // 不绘制卡片背景，保持透明
       
@@ -1097,7 +1103,7 @@ export default class VideoLearningPage {
       
       try {
         if (GameGlobal && GameGlobal.pageManager && typeof GameGlobal.pageManager.switchToPage === 'function') {
-      GameGlobal.pageManager.switchToPage('home');
+      GameGlobal.pageManager.switchToPage('toolAssemblyNav');
         } else {
           console.error('页面管理器不可用');
           showErrorToast('返回首页失败');
@@ -1130,9 +1136,9 @@ export default class VideoLearningPage {
       if (touchX >= x && touchX <= x + width &&
           touchY >= cardY && touchY <= cardY + height) {
         
-        // 检查视频是否播放完成
-        if (!this.videoState.isCompleted) {
-          console.log('视频未播放完成，卡片不能点击');
+        // 仅限制右侧列在视频未完成时不可点击
+        if (columnKey === 'column2' && !this.videoState.isCompleted) {
+          console.log('视频未播放完成，右侧卡片不能点击');
           showToast('请先观看视频再连线呦～');
           return;
         }
@@ -1286,7 +1292,10 @@ export default class VideoLearningPage {
         // 所有卡片都已匹配成功，跳转到3D拼装页面
         console.log("所有卡片匹配成功，跳转到3D拼装页面");
         showSuccessToast("恭喜您完成所有连线！");
-        
+        wx.setStorage({
+          key: 'tool_qyl',
+          data: 2
+        });
         // 延迟一下再跳转到3D拼装页面，让用户看到成功提示
         setTimeout(() => {
           try {
@@ -1362,7 +1371,7 @@ export default class VideoLearningPage {
       isPlaying: false,
       isFullScreen: false,
       volume: 1,
-      isCompleted: true // 临时设置为true，方便测试卡片匹配功能
+      isCompleted: false // 初始为未完成，视频结束后解锁右侧卡片
     };
     
     // 重置卡片状态

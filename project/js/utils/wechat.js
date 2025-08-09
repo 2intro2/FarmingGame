@@ -30,15 +30,9 @@ export default class WechatAPI {
    */
   handleTouchStart(event) {
     console.log('WechatAPI: touchstart');
-    // 将触摸事件传递给当前页面
-    if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
-      // 如果页面有专门的 handleTouchStart 方法，优先使用
-      if (GameGlobal.pageManager.currentPage.handleTouchStart) {
-        GameGlobal.pageManager.currentPage.handleTouchStart(event);
-      } else {
-        // 否则使用通用的 handleTouch 方法
-        GameGlobal.pageManager.currentPage.handleTouch(event);
-      }
+    // 将触摸事件交由页面管理器统一分发（含位置记录与点击模拟）
+    if (GameGlobal.pageManager && GameGlobal.pageManager.handleTouchStart) {
+      GameGlobal.pageManager.handleTouchStart(event);
     }
   }
 
@@ -48,11 +42,9 @@ export default class WechatAPI {
    */
   handleTouchMove(event) {
     console.log('WechatAPI: touchmove');
-    // 将触摸事件传递给当前页面
-    if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
-      if (GameGlobal.pageManager.currentPage.handleTouchMove) {
-        GameGlobal.pageManager.currentPage.handleTouchMove(event);
-      }
+    // 将触摸事件交由页面管理器统一分发
+    if (GameGlobal.pageManager && GameGlobal.pageManager.handleTouchMove) {
+      GameGlobal.pageManager.handleTouchMove(event);
     }
   }
 
@@ -62,11 +54,9 @@ export default class WechatAPI {
    */
   handleTouchEnd(event) {
     console.log('WechatAPI: touchend');
-    // 将触摸事件传递给当前页面
-    if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
-      if (GameGlobal.pageManager.currentPage.handleTouchEnd) {
-        GameGlobal.pageManager.currentPage.handleTouchEnd(event);
-      }
+    // 将触摸事件交由页面管理器统一分发（其会在touchend后模拟一次点击调用handleTouch）
+    if (GameGlobal.pageManager && GameGlobal.pageManager.handleTouchEnd) {
+      GameGlobal.pageManager.handleTouchEnd(event);
     }
   }
 

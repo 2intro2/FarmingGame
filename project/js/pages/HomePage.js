@@ -172,9 +172,9 @@ export default class HomePage extends BasePage {
     };
     this.moduleImages.toolAssembly.src = 'images/icon09.png';
     this.moduleImages.toolAssemblyTop.src = 'images/icon10.png';
-    this.moduleImages.iconButton1.src = 'images/icon.png';
-    this.moduleImages.iconButton2.src = 'images/icon.png';
-    this.moduleImages.iconButton3.src = 'images/icon.png';
+    this.moduleImages.iconButton1.src = 'images/icon-suo.png';
+    this.moduleImages.iconButton2.src = 'images/icon-suo.png';
+    this.moduleImages.iconButton3.src = 'images/icon-suo.png';
     this.moduleImages.noodleLife.src = 'images/bg12.png';
     this.moduleImages.emergencyChallenge.src = 'images/bg13.png';
     this.moduleImages.cornGrowth.src = 'images/bg01.jpeg';

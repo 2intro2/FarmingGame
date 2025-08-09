@@ -107,12 +107,51 @@ export default class ThreeDAssemblyPage {
     this.loadTabFloorImage();
   }
 
+  // 每次进入页面时调用（由 PageManager 在页面切换完成后触发）
+  show() {
+    this.resetState();
+  }
+
+  // 重置页面内所有易变状态，确保每次进入都是全新开始
+  resetState() {
+    // Tab 与选择状态
+    this.activeTabIndex = 0;
+    this.completedTabs = new Set();
+
+    // 拖拽与放置状态
+    this.dragging = null;
+    this.placedParts = [];
+    this.suppressTapAfterDrag = false;
+
+    // 组装总体状态
+    this.isAssemblyCompleted = false;
+    this.finalAssemblyImage = null;
+    this.showGuides = false;
+    this.successEffect = null;
+    this.failureEffect = null;
+
+    // 覆盖层与按钮命中区域
+    this.successOverlayVisible = false;
+    this.failureOverlayVisible = false;
+    this.successButtonBounds = null;
+    this.failureButtonBounds = null;
+
+    // 预览区域状态
+    this.previewBounds = null;
+    this.previewImageBounds = null;
+
+    // 根据当前屏幕尺寸与页面布局，重新计算布局与判定区域
+    this.initLayoutMeta();
+    this.initSnapTargets();
+    this.initAnchors();
+  }
+
   initTabs() {
     // 根据参考图定义五个部位（图片为占位，后续可替换）
     this.tabs = [
       { key: 'li_shao', name: '犁梢', imageSrc: 'images/lishao.png' },
-      { key: 'li_e', name: '犁辕', imageSrc: 'images/liyuan.png' },
-      { key: 'li_ji', name: '犁箭', imageSrc: 'images/lijian.png' },
+      { key: 'li_e', name: '犁辕', imageSrc: 'images/zuzhuang-liyuan.png' },
+      { key: 'li_ji', name: '犁箭', imageSrc: 'images/lijianPic.png' },
       { key: 'li_di', name: '犁底', imageSrc: 'images/lidi.png' },
       { key: 'li_hua', name: '犁铲', imageSrc: 'images/lichan.png' }
     ];
@@ -1064,6 +1103,10 @@ export default class ThreeDAssemblyPage {
       if (b && this.pointInRect(x, y, b.x, b.y, b.width, b.height)) {
         // 成功确认：点击 zuzhzhuang-qr.png，跳转到 ThreeDAssemblyPage 页面
         this.successOverlayVisible = false;
+        wx.setStorage({
+          key: 'tool_qyl',
+          data: 3
+        });
           try { GameGlobal.pageManager.switchToPage('toolAssemblyNav'); } catch (e) {}
       }
       return;
@@ -1094,7 +1137,7 @@ export default class ThreeDAssemblyPage {
     // 返回按钮
     const back = this.buttons.back;
     if (this.pointInCircle(x, y, back.x + back.width / 2, back.y + back.height / 2, back.width / 2)) {
-      GameGlobal.pageManager.switchToPage('home');
+      GameGlobal.pageManager.switchToPage('toolAssemblyNav');
       return;
     }
 

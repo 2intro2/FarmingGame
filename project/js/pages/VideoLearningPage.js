@@ -112,7 +112,7 @@ export default class VideoLearningPage {
       },
       startImage: {
         x: SCREEN_WIDTH * 0.065 + SCREEN_WIDTH * 0.53 * 0.42, // 在progress图片中央偏左
-        y: SCREEN_HEIGHT * 0.30 + SCREEN_WIDTH * 0.40 * (3 / 4) + 15, // 比progress图片高15px
+        y: SCREEN_HEIGHT * 0.33 + SCREEN_WIDTH * 0.40 * (3 / 4) + 15, // 比progress图片高15px
         width: SCREEN_WIDTH * 0.53 * 0.12, // 更小的尺寸（从20%减小到12%）
         height: SCREEN_WIDTH * 0.53 * 0.12 * 0.8 // 保持合适的高度比例
       }
@@ -195,6 +195,9 @@ export default class VideoLearningPage {
     this.video.onTimeUpdate((res) => {
       this.videoState.currentTime = res.position;
       this.videoState.duration = res.duration;
+      
+      // 更新小星星在progress图片上的位置
+      this.updateStarPosition();
     });
 
     this.video.onError((error) => {
@@ -619,7 +622,7 @@ export default class VideoLearningPage {
     
     // 绘制圆形背景
     ctx.fillStyle = '#2196F3';
-    ctx.beginPath();
+      ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
     ctx.fill();
     
@@ -805,6 +808,55 @@ export default class VideoLearningPage {
     ctx.moveTo(x, y);
     ctx.lineTo(x + length, y);
     ctx.stroke();
+  }
+
+  /**
+   * 更新小星星在progress图片上的位置
+   */
+  updateStarPosition() {
+    if (this.videoState.duration > 0) {
+      // 计算播放进度百分比 (0-1)
+      const progress = this.videoState.currentTime / this.videoState.duration;
+      
+      // 获取progress图片的布局信息
+      const progressLayout = this.layout.progressImages.progressImage;
+      
+      // 计算进度条的有效区域（假设进度条占图片宽度的80%，左右各留10%边距）
+      const progressBarMargin = progressLayout.width * 0.19;
+      const progressBarMarginEnd = progressLayout.width * 0.15;  // 左右边距各10%
+      const progressBarStartX = progressLayout.x + progressBarMargin; // 蓝色部分的左边（起始位置）
+      const progressBarEndX = progressLayout.x + progressLayout.width - progressBarMarginEnd; // 橙色部分的右边（结束位置）
+      const progressBarWidth = progressBarEndX - progressBarStartX;
+      
+      // 根据播放进度计算小星星在进度条上的位置
+      const starX = progressBarStartX + progressBarWidth * progress;
+      
+      // 更新start图片的X坐标，让星星居中对齐到计算出的位置
+      this.layout.progressImages.startImage.x = starX - this.layout.progressImages.startImage.width / 2;
+      
+      // 确保小星星不会超出进度条的有效区域
+      const minX = progressBarStartX - this.layout.progressImages.startImage.width / 2;
+      const maxX = progressBarEndX - this.layout.progressImages.startImage.width / 2;
+      this.layout.progressImages.startImage.x = Math.max(minX, Math.min(maxX, this.layout.progressImages.startImage.x));
+      
+      console.log(`视频进度: ${(progress * 100).toFixed(1)}%, 小星星位置: ${this.layout.progressImages.startImage.x}, 进度条范围: ${progressBarStartX} - ${progressBarEndX}`);
+    }
+  }
+
+  /**
+   * 重置小星星位置到progress图片的起始位置
+   */
+  resetStarPosition() {
+    const progressLayout = this.layout.progressImages.progressImage;
+    
+    // 计算进度条的有效区域（与updateStarPosition中的计算保持一致）
+    const progressBarMargin = progressLayout.width * 0.19; // 左右边距各10%
+    const progressBarStartX = progressLayout.x + progressBarMargin; // 蓝色部分的左边（起始位置）
+    
+    // 将小星星放置在蓝色部分的左边（起始位置），星星居中对齐
+    this.layout.progressImages.startImage.x = progressBarStartX - this.layout.progressImages.startImage.width / 2;
+    
+    console.log(`小星星位置已重置到起始位置: ${this.layout.progressImages.startImage.x}, 进度条起始点: ${progressBarStartX}`);
   }
 
   /**
@@ -1316,6 +1368,9 @@ export default class VideoLearningPage {
     // 重置卡片状态
     this.resetCardStates();
     
+    // 重置小星星位置
+    this.resetStarPosition();
+    
     // 销毁现有视频组件
     if (this.video) {
       try {
@@ -1337,6 +1392,9 @@ export default class VideoLearningPage {
   show() {
     // 重置所有状态
     this.resetAllStates();
+    
+    // 初始化小星星位置到progress图片的起始位置
+    this.resetStarPosition();
     
     // 延迟初始化视频组件
     if (!this.video) {

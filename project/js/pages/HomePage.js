@@ -17,6 +17,30 @@ export default class HomePage {
     width: SCREEN_WIDTH * 2.8,       // 宽度为屏幕宽度的80%
     height: SCREEN_HEIGHT * 0.8      // 高度为屏幕高度的40%
   };
+
+  // 3个icon按钮的位置配置（使用屏幕绝对坐标）
+  // 直接修改 x 和 y 来调整各按钮位置
+  iconButtonsConfig = {
+    button1: {
+      x: SCREEN_WIDTH * 0.32,    // 左下角按钮的X坐标
+      y: SCREEN_HEIGHT * 0.7,   // 第一个按钮的Y坐标
+      width: 90,
+      height: 90
+    },
+    button2: {
+      x: SCREEN_WIDTH * 0.67,   // 右下角按钮的X坐标（中间）
+      y: SCREEN_HEIGHT * 0.7,   // 第二个按钮的Y坐标
+      width: 90,
+      height: 90
+    },
+    button3: {
+      x: SCREEN_WIDTH * 0.67,    // 右上角按钮的X坐标
+      y: SCREEN_HEIGHT * 0.38,   // 第三个按钮的Y坐标
+      width: 90,
+      height: 90
+    }
+  };
+
   modulesBackdropImage = null; // 中间四个模块背后背景图
   moduleImages = {}; // 各模块背景图
   homeBgImage = null; // 首页背景图
@@ -137,12 +161,18 @@ export default class HomePage {
     this.moduleImages = {
       toolAssembly: wx.createImage(), // icon09.png
       toolAssemblyTop: wx.createImage(), // icon10.png
+      iconButton1: wx.createImage(), // icon.png (第一个icon按钮)
+      iconButton2: wx.createImage(), // icon.png (第二个icon按钮)
+      iconButton3: wx.createImage(), // icon.png (第三个icon按钮)
       noodleLife: wx.createImage(),   // bg08.png
       emergencyChallenge: wx.createImage(), // bg09.png（名称显示为天气挑战）
       cornGrowth: wx.createImage()    // bg10.png（名称显示为害虫挑战）
     };
     this.moduleImages.toolAssembly.src = 'images/icon09.png';
     this.moduleImages.toolAssemblyTop.src = 'images/icon10.png';
+    this.moduleImages.iconButton1.src = 'images/icon.png';
+    this.moduleImages.iconButton2.src = 'images/icon.png';
+    this.moduleImages.iconButton3.src = 'images/icon.png';
     this.moduleImages.noodleLife.src = 'images/bg08.png';
     this.moduleImages.emergencyChallenge.src = 'images/bg09.png';
     this.moduleImages.cornGrowth.src = 'images/bg10.png';
@@ -368,6 +398,21 @@ export default class HomePage {
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
     }
+
+    // 绘制3个icon按钮（使用屏幕绝对坐标）
+    Object.entries(this.iconButtonsConfig).forEach(([buttonKey, config]) => {
+      const imageKey = buttonKey.replace('button', 'iconButton'); // button1 -> iconButton1
+      const img = this.moduleImages[imageKey];
+      
+      if (img && img.complete && img.naturalWidth !== 0) {
+        try {
+          // 直接使用配置中的绝对坐标
+          ctx.drawImage(img, config.x, config.y, config.width, config.height);
+        } catch (e) {
+          console.warn(`绘制${buttonKey}失败:`, e);
+        }
+      }
+    });
   }
 
   /**

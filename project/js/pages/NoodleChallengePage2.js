@@ -101,9 +101,9 @@ export default class NoodleChallengePage2 {
       this.backButton.image = this.backImage
     }
 
-    // 左侧装饰图
+    // 左侧装饰图：改为使用已存在资源
     this.farmerImage = wx.createImage()
-    this.farmerImage.src = 'images/bg05.png'
+    this.farmerImage.src = 'images/liyuan.png'
     this.farmerImage.onload = () => {
       this.farmerNaturalWidth = this.farmerImage.width || 0
       this.farmerNaturalHeight = this.farmerImage.height || 0

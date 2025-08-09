@@ -82,32 +82,20 @@ export default class NoodleChallengePage4 {
   }
 
   loadResources() {
-    // 背景尝试 png / jpeg
+    // 背景：直接使用已存在资源 lbg04.png
     this.backgroundImage = wx.createImage()
-    const tryJpeg = () => {
-      const alt = wx.createImage()
-      alt.src = 'images/bg14.jpeg'
-      alt.onload = () => {
-        this.backgroundImage = alt
-        this.bgNaturalWidth = alt.width || 0
-        this.bgNaturalHeight = alt.height || 0
-      }
-    }
     this.backgroundImage.src = 'images/lbg04.png'
     this.backgroundImage.onload = () => {
       this.bgNaturalWidth = this.backgroundImage.width || 0
       this.bgNaturalHeight = this.backgroundImage.height || 0
     }
-    setTimeout(() => {
-      if (!this.bgNaturalWidth || !this.bgNaturalHeight) tryJpeg()
-    }, 100)
 
     this.backImage = wx.createImage()
     this.backImage.src = 'images/back.png'
     this.backImage.onload = () => { this.backButton.image = this.backImage }
 
     this.farmerImage = wx.createImage()
-    this.farmerImage.src = 'images/bg05.png'
+    this.farmerImage.src = 'images/liyuan.png'
     this.farmerImage.onload = () => {
       this.farmerNaturalWidth = this.farmerImage.width || 0
       this.farmerNaturalHeight = this.farmerImage.height || 0

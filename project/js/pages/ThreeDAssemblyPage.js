@@ -53,6 +53,8 @@ export default class ThreeDAssemblyPage {
   matchTolerancePx = 30; // 多边形附近命中的容差像素，越大越容易匹配
   matchBoundsMarginPx = 20; // 外接矩形粗过滤的外扩边距像素
   completedTabs = new Set(); // 已完成的部位（禁用再次选择）
+  // 用于抑制一次拖拽手势结束后被当作点击再次触发的处理
+  suppressTapAfterDrag = false;
   // 放置后的微调偏移（像素），用于精确微调显示位置
   placementOffsetByKey = {
     li_shao: { x: 124, y: 192 },
@@ -89,6 +91,9 @@ export default class ThreeDAssemblyPage {
   // 目标位锚点（在各目标位外接矩形中的百分比坐标），以及图片自身锚点（在图片中的百分比坐标）
   targetAnchorByIndex = []; // [{x:0..1, y:0..1}]
   imageAnchorByKey = {}; // { partKey: {x:0..1, y:0..1} }
+  // 预览区与预览图的点击范围
+  previewBounds = null;        // {x, y, width, height}
+  previewImageBounds = null;   // {x, y, width, height, key}
 
   constructor() {
     this.initTabs();
@@ -605,6 +610,8 @@ export default class ThreeDAssemblyPage {
           const markX = tabX + cardW - dw - edgePad - extraLeft;
           const markY = tabY + edgePad;
           ctx.drawImage(this.completedIcon, markX, markY, dw, dh);
+          // 记录完成图标的点击区域（用于跳转）
+          tab.completedIconBounds = { x: markX, y: markY, width: dw, height: dh };
         } else {
           // fallback 圆形勾
           const markX = tabX + cardW - edgePad - 10 - extraLeft;
@@ -618,6 +625,8 @@ export default class ThreeDAssemblyPage {
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText('✓', markX, markY);
+          // 记录近似点击区域（使用小方框代替圆形）
+          tab.completedIconBounds = { x: markX - 10, y: markY - 10, width: 20, height: 20 };
         }
       }
     });
@@ -637,6 +646,8 @@ export default class ThreeDAssemblyPage {
     let areaY = (b.y || y + 16) + (b.height ? (b.height - areaH) / 2 : 0);
     // 边界保护
     areaY = Math.max(margin, Math.min(areaY, SCREEN_HEIGHT - areaH - margin));
+    // 记录预览区域外框
+    this.previewBounds = { x: areaX, y: areaY, width: areaW, height: areaH };
 
     // 当前图片
     const current = this.tabs[this.activeTabIndex];
@@ -654,6 +665,8 @@ export default class ThreeDAssemblyPage {
       const drawX = areaX + (areaW - drawW) / 2 + (previewCfg.offsetX || 0);
       const drawY = areaY + (areaH - drawH) / 2 + (previewCfg.offsetY || 0);
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
+      // 记录预览图的实际点击范围（仅限图片区域）
+      this.previewImageBounds = { x: drawX, y: drawY, width: drawW, height: drawH, key };
     } else {
       // 占位提示
       ctx.fillStyle = '#7AD08C';
@@ -661,6 +674,7 @@ export default class ThreeDAssemblyPage {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('预览：部件图片待补充', areaX + areaW / 2, areaY + areaH / 2);
+      this.previewImageBounds = null;
     }
   }
 
@@ -963,22 +977,94 @@ export default class ThreeDAssemblyPage {
     ctx.closePath();
   }
 
+  // 触摸开始：在点中某个 Tab 时立即进入拖拽状态
+  handleTouchStart(event) {
+    if (!event || !event.touches || event.touches.length === 0) return;
+    const touch = event.touches[0];
+    const x = touch.clientX;
+    const y = touch.clientY;
+
+    // 成功/失败覆盖层开启时，本次开始事件不处理（交由点击流程在 handleTouch 中处理）
+    if (this.successOverlayVisible || this.failureOverlayVisible) return;
+
+    // 返回按钮命中亦交由点击流程处理
+
+    // 命中左侧 Tab：立即开始拖拽
+    for (let i = 0; i < this.tabs.length; i++) {
+      const b = this.tabs[i].bounds;
+      if (b && this.pointInRect(x, y, b.x, b.y, b.width, b.height) && !this.completedTabs.has(this.tabs[i].key)) {
+        this.activeTabIndex = i;
+        const partKey = this.tabs[i].key;
+        const allowed = this.partToTargets[partKey] || [];
+        const targetIdx = allowed.length ? allowed[0] : -1;
+        const refTarget = this.snapTargets[targetIdx];
+        let dw = (refTarget && refTarget.bounds) ? refTarget.bounds.width : 120;
+        let dh = (refTarget && refTarget.bounds) ? refTarget.bounds.height : 120;
+        const img = this.tabImages[partKey];
+        if (img && img.width && img.height && refTarget && refTarget.bounds) {
+          const fit = this.fitImageInBox(img.width, img.height, refTarget.bounds.width, refTarget.bounds.height);
+          dw = fit.width;
+          dh = fit.height;
+        }
+        this.dragging = {
+          key: partKey,
+          x: x - dw / 2,
+          y: y - dh / 2,
+          width: dw,
+          height: dh
+        };
+        // 标记以阻止本次手势在触摸结束后再次被当作一次点击处理
+        this.suppressTapAfterDrag = true;
+        return;
+      }
+    }
+
+    // 命中预览图：同样立即开始拖拽当前 Tab 对应部件
+    if (this.previewImageBounds && this.pointInRect(x, y, this.previewImageBounds.x, this.previewImageBounds.y, this.previewImageBounds.width, this.previewImageBounds.height)) {
+      const partKey = this.previewImageBounds.key || (this.tabs[this.activeTabIndex] && this.tabs[this.activeTabIndex].key);
+      if (partKey && !this.completedTabs.has(partKey)) {
+        const allowed = this.partToTargets[partKey] || [];
+        const targetIdx = allowed.length ? allowed[0] : -1;
+        const refTarget = this.snapTargets[targetIdx];
+        let dw = (refTarget && refTarget.bounds) ? refTarget.bounds.width : 120;
+        let dh = (refTarget && refTarget.bounds) ? refTarget.bounds.height : 120;
+        const img = this.tabImages[partKey];
+        if (img && img.width && img.height && refTarget && refTarget.bounds) {
+          const fit = this.fitImageInBox(img.width, img.height, refTarget.bounds.width, refTarget.bounds.height);
+          dw = fit.width;
+          dh = fit.height;
+        }
+        this.dragging = {
+          key: partKey,
+          x: x - dw / 2,
+          y: y - dh / 2,
+          width: dw,
+          height: dh
+        };
+        this.suppressTapAfterDrag = true;
+        return;
+      }
+    }
+  }
+
   handleTouch(event) {
     const touch = event.touches[0];
     const x = touch.clientX;
     const y = touch.clientY;
 
+    // 若本次手势已在 touchstart 阶段进入拖拽，则在触摸结束后发送来的“点击”模拟应被忽略
+    if (this.suppressTapAfterDrag) {
+      this.suppressTapAfterDrag = false;
+      return;
+    }
+
     // 若成功覆盖层可见，仅处理成功覆盖层按钮点击
     if (this.successOverlayVisible) {
       const b = this.successButtonBounds;
       if (b && this.pointInRect(x, y, b.x, b.y, b.width, b.height)) {
-        // 成功确认：跳转页面（如已配置），否则仅关闭覆盖层
+        // 成功确认：点击 zuzhzhuang-qr.png，跳转到 ThreeDAssemblyPage 页面
         this.successOverlayVisible = false;
-        if (this.successNextPage && GameGlobal.pageManager && GameGlobal.pageManager.switchToPage) {
-          try { GameGlobal.pageManager.switchToPage(this.successNextPage); } catch (e) {}
-        } else {
-          try { const { showToast: showToastUtil } = require('../utils/toast'); showToastUtil('已确认'); } catch (e) {}
-        }
+          try { GameGlobal.pageManager.switchToPage('toolAssemblyNav'); } catch (e) {}
       }
       return;
     }
@@ -999,7 +1085,7 @@ export default class ThreeDAssemblyPage {
         this.failureOverlayVisible = false;
         try {
           const { showToast: showToastUtil } = require('../utils/toast');
-          showToastUtil('已重置所有步骤');
+          // showToastUtil('已重置所有步骤');
         } catch (e) {}
       }
       return;
@@ -1039,6 +1125,15 @@ export default class ThreeDAssemblyPage {
           height: dh
         };
         return;
+      }
+
+      // 若该 Tab 已完成，支持点击其右上角的完成图标，跳回本页重新组装
+      if (this.completedTabs.has(this.tabs[i].key)) {
+        const iconB = this.tabs[i].completedIconBounds;
+        if (iconB && this.pointInRect(x, y, iconB.x, iconB.y, iconB.width, iconB.height)) {
+          try { GameGlobal.pageManager.switchToPage('threeDAssembly'); } catch (e) {}
+          return;
+        }
       }
     }
 
@@ -1085,7 +1180,7 @@ export default class ThreeDAssemblyPage {
         this.successOverlayVisible = true;
         try {
           const { showSuccessToast } = require('../utils/toast');
-          showSuccessToast('拼装完成');
+          // showSuccessToast('拼装完成');
         } catch (e) {}
       } else {
         // 未全部正确：显示失败覆盖层（加载素材）
@@ -1094,7 +1189,7 @@ export default class ThreeDAssemblyPage {
         // 可选：仍弹出错误提示
         try {
           const { showErrorToast } = require('../utils/toast');
-          showErrorToast('还有部位未放置正确');
+          // showErrorToast('还有部位未放置正确');
         } catch (e) {}
       }
     }
@@ -1169,7 +1264,7 @@ export default class ThreeDAssemblyPage {
         this.failureEffect = null;
         try {
           const { showSuccessToast } = require('../utils/toast');
-          showSuccessToast('放置成功');
+          // showSuccessToast('放置成功');
         } catch (e) {}
       } else {
         this.failureEffect = { x: centerX, y: centerY, startTime: Date.now(), endTime: Date.now() + 600 };
@@ -1179,7 +1274,7 @@ export default class ThreeDAssemblyPage {
         }
         try {
           const { showErrorToast } = require('../utils/toast');
-          showErrorToast('放置位置不正确');
+          // showErrorToast('放置位置不正确');
         } catch (e) {}
       }
     }

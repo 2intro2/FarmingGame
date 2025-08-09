@@ -20,7 +20,7 @@ export default class ToolAssemblyNavPage extends BasePage {
     try {
       this.initTools();
       this.initLayout();
-      this.updateStepStatus(); // 初始化时动态计算步骤状态
+  
       this.loadResources();
     } catch (error) {
       if (GameGlobal.logger) {
@@ -181,65 +181,6 @@ export default class ToolAssemblyNavPage extends BasePage {
     this.isSwipeInProgress = false;
     this.swipeStartX = 0;
     this.swipeStartTime = 0;
-    
-    this.steps = [
-      { id: 'step1', name: '观看视频', status: 'completed', title: '第一步 (已完成)' },
-      { id: 'step2', name: '基础认知', status: 'current', title: '第二步 (进行中)' },
-      { id: 'step3', name: '立体组装', status: 'locked', title: '第三步 (未解锁)' }
-    ];
-  }
-
-  /**
-   * 加载状态图标和导航图片
-   */
-  loadStatusIcons() {
-    // 加载导航栏图片
-    this.loadNavImages();
-    // 加载已完成图标
-    try {
-      this.finishIcon = wx.createImage();
-      this.finishIcon.onload = () => {
-        this.finishIconLoaded = true;
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info('已完成图标加载成功: finish.png', null, 'toolAssemblyNav');
-        }
-      };
-      this.finishIcon.onerror = () => {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('已完成图标加载失败: finish.png', null, 'toolAssemblyNav');
-        }
-        this.finishIconLoaded = false;
-      };
-      this.finishIcon.src = 'images/finish.png';
-    } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('已完成图标加载异常', { error: error.message }, 'toolAssemblyNav');
-      }
-      this.finishIconLoaded = false;
-    }
-
-    // 加载锁定图标
-    try {
-      this.lockIcon = wx.createImage();
-      this.lockIcon.onload = () => {
-        this.lockIconLoaded = true;
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info('锁定图标加载成功: lock.png', null, 'toolAssemblyNav');
-        }
-      };
-      this.lockIcon.onerror = () => {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('锁定图标加载失败: lock.png', null, 'toolAssemblyNav');
-        }
-        this.lockIconLoaded = false;
-      };
-      this.lockIcon.src = 'images/lock.png';
-    } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('锁定图标加载异常', { error: error.message }, 'toolAssemblyNav');
-      }
-      this.lockIconLoaded = false;
-    }
   }
 
   /**
@@ -337,14 +278,37 @@ export default class ToolAssemblyNavPage extends BasePage {
       }
       this.toolBackgroundImageLoaded = false;
     }
+
+    // 加载底部导航栏背景图片
+    try {
+      this.bottomNavBgImage = wx.createImage();
+      this.bottomNavBgImage.onload = () => {
+        this.bottomNavBgImageLoaded = true;
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('底部导航栏背景图片加载成功: bottom_nav_bg.png', null, 'toolAssemblyNav');
+        }
+      };
+      this.bottomNavBgImage.onerror = () => {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('底部导航栏背景图片加载失败: bottom_nav_bg.png', null, 'toolAssemblyNav');
+        }
+        this.bottomNavBgImageLoaded = false;
+      };
+      this.bottomNavBgImage.src = 'images/bottom_nav_bg.png';
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('底部导航栏背景图片加载异常', { error: error.message }, 'toolAssemblyNav');
+      }
+      this.bottomNavBgImageLoaded = false;
+    }
   }
 
   /**
    * 加载资源
    */
   loadResources() {
-    // 加载状态图标
-    this.loadStatusIcons();
+    // 加载导航栏图片
+    this.loadNavImages();
     
     this.tools.forEach(tool => {
       try {
@@ -379,8 +343,6 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   renderContent(ctx) {
     try {
-      // 每次渲染前更新步骤状态，确保状态是最新的
-      this.updateStepStatus();
       
       // 绘制背景 - 优先使用背景图片，否则使用白色背景
       this.renderBackground(ctx);
@@ -390,7 +352,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       
       this.renderTopNav(ctx);
       this.renderToolCards(ctx);
-      this.renderProgressSteps(ctx);
+      this.renderBottomNavBg(ctx);
     } catch (error) {
       if (GameGlobal.logger) {
         GameGlobal.logger.error('渲染页面内容失败', { error: error.message }, 'toolAssemblyNav');
@@ -575,10 +537,10 @@ export default class ToolAssemblyNavPage extends BasePage {
       
       // 绘制卡片阴影（仅对活跃卡片）
       if (isActive) {
-        ctx.save();
+      ctx.save();
         ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
         ctx.shadowBlur = 20;
-        ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 10;
       }
       
@@ -599,7 +561,7 @@ export default class ToolAssemblyNavPage extends BasePage {
             drawHeight = this.cardWidth / imgRatio;
             drawX = 0;
             drawY = (this.cardHeight - drawHeight) / 2; // 垂直居中
-          } else {
+        } else {
             // 图片更高，按卡片高度缩放
             drawHeight = this.cardHeight;
             drawWidth = this.cardHeight * imgRatio;
@@ -630,7 +592,7 @@ export default class ToolAssemblyNavPage extends BasePage {
           // 绘制占位符
           this.renderCardPlaceholder(ctx, tool);
         }
-      } else {
+        } else {
         // 绘制占位符
         this.renderCardPlaceholder(ctx, tool);
       }
@@ -895,143 +857,41 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
-   * 渲染进度步骤
+   * 渲染底部导航栏背景图片
    */
-  renderProgressSteps(ctx) {
-    const startY = SCREEN_HEIGHT - 150; // 从-140调整到-150，为更大卡片留出更多空间
-    const stepWidth = 200; // 从180进一步增加到200，卡片再次变大
-    const spacing = 65; // 从55进一步增加到65，间距再次变宽
-    const totalWidth = this.steps.length * stepWidth + (this.steps.length - 1) * spacing;
-    const startX = (SCREEN_WIDTH - totalWidth) / 2;
-
-    // 移除虚线边框，保持简洁的设计
-
-    this.steps.forEach((step, index) => {
-      this.renderProgressStep(ctx, step, startX + index * (stepWidth + spacing), startY, stepWidth);
-    });
-  }
-
-  /**
-   * 渲染单个进度步骤
-   */
-  renderProgressStep(ctx, step, x, y, width) {
+  renderBottomNavBg(ctx) {
     try {
-      const isCompleted = step.status === 'completed';
-      const isCurrent = step.status === 'current';
-      const isLocked = step.status === 'locked';
-      
-      // 使用绿色圆角卡片样式，再次增大高度
-      const cardHeight = 105; // 从95进一步增加到105，适配200px宽度的更大卡片
-      const borderRadius = 22; // 适当增大圆角，与卡片尺寸协调
-      
-      // 背景颜色 - 三张卡片使用不同的绿色系背景
-      let bgColor, textColor;
-      if (isCompleted) {
-        bgColor = '#f6ffed'; // 第一张卡片：最浅绿色背景
-        textColor = '#333333'; // 正文颜色 - 深灰色
-      } else if (isCurrent) {
-        bgColor = '#d9f7be'; // 第二张卡片：中等绿色背景
-        textColor = '#333333'; // 正文颜色 - 深灰色
-        } else {
-        bgColor = '#b7eb8f'; // 第三张卡片：较深绿色背景
-        textColor = '#333333'; // 改为正文颜色，保持一致性
-      }
-      
-      // 绘制圆角卡片背景
-      ctx.fillStyle = bgColor;
-      try {
-        this.drawSimpleRoundedRect(ctx, x, y, width, cardHeight, borderRadius);
-        ctx.fill();
-      } catch (rectError) {
-        ctx.fillRect(x, y, width, cardHeight);
-      }
-      
-      // 步骤标题（第一行） - 现代化字体，较小
-      ctx.fillStyle = textColor;
-      ctx.font = '12px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(step.title, x + width / 2, y + 35); // 从y+30调整到y+35，适配105px高度
-
-      // 步骤名称（第二行） - 现代化字体，比第一行大且加黑
-      ctx.fillStyle = textColor;
-      ctx.font = 'bold 16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-      ctx.fillText(step.name, x + width / 2, y + 70); // 从y+65调整到y+70，适配105px高度
-
-      // 状态图标
-      if (isCompleted) {
-        // 已完成图标 - 使用finish.png图片，再次增大尺寸
-        const iconSize = 32; // 从28增加到32，图标尺寸再次变大
-        const iconX = x + width - iconSize - 12; // 右上角位置，增加到12px边距
-        const iconY = y + 12; // 顶部增加到12px边距
+      if (this.bottomNavBgImageLoaded && this.bottomNavBgImage) {
+        // 计算底部导航栏位置 - 在屏幕底部
+        const navHeight = 150; // 底部导航栏高度
+        const navY = SCREEN_HEIGHT - navHeight; // 底部位置
         
-        if (this.finishIconLoaded && this.finishIcon) {
-          try {
-            ctx.drawImage(this.finishIcon, iconX, iconY, iconSize, iconSize);
-          } catch (drawError) {
-            // 图片绘制失败，使用备用方案
-            this.drawFallbackCompletedIcon(ctx, x + width - 15, y + 15);
-          }
-        } else {
-          // 图片未加载，使用备用方案
-          this.drawFallbackCompletedIcon(ctx, x + width - 15, y + 15);
+        // 绘制底部导航栏背景图片，拉伸至全屏宽度
+        ctx.drawImage(
+          this.bottomNavBgImage, 
+          0, navY, // 起始位置：左边缘，底部
+          SCREEN_WIDTH, navHeight // 拉伸至全屏宽度，固定高度
+        );
+        
+        if (GameGlobal.logger) {
+          GameGlobal.logger.debug('底部导航栏背景图片渲染成功', null, 'toolAssemblyNav');
         }
-      } else if (isLocked) {
-        // 锁定图标 - 使用lock.png图片，再次增大尺寸
-        const iconSize = 32; // 从28增加到32，图标尺寸再次变大
-        const iconX = x + width - iconSize - 12; // 右上角位置，增加到12px边距
-        const iconY = y + 12; // 顶部增加到12px边距
-        
-        if (this.lockIconLoaded && this.lockIcon) {
-          try {
-            ctx.drawImage(this.lockIcon, iconX, iconY, iconSize, iconSize);
-          } catch (drawError) {
-            // 图片绘制失败，使用备用方案
-            this.drawFallbackLockedIcon(ctx, x + width - 15, y + 15);
-          }
         } else {
-          // 图片未加载，使用备用方案
-          this.drawFallbackLockedIcon(ctx, x + width - 15, y + 15);
+        // 图片未加载成功，使用备用方案（暂时为空，因为用户要求完全删除原有导航栏）
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('底部导航栏背景图片未加载，跳过渲染', null, 'toolAssemblyNav');
         }
       }
     } catch (error) {
       if (GameGlobal.logger) {
-        GameGlobal.logger.error('渲染进度步骤失败', { error: error.message, step: step.name }, 'toolAssemblyNav');
+        GameGlobal.logger.error('渲染底部导航栏背景失败', { error: error.message }, 'toolAssemblyNav');
       }
     }
   }
 
-  /**
-   * 绘制备用已完成图标
-   */
-  drawFallbackCompletedIcon(ctx, x, y) {
-    ctx.fillStyle = '#52c41a';
-    ctx.beginPath();
-    ctx.arc(x, y, 8, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 10px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('✓', x, y);
-  }
 
-  /**
-   * 绘制备用锁定图标
-   */
-  drawFallbackLockedIcon(ctx, x, y) {
-    ctx.fillStyle = '#bfbfbf';
-    ctx.beginPath();
-    ctx.arc(x, y, 8, 0, 2 * Math.PI);
-    ctx.fill();
-    
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 10px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🔒', x, y);
-  }
+
+
 
   /**
    * 绘制自动换行文字
@@ -1318,15 +1178,9 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   onShow() {
     super.onShow();
-    // 页面显示时更新步骤状态
-    this.updateStepStatus();
     
     if (GameGlobal.logger) {
-      GameGlobal.logger.info('农具拼装导航页显示，步骤状态已更新', {
-        step1: this.steps[0]?.status,
-        step2: this.steps[1]?.status,
-        step3: this.steps[2]?.status
-      }, 'toolAssemblyNav');
+      GameGlobal.logger.info('农具拼装导航页显示', null, 'toolAssemblyNav');
     }
   }
 
@@ -1337,22 +1191,6 @@ export default class ToolAssemblyNavPage extends BasePage {
     super.onHide();
     if (GameGlobal.logger) {
       GameGlobal.logger.info('农具拼装导航页隐藏', null, 'toolAssemblyNav');
-    }
-  }
-
-  /**
-   * 强制刷新步骤状态
-   * 可供外部调用，当知道步骤状态可能发生变化时使用
-   */
-  refreshStepStatus() {
-    this.updateStepStatus();
-    
-    if (GameGlobal.logger) {
-      GameGlobal.logger.info('步骤状态已强制刷新', {
-        step1: this.steps[0]?.status,
-        step2: this.steps[1]?.status,
-        step3: this.steps[2]?.status
-      }, 'toolAssemblyNav');
     }
   }
 

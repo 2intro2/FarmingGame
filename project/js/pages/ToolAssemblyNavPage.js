@@ -324,7 +324,9 @@ export default class ToolAssemblyNavPage extends BasePage {
     const availableBottom = SCREEN_HEIGHT - 120;
     const centerY = (availableTop + availableBottom) / 2; // 在可用空间中居中
     
-    // 按Z-order渲染（从后往前）
+    // 创建卡片渲染队列，按Z-order排序（确保中央卡片在顶层）
+    const cardsToRender = [];
+    
     for (let i = -this.maxVisibleCards; i <= this.maxVisibleCards; i++) {
       const cardIndex = this.selectedToolIndex + i;
       
@@ -338,11 +340,25 @@ export default class ToolAssemblyNavPage extends BasePage {
       const cardX = centerX - this.cardWidth / 2 + i * this.stackOffset;
       const cardY = centerY - this.cardHeight / 2;
       const scale = isActive ? 1.0 : this.scaleRatio;
-      const zIndex = this.maxVisibleCards - Math.abs(i); // Z层级
+      const zIndex = this.maxVisibleCards - Math.abs(i); // Z层级（中央卡片最高）
       
-      // 渲染卡片
-      this.renderStackedToolCard(ctx, tool, cardX, cardY, scale, isActive, zIndex);
+      cardsToRender.push({
+        tool,
+        cardX,
+        cardY,
+        scale,
+        isActive,
+        zIndex,
+        relativeIndex: i
+      });
     }
+    
+    // 按Z-order排序渲染，确保中央卡片(zIndex最高)最后渲染在顶层
+    cardsToRender
+      .sort((a, b) => a.zIndex - b.zIndex) // 从低到高排序
+      .forEach(card => {
+        this.renderStackedToolCard(ctx, card.tool, card.cardX, card.cardY, card.scale, card.isActive, card.zIndex);
+      });
   }
 
   /**
@@ -352,6 +368,11 @@ export default class ToolAssemblyNavPage extends BasePage {
     ctx.save();
     
     try {
+      // 应用透明度（非活跃卡片降低透明度减少干扰）
+      if (!isActive) {
+        ctx.globalAlpha = 0.6; // 非活跃卡片透明度60%
+      }
+      
       // 应用缩放变换
       ctx.translate(x + this.cardWidth / 2, y + this.cardHeight / 2);
       ctx.scale(scale, scale);
@@ -360,10 +381,10 @@ export default class ToolAssemblyNavPage extends BasePage {
       // 绘制卡片阴影（仅对活跃卡片）
       if (isActive) {
         ctx.save();
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-        ctx.shadowBlur = 12;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 增强中央卡片阴影
+        ctx.shadowBlur = 16;
         ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 6;
+        ctx.shadowOffsetY = 8;
       }
       
       // 创建渐变背景
@@ -394,9 +415,14 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.restore(); // 恢复阴影设置
       }
       
-      // 绘制卡片边框
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.lineWidth = 2;
+      // 绘制卡片边框（活跃卡片增强边框）
+      if (isActive) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 1.0)';
+        ctx.lineWidth = 3; // 增强中央卡片边框
+      } else {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 2;
+      }
       try {
         if (ctx.roundRect && typeof ctx.roundRect === 'function') {
           ctx.roundRect(0, 0, this.cardWidth, this.cardHeight, borderRadius);
@@ -1134,9 +1160,11 @@ export default class ToolAssemblyNavPage extends BasePage {
       return;
     }
 
-    // 检查堆叠卡片点击
+    // 检查堆叠卡片点击 - 使用更新后的位置计算
     const centerX = SCREEN_WIDTH / 2;
-    const centerY = SCREEN_HEIGHT / 2 - 50;
+    const availableTop = 80;
+    const availableBottom = SCREEN_HEIGHT - 120;
+    const centerY = (availableTop + availableBottom) / 2; // 使用与渲染相同的位置计算
     
     // 检查左右导航区域
     if (y >= centerY - this.cardHeight / 2 && y <= centerY + this.cardHeight / 2) {
@@ -1151,10 +1179,18 @@ export default class ToolAssemblyNavPage extends BasePage {
       }
     }
     
-    // 检查中心卡片点击
+    // 检查中心卡片点击（确保点击的是中央卡片）
     if (x >= centerX - this.cardWidth / 2 && x <= centerX + this.cardWidth / 2 &&
         y >= centerY - this.cardHeight / 2 && y <= centerY + this.cardHeight / 2) {
-      this.handleCardClick(this.tools[this.selectedToolIndex]);
+      const centerTool = this.tools[this.selectedToolIndex];
+      if (centerTool) {
+        this.handleCardClick(centerTool);
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info(`点击中央卡片: ${centerTool.name}`, { 
+            selectedIndex: this.selectedToolIndex 
+          }, 'toolAssemblyNav');
+        }
+      }
     }
   }
 

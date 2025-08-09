@@ -67,17 +67,17 @@ export default class VideoLearningPage {
 
     cards: {
       column1: {
-        x: SCREEN_WIDTH * 0.68,
-        y: SCREEN_HEIGHT * 0.20,
-        width: SCREEN_WIDTH * 0.12,
-        height: SCREEN_WIDTH * 0.12,
+        x: SCREEN_WIDTH * 0.615,
+        y: SCREEN_HEIGHT * 0.22,
+        width: SCREEN_WIDTH * 0.14,
+        height: SCREEN_WIDTH * 0.1,
         gap: 15
       },
       column2: {
-        x: SCREEN_WIDTH * 0.68 + SCREEN_WIDTH * 0.15 + 20,
-        y: SCREEN_HEIGHT * 0.20,
-        width: SCREEN_WIDTH * 0.12,
-        height: SCREEN_WIDTH * 0.12,
+        x: SCREEN_WIDTH * 0.615 + SCREEN_WIDTH * 0.15 + 20,
+        y: SCREEN_HEIGHT * 0.22,
+        width: SCREEN_WIDTH * 0.14,
+        height: SCREEN_WIDTH * 0.1,
         gap: 15
       }
     },

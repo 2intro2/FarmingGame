@@ -49,11 +49,11 @@ export default class Main {
       console.log('检查登录状态:', loginInfo);
       
       // 每次启动都默认显示登录页面，不自动跳转到主页
-      // console.log('默认显示登录页面');
-      // GameGlobal.pageManager.switchToPage('login');
+      console.log('默认显示登录页面');
+      GameGlobal.pageManager.switchToPage('login');
       // 每次启动默认进入立体组装页
-      console.log('默认显示立体组装页');
-      GameGlobal.pageManager.switchToPage('threeDAssembly');
+      // console.log('默认显示立体组装页');
+      // GameGlobal.pageManager.switchToPage('threeDAssembly');
       
       // 如果有登录信息，设置到数据总线但不切换页面
       if (loginInfo && loginInfo.isLoggedIn && loginInfo.userInfo) {

@@ -167,9 +167,9 @@ export default class ToolAssemblyNavPage extends BasePage {
     const availableHeight = SCREEN_HEIGHT - 200;
     const availableWidth = SCREEN_WIDTH - 40;
     
-    // 卡片布局参数
-    this.cardWidth = Math.min(750, availableWidth);
-    this.cardHeight = Math.min(450, availableHeight * 0.85);
+    // 卡片布局参数 - 增大卡片尺寸
+    this.cardWidth = Math.min(900, availableWidth); // 从750增加到900
+    this.cardHeight = Math.min(600, availableHeight * 0.9); // 从450增加到600，占用空间从85%增加到90%
     this.cardSpacing = 60;
     this.stackOffset = 130;
     this.scaleRatio = 0.75;

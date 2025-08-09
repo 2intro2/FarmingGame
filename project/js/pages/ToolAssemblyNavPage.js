@@ -109,13 +109,20 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 初始化布局参数
    */
   initLayout() {
-    // 堆叠卡片布局参数
-    this.cardWidth = 350;   // 调整宽度适配堆叠效果
-    this.cardHeight = 200;  // 调整高度为更扁平的卡片
+    // 堆叠卡片布局参数 - 优化尺寸占据屏幕中央
+    this.cardWidth = 480;   // 增大卡片宽度占据更多屏幕空间
+    this.cardHeight = 280;  // 增大卡片高度保持合理比例
     this.cardSpacing = 60;  // 卡片之间的间距
-    this.stackOffset = 80;  // 堆叠偏移量
-    this.scaleRatio = 0.85; // 非活跃卡片的缩放比例
-    this.maxVisibleCards = 3; // 最多同时显示的卡片数量
+    this.stackOffset = 100; // 增大堆叠偏移量适配更大卡片
+    this.scaleRatio = 0.82; // 调整非活跃卡片的缩放比例
+    this.maxVisibleCards = 2; // 减少同时显示卡片数量突出中心卡片
+    
+    // 滑动手势参数
+    this.swipeThreshold = 50; // 滑动触发阈值
+    this.swipeVelocityThreshold = 0.3; // 滑动速度阈值
+    this.isSwipeInProgress = false; // 滑动进行中标志
+    this.swipeStartX = 0; // 滑动起始X坐标
+    this.swipeStartTime = 0; // 滑动起始时间
     
     this.steps = [
       { id: 'step1', name: '观看视频', status: 'completed', title: '第一步 (已完成)' },
@@ -395,9 +402,9 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.strokeRect(0, 0, this.cardWidth, this.cardHeight);
       }
       
-      // 渲染工具图标（左侧）
-      const iconSize = 60;
-      const iconX = 20;
+      // 渲染工具图标（左侧，更大尺寸）
+      const iconSize = 100; // 增大图标尺寸
+      const iconX = 30;
       const iconY = (this.cardHeight - iconSize) / 2;
       
       if (tool.imageLoaded && !tool.usePlaceholder && tool.imageElement) {
@@ -410,33 +417,33 @@ export default class ToolAssemblyNavPage extends BasePage {
         this.renderImagePlaceholder(ctx, iconX, iconY, iconSize, iconSize);
       }
       
-      // 渲染文本内容（右侧）
-      const textX = iconX + iconSize + 15;
-      const textY = 30;
+      // 渲染文本内容（右侧，适配更大空间）
+      const textX = iconX + iconSize + 25;
+      const textY = 40;
       
-      // 工具名称
+      // 工具名称（更大字体）
       ctx.fillStyle = '#333333';
-      ctx.font = 'bold 18px Arial';
+      ctx.font = 'bold 24px Arial';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(tool.name, textX, textY);
       
-      // 副标题
+      // 副标题（更大字体）
       ctx.fillStyle = '#666666';
-      ctx.font = '14px Arial';
-      ctx.fillText(tool.subtitle, textX, textY + 25);
+      ctx.font = '18px Arial';
+      ctx.fillText(tool.subtitle, textX, textY + 35);
       
-      // 描述文字（截断显示）
+      // 描述文字（适配更大空间）
       ctx.fillStyle = '#888888';
-      ctx.font = '12px Arial';
-      const maxDescWidth = this.cardWidth - textX - 20;
-      this.drawTruncatedText(ctx, tool.description, textX, textY + 50, maxDescWidth, 80);
+      ctx.font = '14px Arial';
+      const maxDescWidth = this.cardWidth - textX - 30;
+      this.drawTruncatedText(ctx, tool.description, textX, textY + 70, maxDescWidth, 100);
       
-      // 渲染难度标签（右上角）
-      this.renderDifficultyTag(ctx, tool.difficulty, this.cardWidth - 80, 15);
+      // 渲染难度标签（右上角，适配新尺寸）
+      this.renderDifficultyTag(ctx, tool.difficulty, this.cardWidth - 100, 20);
       
-      // 渲染奖励信息（右下角）
-      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 60, this.cardHeight - 25);
+      // 渲染奖励信息（右下角，适配新尺寸）
+      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 80, this.cardHeight - 30);
       
     } catch (error) {
       if (GameGlobal.logger) {
@@ -658,8 +665,8 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染难度标签
    */
   renderDifficultyTag(ctx, difficulty, x, y) {
-    const tagWidth = 65;
-    const tagHeight = 25;
+    const tagWidth = 85; // 增大标签宽度
+    const tagHeight = 30; // 增大标签高度
     
     // 绘制标签背景
     const gradient = ctx.createLinearGradient(x, y, x + tagWidth, y + tagHeight);
@@ -679,9 +686,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillRect(x, y, tagWidth, tagHeight);
     }
     
-    // 绘制星级
+    // 绘制星级（更大字体）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '12px Arial';
+    ctx.font = '14px Arial'; // 增大字体
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
@@ -696,8 +703,8 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染奖励标签
    */
   renderRewardTag(ctx, reward, x, y) {
-    const tagWidth = 50;
-    const tagHeight = 20;
+    const tagWidth = 60; // 增大标签宽度
+    const tagHeight = 25; // 增大标签高度
     
     // 绘制标签背景
     const gradient = ctx.createLinearGradient(x, y - tagHeight, x + tagWidth, y);
@@ -717,9 +724,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillRect(x, y - tagHeight, tagWidth, tagHeight);
     }
     
-    // 绘制奖励数值
+    // 绘制奖励数值（更大字体）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 12px Arial';
+    ctx.font = 'bold 14px Arial'; // 增大字体
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${reward}`, x + tagWidth / 2, y - tagHeight / 2);
@@ -936,58 +943,58 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
-   * 处理触摸事件
+   * 处理触摸事件（保持兼容性）
    */
   handleTouch(event) {
-    if (!event.touches || event.touches.length === 0) {
-      return;
-    }
-
-    const touch = event.touches[0];
-    const x = touch.clientX;
-    const y = touch.clientY;
-
-    // 检查返回按钮
-    const distance = Math.sqrt((x - 40) * (x - 40) + (y - 40) * (y - 40));
-    if (distance <= 20) {
-      GameGlobal.pageManager.goBack();
-      return;
-    }
-
-    // 检查堆叠卡片点击
-    const centerX = SCREEN_WIDTH / 2;
-    const centerY = SCREEN_HEIGHT / 2 - 50;
-    
-    // 检查左右导航区域
-    if (y >= centerY - this.cardHeight / 2 && y <= centerY + this.cardHeight / 2) {
-      if (x < centerX - this.cardWidth / 4) {
-        // 点击左侧，切换到上一张卡片
-        this.navigateToCard(-1);
-        return;
-      } else if (x > centerX + this.cardWidth / 4) {
-        // 点击右侧，切换到下一张卡片
-        this.navigateToCard(1);
-        return;
-      }
-    }
-    
-    // 检查中心卡片点击
-    if (x >= centerX - this.cardWidth / 2 && x <= centerX + this.cardWidth / 2 &&
-        y >= centerY - this.cardHeight / 2 && y <= centerY + this.cardHeight / 2) {
-      this.handleCardClick(this.tools[this.selectedToolIndex]);
-    }
+    // 将处理逻辑委托给touchEnd，保持与现有PageManager的兼容性
+    this.handleTouchEnd(event);
   }
 
   /**
-   * 导航到指定卡片
+   * 导航到指定卡片（添加动画支持）
    */
   navigateToCard(direction) {
     const newIndex = this.selectedToolIndex + direction;
     if (newIndex >= 0 && newIndex < this.tools.length) {
+      const oldIndex = this.selectedToolIndex;
       this.selectedToolIndex = newIndex;
+      
+      // 触发平滑切换动画
+      this.animateCardTransition(oldIndex, newIndex);
+      
       if (GameGlobal.logger) {
         GameGlobal.logger.info(`切换到卡片: ${this.tools[this.selectedToolIndex].name}`, 
-          { index: this.selectedToolIndex }, 'toolAssemblyNav');
+          { oldIndex, newIndex, direction }, 'toolAssemblyNav');
+      }
+    }
+  }
+
+  /**
+   * 卡片切换动画
+   */
+  animateCardTransition(fromIndex, toIndex) {
+    // 这里可以添加更复杂的动画效果
+    // 目前使用简单的即时切换，未来可以集成动画管理器
+    if (GameGlobal.animationManager) {
+      try {
+        // 创建简单的切换动画效果
+        const animationData = {
+          type: 'cardSwitch',
+          fromIndex,
+          toIndex,
+          duration: 200, // 200ms动画时长
+          easing: 'ease-out'
+        };
+        
+        if (GameGlobal.logger) {
+          GameGlobal.logger.debug('开始卡片切换动画', animationData, 'toolAssemblyNav');
+        }
+        
+        // TODO: 集成到动画管理器中
+      } catch (error) {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('卡片动画创建失败', { error: error.message }, 'toolAssemblyNav');
+        }
       }
     }
   }
@@ -1020,48 +1027,120 @@ export default class ToolAssemblyNavPage extends BasePage {
       return;
     }
     
-    this.isDragging = true;
-    this.lastTouchX = event.touches[0].clientX;
+    const touch = event.touches[0];
+    this.swipeStartX = touch.clientX;
+    this.swipeStartTime = Date.now();
+    this.isSwipeInProgress = true;
+    this.isDragging = false; // 区分滑动和拖拽
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug('触摸开始', { x: this.swipeStartX }, 'toolAssemblyNav');
+    }
   }
 
   /**
    * 处理触摸移动事件
    */
   handleTouchMove(event) {
-    if (!this.isDragging || !event.touches || event.touches.length === 0) {
+    if (!this.isSwipeInProgress || !event.touches || event.touches.length === 0) {
       return;
     }
     
-    const currentX = event.touches[0].clientX;
-    const deltaX = currentX - this.lastTouchX;
+    const currentTouch = event.touches[0];
+    const deltaX = currentTouch.clientX - this.swipeStartX;
+    const deltaTime = Date.now() - this.swipeStartTime;
     
-    this.scrollOffset += deltaX;
-    this.lastTouchX = currentX;
+    // 只有移动距离超过一定阈值才认为是滑动
+    if (Math.abs(deltaX) > 10) {
+      this.isDragging = true;
+      
+      // 防止页面滚动
+      event.preventDefault();
+      
+      if (GameGlobal.logger) {
+        GameGlobal.logger.debug('触摸移动', { deltaX, deltaTime }, 'toolAssemblyNav');
+      }
+    }
   }
 
   /**
    * 处理触摸结束事件
    */
   handleTouchEnd(event) {
-    if (!this.isDragging) {
+    if (!this.isSwipeInProgress) {
       return;
     }
     
-    this.isDragging = false;
+    const endTime = Date.now();
+    const totalTime = endTime - this.swipeStartTime;
+    const endX = event.changedTouches ? event.changedTouches[0].clientX : this.swipeStartX;
+    const totalDeltaX = endX - this.swipeStartX;
+    const velocity = Math.abs(totalDeltaX) / totalTime; // 像素/毫秒
     
-    // 自动对齐到最近的卡片
-    const cardSpacing = this.cardWidth + this.cardSpacing;
-    const targetOffset = -this.selectedToolIndex * cardSpacing;
+    this.isSwipeInProgress = false;
     
-    if (Math.abs(this.scrollOffset - targetOffset) > cardSpacing / 2) {
-      if (this.scrollOffset > targetOffset) {
-        this.selectedToolIndex = Math.max(0, this.selectedToolIndex - 1);
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug('触摸结束', { 
+        totalDeltaX, 
+        totalTime, 
+        velocity, 
+        isDragging: this.isDragging 
+      }, 'toolAssemblyNav');
+    }
+    
+    // 判断是否为有效滑动
+    if (this.isDragging && 
+        (Math.abs(totalDeltaX) > this.swipeThreshold || velocity > this.swipeVelocityThreshold)) {
+      
+      // 根据滑动方向切换卡片
+      if (totalDeltaX > 0) {
+        // 向右滑动，显示上一张卡片
+        this.navigateToCard(-1);
       } else {
-        this.selectedToolIndex = Math.min(this.tools.length - 1, this.selectedToolIndex + 1);
+        // 向左滑动，显示下一张卡片
+        this.navigateToCard(1);
+      }
+    } else if (!this.isDragging) {
+      // 如果不是滑动，则处理点击事件
+      this.handleTouchTap(endX, event.changedTouches ? event.changedTouches[0].clientY : 0);
+    }
+    
+    this.isDragging = false;
+  }
+
+  /**
+   * 处理点击事件
+   */
+  handleTouchTap(x, y) {
+    // 检查返回按钮
+    const distance = Math.sqrt((x - 40) * (x - 40) + (y - 40) * (y - 40));
+    if (distance <= 20) {
+      GameGlobal.pageManager.goBack();
+      return;
+    }
+
+    // 检查堆叠卡片点击
+    const centerX = SCREEN_WIDTH / 2;
+    const centerY = SCREEN_HEIGHT / 2 - 50;
+    
+    // 检查左右导航区域
+    if (y >= centerY - this.cardHeight / 2 && y <= centerY + this.cardHeight / 2) {
+      if (x < centerX - this.cardWidth / 4) {
+        // 点击左侧，切换到上一张卡片
+        this.navigateToCard(-1);
+        return;
+      } else if (x > centerX + this.cardWidth / 4) {
+        // 点击右侧，切换到下一张卡片
+        this.navigateToCard(1);
+        return;
       }
     }
     
-    this.scrollOffset = -this.selectedToolIndex * cardSpacing;
+    // 检查中心卡片点击
+    if (x >= centerX - this.cardWidth / 2 && x <= centerX + this.cardWidth / 2 &&
+        y >= centerY - this.cardHeight / 2 && y <= centerY + this.cardHeight / 2) {
+      this.handleCardClick(this.tools[this.selectedToolIndex]);
+    }
   }
 
   /**

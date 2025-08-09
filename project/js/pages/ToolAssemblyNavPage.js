@@ -867,9 +867,9 @@ export default class ToolAssemblyNavPage extends BasePage {
         const imgOriginalHeight = this.bottomNavBgImage.naturalHeight || this.bottomNavBgImage.height;
         
         if (imgOriginalWidth && imgOriginalHeight) {
-          // 计算底部导航栏区域
-          const maxNavHeight = 120; // 减小最大高度，避免图片过大
-          const maxNavWidth = Math.min(SCREEN_WIDTH * 0.9, 600); // 最大宽度限制为屏幕90%或600px
+          // 计算底部导航栏区域 - 增大宽度和高度
+          const maxNavHeight = 160; // 从120增加到160，高度适当变高
+          const maxNavWidth = Math.min(SCREEN_WIDTH * 0.95, 800); // 从90%/600px增加到95%/800px，宽度变长
           
           // 计算缩放比例，保持宽高比
           const scaleX = maxNavWidth / imgOriginalWidth;
@@ -880,8 +880,8 @@ export default class ToolAssemblyNavPage extends BasePage {
           const renderWidth = imgOriginalWidth * scale;
           const renderHeight = imgOriginalHeight * scale;
           
-          // 计算居中位置
-          const navY = SCREEN_HEIGHT - maxNavHeight - 20; // 距离底部20px
+          // 计算居中位置 - 向上移动
+          const navY = SCREEN_HEIGHT - maxNavHeight - 40; // 从20px增加到40px，图片向上移动
           const navX = (SCREEN_WIDTH - renderWidth) / 2; // 水平居中
           
           // 绘制底部导航栏背景图片，保持宽高比和清晰度

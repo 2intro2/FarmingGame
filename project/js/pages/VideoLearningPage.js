@@ -62,10 +62,10 @@ export default class VideoLearningPage {
   // UI布局参数
   layout = {
     video: {
-      x: SCREEN_WIDTH * 0.02,
-      y: SCREEN_HEIGHT * 0.12,
-      width: SCREEN_WIDTH * 0.65,
-      height: SCREEN_WIDTH * 0.65 * (9 / 16) // 16:9比例
+      x: SCREEN_WIDTH * 0.065,
+      y: SCREEN_HEIGHT * 0.20,
+      width: SCREEN_WIDTH * 0.53,
+      height: SCREEN_WIDTH * 0.40 * (3 / 4) // 16:9比例
     },
     progress: {
       x: SCREEN_WIDTH * 0.02,

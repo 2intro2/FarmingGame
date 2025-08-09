@@ -34,9 +34,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.initLayout();
       this.loadResources();
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('ToolAssemblyNavPage构造函数错误', { error: error.message }, 'toolAssemblyNav');
-      }
+      // 构造函数错误处理
     }
   }
 
@@ -102,21 +100,15 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.backIcon = wx.createImage();
       this.backIcon.onload = () => {
         this.backIconLoaded = true;
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info('返回按钮图片加载成功: back.png', null, 'toolAssemblyNav');
-        }
+
       };
       this.backIcon.onerror = () => {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('返回按钮图片加载失败: back.png', null, 'toolAssemblyNav');
-        }
+
         this.backIconLoaded = false;
       };
       this.backIcon.src = 'images/back.png';
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('返回按钮图片加载异常', { error: error.message }, 'toolAssemblyNav');
-      }
+      
       this.backIconLoaded = false;
     }
 
@@ -125,21 +117,12 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.titleImage = wx.createImage();
       this.titleImage.onload = () => {
         this.titleImageLoaded = true;
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info('标题图片加载成功: title.png', null, 'toolAssemblyNav');
-        }
       };
       this.titleImage.onerror = () => {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('标题图片加载失败: title.png', null, 'toolAssemblyNav');
-        }
         this.titleImageLoaded = false;
       };
       this.titleImage.src = 'images/title.png';
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('标题图片加载异常', { error: error.message }, 'toolAssemblyNav');
-      }
       this.titleImageLoaded = false;
     }
 
@@ -148,21 +131,12 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.backgroundImage = wx.createImage();
       this.backgroundImage.onload = () => {
         this.backgroundImageLoaded = true;
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info('主背景图片加载成功: background.png', null, 'toolAssemblyNav');
-        }
       };
       this.backgroundImage.onerror = () => {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('主背景图片加载失败: background.png', null, 'toolAssemblyNav');
-        }
         this.backgroundImageLoaded = false;
       };
       this.backgroundImage.src = 'images/background.png';
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('主背景图片加载异常', { error: error.message }, 'toolAssemblyNav');
-      }
       this.backgroundImageLoaded = false;
     }
 
@@ -171,21 +145,12 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.toolBackgroundImage = wx.createImage();
       this.toolBackgroundImage.onload = () => {
         this.toolBackgroundImageLoaded = true;
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info('工具背景图片加载成功: bg_tool.png', null, 'toolAssemblyNav');
-        }
       };
       this.toolBackgroundImage.onerror = () => {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('工具背景图片加载失败: bg_tool.png', null, 'toolAssemblyNav');
-        }
         this.toolBackgroundImageLoaded = false;
       };
       this.toolBackgroundImage.src = 'images/bg_tool.png';
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('工具背景图片加载异常', { error: error.message }, 'toolAssemblyNav');
-      }
       this.toolBackgroundImageLoaded = false;
     }
 
@@ -194,21 +159,12 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.bottomNavBgImage = wx.createImage();
       this.bottomNavBgImage.onload = () => {
         this.bottomNavBgImageLoaded = true;
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info('底部导航栏背景图片加载成功: bottom_nav_bg.png', null, 'toolAssemblyNav');
-        }
       };
       this.bottomNavBgImage.onerror = () => {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('底部导航栏背景图片加载失败: bottom_nav_bg.png', null, 'toolAssemblyNav');
-        }
         this.bottomNavBgImageLoaded = false;
       };
       this.bottomNavBgImage.src = 'images/bottom_nav_bg.png';
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('底部导航栏背景图片加载异常', { error: error.message }, 'toolAssemblyNav');
-      }
       this.bottomNavBgImageLoaded = false;
     }
 
@@ -217,21 +173,12 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.starStatusImage = wx.createImage();
       this.starStatusImage.onload = () => {
         this.starStatusImageLoaded = true;
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info('状态图片加载成功: star_status.png', null, 'toolAssemblyNav');
-        }
       };
       this.starStatusImage.onerror = () => {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('状态图片加载失败: star_status.png', null, 'toolAssemblyNav');
-        }
         this.starStatusImageLoaded = false;
       };
       this.starStatusImage.src = 'images/star_status.png';
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('状态图片加载异常', { error: error.message }, 'toolAssemblyNav');
-      }
       this.starStatusImageLoaded = false;
     }
   }
@@ -256,9 +203,6 @@ export default class ToolAssemblyNavPage extends BasePage {
         };
         img.src = tool.image;
       } catch (error) {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.error(`加载图片失败: ${tool.image}`, { error: error.message }, 'toolAssemblyNav');
-        }
         tool.usePlaceholder = true;
         tool.imageLoaded = false;
       }
@@ -276,9 +220,6 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.renderToolCards(ctx);
       this.renderBottomNavBg(ctx);
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('渲染页面内容失败', { error: error.message }, 'toolAssemblyNav');
-      }
       this.renderFallbackContent(ctx);
     }
   }
@@ -314,9 +255,6 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.fillText(tool.name, 30, y + 30);
       });
     } catch (fallbackError) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('备用渲染也失败', { error: fallbackError.message }, 'toolAssemblyNav');
-      }
     }
   }
 
@@ -343,9 +281,6 @@ export default class ToolAssemblyNavPage extends BasePage {
         );
 
       } catch (drawError) {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('返回按钮图片渲染失败，使用降级方案', { error: drawError.message }, 'toolAssemblyNav');
-        }
         this.renderFallbackBackButton(ctx, buttonX, buttonY);
       }
     } else {
@@ -376,9 +311,6 @@ export default class ToolAssemblyNavPage extends BasePage {
         
 
       } catch (drawError) {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('标题图片渲染失败，使用降级方案', { error: drawError.message }, 'toolAssemblyNav');
-        }
         this.renderFallbackTitle(ctx, titleX, titleY);
       }
     } else {
@@ -498,12 +430,6 @@ export default class ToolAssemblyNavPage extends BasePage {
           
 
         } catch (drawError) {
-          if (GameGlobal.logger) {
-            GameGlobal.logger.warn(`卡片图片渲染失败: ${tool.name}`, { 
-              error: drawError.message,
-              image: tool.image
-            }, 'toolAssemblyNav');
-          }
           // 绘制占位符
           this.renderCardPlaceholder(ctx, tool);
         }
@@ -518,9 +444,6 @@ export default class ToolAssemblyNavPage extends BasePage {
       }
       
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('渲染堆叠卡片失败', { error: error.message, tool: tool.name }, 'toolAssemblyNav');
-      }
     }
     
     ctx.restore();
@@ -560,9 +483,6 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.beginPath();
       ctx.rect(x, y, width, height);
       ctx.closePath();
-          if (GameGlobal.logger) {
-        GameGlobal.logger.warn('弧线绘制失败，使用矩形', { error: error.message }, 'toolAssemblyNav');
-      }
     }
   }
 
@@ -643,30 +563,12 @@ export default class ToolAssemblyNavPage extends BasePage {
           // 渲染状态图片
           this.renderStarStatus(ctx, navX, navY, renderWidth, renderHeight);
           
-          if (GameGlobal.logger) {
-            GameGlobal.logger.debug('底部导航栏背景图片渲染成功', {
-              originalSize: `${imgOriginalWidth}x${imgOriginalHeight}`,
-              renderSize: `${Math.round(renderWidth)}x${Math.round(renderHeight)}`,
-              position: `${Math.round(navX)}, ${Math.round(navY)}`,
-              scale: scale.toFixed(3),
-              toolQylStatus: this.toolQylStatus
-            }, 'toolAssemblyNav');
-          }
         } else {
-          if (GameGlobal.logger) {
-            GameGlobal.logger.warn('无法获取底部导航栏背景图片尺寸', null, 'toolAssemblyNav');
-          }
         }
       } else {
         // 图片未加载成功，使用备用方案（暂时为空，因为用户要求完全删除原有导航栏）
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('底部导航栏背景图片未加载，跳过渲染', null, 'toolAssemblyNav');
-        }
       }
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('渲染底部导航栏背景失败', { error: error.message }, 'toolAssemblyNav');
-      }
     }
   }
 
@@ -708,9 +610,6 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.fillText(lastLine, x, currentY);
       }
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('绘制换行文字失败', { error: error.message, text: text }, 'toolAssemblyNav');
-      }
     }
   }
 
@@ -745,10 +644,6 @@ export default class ToolAssemblyNavPage extends BasePage {
     // 触发平滑切换动画
     this.animateCardTransition(oldIndex, newIndex);
     
-    if (GameGlobal.logger) {
-      GameGlobal.logger.info(`循环切换到卡片: ${this.tools[this.selectedToolIndex].name}`, 
-        { oldIndex, newIndex, direction, isCircular: oldIndex === 0 && newIndex === 2 || oldIndex === 2 && newIndex === 0 }, 'toolAssemblyNav');
-    }
   }
 
   /**
@@ -768,15 +663,9 @@ export default class ToolAssemblyNavPage extends BasePage {
           easing: 'ease-out'
         };
         
-        if (GameGlobal.logger) {
-          GameGlobal.logger.debug('开始卡片切换动画', animationData, 'toolAssemblyNav');
-        }
         
         // TODO: 集成到动画管理器中
       } catch (error) {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('卡片动画创建失败', { error: error.message }, 'toolAssemblyNav');
-        }
       }
     }
   }
@@ -785,12 +674,6 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 处理卡片点击
    */
   handleCardClick(tool) {
-    if (GameGlobal.logger) {
-      GameGlobal.logger.info(`点击农具卡片: ${tool.name}`, { 
-        toolId: tool.id, 
-        unlocked: tool.unlocked 
-      }, 'toolAssemblyNav');
-    }
     
     if (tool.unlocked) {
       // 第一张卡片（曲辕犁）- 跳转到指定页面
@@ -799,7 +682,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         // 参数说明：
         // - 第一个参数：目标页面名称（字符串），例如：'ToolAssemblyDetailPage'
         // - 第二个参数：传递的数据对象，例如：{ toolData: tool, level: 1 }
-        console.log(`跳转到 ${tool.name} 的拼装页面`);
+
         
         // 示例跳转代码（需要根据实际页面名称替换）：
         // GameGlobal.pageManager.switchToPage('TARGET_PAGE_NAME', { 
@@ -809,17 +692,11 @@ export default class ToolAssemblyNavPage extends BasePage {
         //   difficulty: 'normal'
         // });
         
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info(`${tool.name} 页面跳转触发`, { toolId: tool.id }, 'toolAssemblyNav');
-        }
       }
     } else {
       // 后两张卡片（石磨、水车）- 显示未解锁Toast
       Toast.show('功能未解锁，敬请期待～', { duration: 2000 });
       
-      if (GameGlobal.logger) {
-        GameGlobal.logger.info(`${tool.name} 功能未解锁`, { toolId: tool.id }, 'toolAssemblyNav');
-      }
     }
   }
 
@@ -837,9 +714,6 @@ export default class ToolAssemblyNavPage extends BasePage {
     this.isSwipeInProgress = true;
     this.isDragging = false; // 区分滑动和拖拽
     
-    if (GameGlobal.logger) {
-      GameGlobal.logger.debug('触摸开始', { x: this.swipeStartX }, 'toolAssemblyNav');
-    }
   }
 
   /**
@@ -864,14 +738,8 @@ export default class ToolAssemblyNavPage extends BasePage {
           event.preventDefault();
         }
       } catch (error) {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.debug('preventDefault不支持', { error: error.message }, 'toolAssemblyNav');
-        }
       }
       
-      if (GameGlobal.logger) {
-        GameGlobal.logger.debug('触摸移动', { deltaX, deltaTime }, 'toolAssemblyNav');
-      }
     }
   }
 
@@ -891,14 +759,6 @@ export default class ToolAssemblyNavPage extends BasePage {
     
     this.isSwipeInProgress = false;
     
-    if (GameGlobal.logger) {
-      GameGlobal.logger.debug('触摸结束', { 
-        totalDeltaX, 
-        totalTime, 
-        velocity, 
-        isDragging: this.isDragging 
-      }, 'toolAssemblyNav');
-    }
     
     // 判断是否为有效滑动
     if (this.isDragging && 
@@ -956,11 +816,6 @@ export default class ToolAssemblyNavPage extends BasePage {
       const centerTool = this.tools[this.selectedToolIndex];
       if (centerTool) {
         this.handleCardClick(centerTool);
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info(`点击中央卡片: ${centerTool.name}`, { 
-            selectedIndex: this.selectedToolIndex 
-          }, 'toolAssemblyNav');
-        }
       }
     }
   }
@@ -981,9 +836,6 @@ export default class ToolAssemblyNavPage extends BasePage {
     // 读取微信存储中的tool_qyl状态
     this.loadToolQylStatus();
     
-    if (GameGlobal.logger) {
-      GameGlobal.logger.info('农具拼装导航页显示', null, 'toolAssemblyNav');
-    }
   }
 
   /**
@@ -997,40 +849,19 @@ export default class ToolAssemblyNavPage extends BasePage {
           const status = parseInt(res.data);
           if (status >= 0 && status <= 3) {
             this.toolQylStatus = status;
-            if (GameGlobal.logger) {
-              GameGlobal.logger.info('tool_qyl状态读取成功', { status: this.toolQylStatus }, 'toolAssemblyNav');
-            }
           } else {
             // 状态值超出范围，使用默认值0
             this.toolQylStatus = 0;
-            if (GameGlobal.logger) {
-              GameGlobal.logger.warn('tool_qyl状态值超出范围，使用默认值', { 
-                originalValue: res.data, 
-                defaultValue: this.toolQylStatus 
-              }, 'toolAssemblyNav');
-            }
           }
         },
         fail: (error) => {
           // 读取失败，使用默认值0
           this.toolQylStatus = 0;
-          if (GameGlobal.logger) {
-            GameGlobal.logger.warn('tool_qyl状态读取失败，使用默认值', { 
-              error: error.errMsg, 
-              defaultValue: this.toolQylStatus 
-            }, 'toolAssemblyNav');
-          }
         }
       });
     } catch (error) {
       // 异常情况，使用默认值0
       this.toolQylStatus = 0;
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('tool_qyl状态读取异常，使用默认值', { 
-          error: error.message, 
-          defaultValue: this.toolQylStatus 
-        }, 'toolAssemblyNav');
-      }
     }
   }
 
@@ -1039,9 +870,6 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   onHide() {
     super.onHide();
-    if (GameGlobal.logger) {
-      GameGlobal.logger.info('农具拼装导航页隐藏', null, 'toolAssemblyNav');
-    }
   }
 
   /**
@@ -1147,16 +975,7 @@ export default class ToolAssemblyNavPage extends BasePage {
           SCREEN_HEIGHT
         );
         
-        if (GameGlobal.logger) {
-          GameGlobal.logger.debug('背景图片渲染成功', {
-            screenWidth: SCREEN_WIDTH,
-            screenHeight: SCREEN_HEIGHT
-          }, 'toolAssemblyNav');
-        }
       } catch (drawError) {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('背景图片渲染失败，使用白色背景', { error: drawError.message }, 'toolAssemblyNav');
-        }
         this.renderFallbackBackground(ctx);
       }
     } else {
@@ -1197,17 +1016,7 @@ export default class ToolAssemblyNavPage extends BasePage {
           toolAreaHeight // 目标高度 - 覆盖卡片和底部导航区域
         );
         
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info('工具背景图片渲染成功', {
-            toolAreaY,
-            toolAreaHeight,
-            screenWidth: SCREEN_WIDTH
-          }, 'toolAssemblyNav');
-        }
       } catch (drawError) {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.warn('工具背景图片渲染失败', { error: drawError.message }, 'toolAssemblyNav');
-        }
         // 工具背景渲染失败时不做任何处理，让主背景显示
       }
     }
@@ -1269,24 +1078,10 @@ export default class ToolAssemblyNavPage extends BasePage {
           
 
         } else {
-          if (GameGlobal.logger) {
-            GameGlobal.logger.warn('tool_qyl状态值超出位置配置范围', { 
-              status: this.toolQylStatus,
-              maxPositions: this.starStatusPositions.length 
-            }, 'toolAssemblyNav');
-          }
         }
       } else {
-        if (GameGlobal.logger) {
-          GameGlobal.logger.debug('状态图片未加载，跳过渲染', { 
-            imageLoaded: this.starStatusImageLoaded 
-          }, 'toolAssemblyNav');
-        }
       }
     } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('渲染状态图片失败', { error: error.message }, 'toolAssemblyNav');
-      }
     }
   }
 } 

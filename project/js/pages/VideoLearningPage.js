@@ -587,31 +587,9 @@ export default class VideoLearningPage {
       // 判断卡片是否可用（视频完成或已永久选中）
       const isCardEnabled = isVideoCompleted || card.permanentlySelected;
       
-      // 绘制卡片背景
-      if (card.permanentlySelected) {
-        ctx.fillStyle = '#4CAF50'; // 深绿色表示永久选中
-      } else if (!isCardEnabled) {
-        ctx.fillStyle = '#F5F5F5'; // 灰色表示锁定
-      } else {
-      ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
-      }
-      ctx.fillRect(x, cardY, width, height);
+      // 不绘制卡片背景，保持透明
       
-      // 绘制边框
-      if (card.permanentlySelected) {
-        ctx.strokeStyle = '#2E7D32';
-        ctx.lineWidth = 3;
-      } else if (!isCardEnabled) {
-      ctx.strokeStyle = '#CCCCCC';
-      ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]); // 虚线边框表示锁定
-      } else {
-        ctx.strokeStyle = '#CCCCCC';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([]); // 恢复实线
-      }
-      ctx.strokeRect(x, cardY, width, height);
-      ctx.setLineDash([]); // 确保恢复实线
+      // 不绘制边框
       
       // 如果永久选中，绘制选中指示器
       if (card.permanentlySelected) {
@@ -661,14 +639,7 @@ export default class VideoLearningPage {
    * 绘制图片占位符
    */
   drawImagePlaceholder(ctx, x, y, width, height, label) {
-    // 绘制占位符背景
-    ctx.fillStyle = '#EEEEEE';
-    ctx.fillRect(x, y, width, height);
-    
-    // 绘制边框
-    ctx.strokeStyle = '#CCCCCC';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x, y, width, height);
+    // 不绘制背景和边框，保持透明
     
     // 绘制文字
     ctx.fillStyle = '#666666';
@@ -691,31 +662,9 @@ export default class VideoLearningPage {
       // 判断卡片是否可用（视频完成或已永久选中）
       const isCardEnabled = isVideoCompleted || card.permanentlySelected;
       
-      // 绘制卡片背景
-      if (card.permanentlySelected) {
-        ctx.fillStyle = '#4CAF50'; // 深绿色表示永久选中
-      } else if (!isCardEnabled) {
-        ctx.fillStyle = '#F5F5F5'; // 灰色表示锁定
-      } else {
-        ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
-      }
-      ctx.fillRect(x, cardY, width, height);
+      // 不绘制卡片背景，保持透明
       
-      // 绘制边框
-      if (card.permanentlySelected) {
-        ctx.strokeStyle = '#2E7D32';
-        ctx.lineWidth = 3;
-      } else if (!isCardEnabled) {
-        ctx.strokeStyle = '#CCCCCC';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]); // 虚线边框表示锁定
-      } else {
-        ctx.strokeStyle = '#CCCCCC';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([]); // 恢复实线
-      }
-      ctx.strokeRect(x, cardY, width, height);
-      ctx.setLineDash([]); // 确保恢复实线
+      // 不绘制边框
       
       // 如果永久选中，绘制选中指示器
       if (card.permanentlySelected) {

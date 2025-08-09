@@ -1,6 +1,6 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
 import BasePage from './BasePage';
-import { showToast } from '../utils/toast';
+import Toast from '../components/Toast';
 
 /**
  * 农具拼装导航页面
@@ -1067,7 +1067,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       }
     } else {
       // 后两张卡片（石磨、水车）- 显示未解锁Toast
-      showToast('功能未解锁，敬请期待～', 2000);
+      Toast.show('功能未解锁，敬请期待～', { duration: 2000 });
       
       if (GameGlobal.logger) {
         GameGlobal.logger.info(`${tool.name} 功能未解锁`, { toolId: tool.id }, 'toolAssemblyNav');

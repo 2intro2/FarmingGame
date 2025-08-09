@@ -213,8 +213,11 @@ export default class DataBus {
     if (this.backgroundMusic && !this.isMusicPlaying) {
       try {
         this.backgroundMusic.play();
+        // 立即更新状态，不依赖事件回调的时序
+        this.isMusicPlaying = true;
       } catch (error) {
         console.warn('播放全局背景音乐失败:', error);
+        this.isMusicPlaying = false;
       }
     }
   }
@@ -224,8 +227,11 @@ export default class DataBus {
     if (this.backgroundMusic && this.isMusicPlaying) {
       try {
         this.backgroundMusic.pause();
+        // 立即更新状态，不依赖事件回调的时序
+        this.isMusicPlaying = false;
       } catch (error) {
         console.warn('停止全局背景音乐失败:', error);
+        this.isMusicPlaying = false;
       }
     }
   }
@@ -234,10 +240,10 @@ export default class DataBus {
   toggleMusic() {
     if (this.isMusicPlaying) {
       this.stopMusic();
-      return false; // 返回当前状态：停止
+      return false; // 返回切换后的状态：停止
     } else {
       this.playMusic();
-      return true; // 返回当前状态：播放
+      return true; // 返回切换后的状态：播放
     }
   }
 

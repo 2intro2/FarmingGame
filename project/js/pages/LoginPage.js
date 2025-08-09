@@ -342,7 +342,7 @@ export default class LoginPage {
    * @param {string} message - 提示信息
    */
   showToast(message) {
-    // 使用导入的showToast函数
+    // 只使用自定义Toast组件，避免重复显示
     const { showToast: showToastUtil } = require('../utils/toast');
     showToastUtil(message);
   }

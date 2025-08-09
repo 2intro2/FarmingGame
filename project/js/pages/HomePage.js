@@ -747,14 +747,9 @@ export default class HomePage {
   showToast(message) {
     console.log('尝试显示Toast:', message);
     
-    // 使用导入的showToast函数
+    // 只使用自定义Toast组件，避免重复显示
     const { showToast: showToastUtil } = require('../utils/toast');
     showToastUtil(message);
-    
-    // 同时使用微信原生Toast作为备用
-    if (GameGlobal.wechatAPI) {
-      GameGlobal.wechatAPI.showToast(message);
-    }
   }
 
   /**

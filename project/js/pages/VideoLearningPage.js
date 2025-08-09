@@ -22,14 +22,14 @@ export default class VideoLearningPage {
   // 卡片数据
   cards = {
     column1: [
-      { id: 'yuan', image: 'images/qylPic1.png', selected: false, permanentlySelected: false, label: '犁辕' },
-      { id: 'jian', image: 'images/qylpic2.png', selected: false, permanentlySelected: false, label: '犁箭' },
-      { id: 'hua', image: 'images/qylpic3.png', selected: false, permanentlySelected: false, label: '犁铧' }
+      { id: 'yuan', image: 'images/lishaoPic.png', selected: false, permanentlySelected: false, label: '犁辕' },
+      { id: 'jian', image: 'images/lichanPic.png', selected: false, permanentlySelected: false, label: '犁箭' },
+      { id: 'hua', image: 'images/liyuanPic.png', selected: false, permanentlySelected: false, label: '犁铧' }
     ],
     column2: [
-      { id: 'liyuan', pinyin: 'lí yuán', chinese: '犁辕', selected: false, permanentlySelected: false, refId: 'yuan' },
-      { id: 'lijian', pinyin: 'lí jiàn', chinese: '犁箭', selected: false, permanentlySelected: false, refId: 'jian' },
-      { id: 'lihua', pinyin: 'lí huá', chinese: '犁铧', selected: false, permanentlySelected: false, refId: 'hua' }
+      { id: 'liyuan', image: 'images/lichanWord.png', selected: false, permanentlySelected: false, label: 'yuan' },
+      { id: 'lijian', image: 'images/liyuanWord.png', selected: false, permanentlySelected: false, label: 'jian' },
+      { id: 'lihua', image: 'images/lishaoWord.png', selected: false, permanentlySelected: false, label: 'hua' }
     ]
   };
 
@@ -202,8 +202,13 @@ export default class VideoLearningPage {
    * 加载资源
    */
   loadResources() {
-    // 预加载卡片图片
+    // 预加载第一列卡片图片
     this.cards.column1.forEach(card => {
+      this.loadImage(card);
+    });
+    
+    // 预加载第二列卡片图片
+    this.cards.column2.forEach(card => {
       this.loadImage(card);
     });
     
@@ -228,8 +233,10 @@ export default class VideoLearningPage {
    * 测试图片文件
    */
   testImages() {
-    // 测试卡片图片
+    // 测试第一列卡片图片
     const cardImages = this.cards.column1.map(card => card.image);
+    // 测试第二列卡片图片
+    cardImages.push(...this.cards.column2.map(card => card.image));
     // 测试确认提交按钮图片
     cardImages.push('images/confirmSubmission.png');
     // 测试返回按钮图片
@@ -248,6 +255,8 @@ export default class VideoLearningPage {
    * 加载图片
    */
   loadImage(card) {
+    console.log("加载图片")
+    console.log(card.image)
     ImageLoader.loadImage(card.image, { timeout: 5000 })
       .then(img => {
         card.imageObj = img;
@@ -670,7 +679,7 @@ export default class VideoLearningPage {
   }
 
   /**
-   * 绘制文字卡片
+   * 绘制第二列图片卡片
    */
   renderTextCards(ctx) {
     const { x, y, width, height, gap } = this.layout.cards.column2;
@@ -688,7 +697,7 @@ export default class VideoLearningPage {
       } else if (!isCardEnabled) {
         ctx.fillStyle = '#F5F5F5'; // 灰色表示锁定
       } else {
-      ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
+        ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
       }
       ctx.fillRect(x, cardY, width, height);
       
@@ -697,8 +706,8 @@ export default class VideoLearningPage {
         ctx.strokeStyle = '#2E7D32';
         ctx.lineWidth = 3;
       } else if (!isCardEnabled) {
-      ctx.strokeStyle = '#CCCCCC';
-      ctx.lineWidth = 2;
+        ctx.strokeStyle = '#CCCCCC';
+        ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]); // 虚线边框表示锁定
       } else {
         ctx.strokeStyle = '#CCCCCC';
@@ -719,32 +728,34 @@ export default class VideoLearningPage {
         ctx.fillText('✓', x + width - 7.5, cardY + 7.5);
       }
       
-      // 绘制文字内容
+      // 绘制图片内容
       if (isCardEnabled) {
-      // 绘制拼音
-        ctx.fillStyle = card.permanentlySelected ? '#FFFFFF' : '#333333';
-      ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(card.pinyin, x + width / 2, cardY + height / 2 - 10);
-      
-      // 绘制汉字
-      ctx.font = '24px Arial';
-      ctx.fillText(card.chinese, x + width / 2, cardY + height / 2 + 20);
+        ImageLoader.safeDrawImage(
+          ctx, 
+          card.imageObj, 
+          x + 10, 
+          cardY + 10, 
+          width - 20, 
+          height - 20,
+          (ctx, x, y, width, height) => {
+            this.drawImagePlaceholder(ctx, x, y, width, height, card.label);
+          }
+        );
       } else {
-        // 锁定状态下绘制半透明文字
+        // 锁定状态下绘制半透明图片
         ctx.save();
         ctx.globalAlpha = 0.3;
-        
-        // 绘制拼音
-        ctx.fillStyle = '#666666';
-        ctx.font = '16px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(card.pinyin, x + width / 2, cardY + height / 2 - 10);
-        
-        // 绘制汉字
-        ctx.font = '24px Arial';
-        ctx.fillText(card.chinese, x + width / 2, cardY + height / 2 + 20);
-        
+        ImageLoader.safeDrawImage(
+          ctx, 
+          card.imageObj, 
+          x + 10, 
+          cardY + 10, 
+          width - 20, 
+          height - 20,
+          (ctx, x, y, width, height) => {
+            this.drawImagePlaceholder(ctx, x, y, width, height, card.label);
+          }
+        );
         ctx.restore();
       }
     });

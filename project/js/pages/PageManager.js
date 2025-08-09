@@ -250,7 +250,6 @@ export default class PageManager {
     }
   }
 
-<<<<<<< HEAD
   /**
    * 处理触摸开始事件
    * @param {Object} event - 触摸事件对象
@@ -284,15 +283,11 @@ export default class PageManager {
       this.lastTouchPosition = { x: touch.clientX, y: touch.clientY };
     }
     
-=======
-  handleTouchMove(event) {
->>>>>>> origin/main
     if (this.currentPage && this.currentPage.handleTouchMove) {
       this.currentPage.handleTouchMove(event);
     }
   }
 
-<<<<<<< HEAD
   /**
    * 处理触摸结束事件
    * @param {Object} event - 触摸事件对象
@@ -317,11 +312,5 @@ export default class PageManager {
       };
       this.currentPage.handleTouch(simulatedEvent);
     }
-=======
-  handleTouchEnd(event) {
-    if (this.currentPage && this.currentPage.handleTouchEnd) {
-      this.currentPage.handleTouchEnd(event);
-    }
->>>>>>> origin/main
   }
 }

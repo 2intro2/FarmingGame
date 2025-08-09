@@ -686,8 +686,8 @@ export default class HomePage {
       
       if (isInModule) {
         console.log('点击农具拼装按钮');
-        GameGlobal.pageManager.switchToPage('toolAssembly');
-        this.showToast('进入农具拼装');
+        GameGlobal.pageManager.switchToPage('toolAssemblyNav');
+        this.showToast('进入农具拼装导航');
         return;
       }
     }

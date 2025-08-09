@@ -397,7 +397,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillStyle = gradient;
       
       // 绘制圆角矩形背景
-      const borderRadius = 30; // 适配大卡片的圆角
+      const borderRadius = 60; // 大幅增加圆角半径，创造更圆润的效果
       try {
         if (ctx.roundRect && typeof ctx.roundRect === 'function') {
           ctx.roundRect(0, 0, this.cardWidth, this.cardHeight, borderRadius);
@@ -475,8 +475,8 @@ export default class ToolAssemblyNavPage extends BasePage {
       // 渲染难度标签（右上角，适配最大卡片）
       this.renderDifficultyTag(ctx, tool.difficulty, this.cardWidth - 120, 30);
       
-      // 渲染奖励信息（右下角，适配最大卡片）
-      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 100, this.cardHeight - 40);
+      // 渲染奖励信息（右下角，适配更宽的奖励标签）
+      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 140, this.cardHeight - 40);
       
     } catch (error) {
       if (GameGlobal.logger) {
@@ -736,7 +736,7 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染奖励标签
    */
   renderRewardTag(ctx, reward, x, y) {
-    const tagWidth = 80; // 适配最大卡片的标签宽度
+    const tagWidth = 120; // 增加宽度以适应"奖励"文本前缀
     const tagHeight = 35; // 适配最大卡片的标签高度
     
     // 绘制标签背景
@@ -757,12 +757,12 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillRect(x, y - tagHeight, tagWidth, tagHeight);
     }
     
-    // 绘制奖励数值（适配最大标签）
+    // 绘制奖励文本和数值（添加"奖励"前缀）
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 18px Arial'; // 适配最大标签的字体
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${reward}`, x + tagWidth / 2, y - tagHeight / 2);
+    ctx.fillText(`奖励${reward}`, x + tagWidth / 2, y - tagHeight / 2);
   }
 
   /**

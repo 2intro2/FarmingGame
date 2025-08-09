@@ -514,25 +514,28 @@ export default class ToolAssemblyNavPage extends BasePage {
     const availableBottom = SCREEN_HEIGHT - 120;
     const centerY = (availableTop + availableBottom) / 2; // 在可用空间中居中
     
-    // 创建卡片渲染队列，按Z-order排序（确保中央卡片在顶层）
+    // 定义三个固定位置：左、中、右
+    const leftX = centerX - this.cardWidth / 2 - 150;   // 左侧位置
+    const centerCardX = centerX - this.cardWidth / 2;   // 中央位置
+    const rightX = centerX - this.cardWidth / 2 + 150;  // 右侧位置
+    const fixedPositions = [leftX, centerCardX, rightX];
+    
+    // 创建卡片渲染队列
     const cardsToRender = [];
     
-    for (let i = -this.maxVisibleCards; i <= this.maxVisibleCards; i++) {
-      const cardIndex = this.selectedToolIndex + i;
+    // 始终显示三张卡片，分别在三个固定位置
+    for (let positionIndex = 0; positionIndex < 3; positionIndex++) {
+      // 计算当前位置应该显示的工具索引
+      const toolIndex = (this.selectedToolIndex - 1 + positionIndex + this.tools.length) % this.tools.length;
+      const tool = this.tools[toolIndex];
       
-      // 跳过超出范围的卡片
-      if (cardIndex < 0 || cardIndex >= this.tools.length) continue;
+      if (!tool) continue;
       
-      const tool = this.tools[cardIndex];
-      const isActive = i === 0; // 中心卡片为活跃状态
-      
-      // 计算卡片位置和变换 - 限制在固定范围内
-      const maxOffset = Math.min(this.stackOffset, 100); // 限制最大偏移量
-      const limitedOffset = Math.max(-200, Math.min(200, i * maxOffset)); // 限制在±200px范围内
-      const cardX = centerX - this.cardWidth / 2 + limitedOffset;
+      const isActive = positionIndex === 1; // 中间位置为活跃状态
+      const cardX = fixedPositions[positionIndex];
       const cardY = centerY - this.cardHeight / 2;
       const scale = isActive ? 1.0 : this.scaleRatio;
-      const zIndex = this.maxVisibleCards - Math.abs(i); // Z层级（中央卡片最高）
+      const zIndex = isActive ? 2 : (positionIndex === 0 ? 1 : 0); // 中央最高，左侧次之，右侧最低
       
       cardsToRender.push({
         tool,
@@ -541,7 +544,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         scale,
         isActive,
         zIndex,
-        relativeIndex: i
+        positionIndex // 记录位置索引
       });
     }
     

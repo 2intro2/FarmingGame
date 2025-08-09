@@ -467,9 +467,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       const maxDescWidth = this.cardWidth - textX - 50;
       this.drawTruncatedText(ctx, tool.description, textX, textY + 80, maxDescWidth, 140);
       
-      // 渲染难度标签（右上角，增加更大安全边距确保不超出卡片边界）
+      // 渲染难度标签（右上角，向左移动更多以优化视觉平衡）
       const difficultyTagWidth = 110;
-      const difficultyX = this.cardWidth - difficultyTagWidth - 30; // 增加30px安全边距
+      const difficultyX = this.cardWidth - difficultyTagWidth - 80; // 增加左移距离到80px
       this.renderDifficultyTag(ctx, tool.difficulty, difficultyX, 30);
       
       if (GameGlobal.logger && isActive) {
@@ -477,14 +477,14 @@ export default class ToolAssemblyNavPage extends BasePage {
           cardWidth: this.cardWidth,
           difficultyX,
           difficultyRightEdge: difficultyX + difficultyTagWidth,
-          rewardX: this.cardWidth - 120 - 30,
-          rewardRightEdge: (this.cardWidth - 120 - 30) + 120
+          rewardX: this.cardWidth - 120 - 80,
+          rewardRightEdge: (this.cardWidth - 120 - 80) + 120
         }, 'toolAssemblyNav');
       }
       
-      // 渲染奖励信息（右下角，增加更大安全边距确保不超出卡片边界）
+      // 渲染奖励信息（右下角，向左移动更多以优化视觉平衡）
       const rewardTagWidth = 120;
-      const rewardX = this.cardWidth - rewardTagWidth - 30; // 增加30px安全边距
+      const rewardX = this.cardWidth - rewardTagWidth - 80; // 增加左移距离到80px
       this.renderRewardTag(ctx, tool.reward, rewardX, this.cardHeight - 40);
       
     } catch (error) {

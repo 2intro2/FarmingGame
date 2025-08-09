@@ -978,9 +978,9 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染进度步骤
    */
   renderProgressSteps(ctx) {
-    const startY = SCREEN_HEIGHT - 130; // 从-120调整到-130，为更大卡片留出空间
-    const stepWidth = 160; // 从140进一步增加到160，卡片更大
-    const spacing = 45; // 从35进一步增加到45，间距更宽
+    const startY = SCREEN_HEIGHT - 140; // 从-130调整到-140，为更大卡片留出更多空间
+    const stepWidth = 180; // 从160进一步增加到180，卡片再次变大
+    const spacing = 55; // 从45进一步增加到55，间距再次变宽
     const totalWidth = this.steps.length * stepWidth + (this.steps.length - 1) * spacing;
     const startX = (SCREEN_WIDTH - totalWidth) / 2;
 
@@ -1000,8 +1000,8 @@ export default class ToolAssemblyNavPage extends BasePage {
       const isCurrent = step.status === 'current';
       const isLocked = step.status === 'locked';
       
-      // 使用绿色圆角卡片样式，进一步增大高度
-      const cardHeight = 85; // 从75进一步增加到85，适配更大卡片
+      // 使用绿色圆角卡片样式，再次增大高度
+      const cardHeight = 95; // 从85进一步增加到95，适配180px宽度的更大卡片
       const borderRadius = 20; // 大圆角
       
       // 背景颜色 - 统一使用绿色背景，文字改为正文颜色
@@ -1031,12 +1031,12 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.font = '12px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(step.title, x + width / 2, y + 25); // 从y+22调整到y+25，适配85px高度
+      ctx.fillText(step.title, x + width / 2, y + 30); // 从y+25调整到y+30，适配95px高度
 
       // 步骤名称（第二行） - 现代化字体，比第一行大且加黑
       ctx.fillStyle = textColor;
       ctx.font = 'bold 16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-      ctx.fillText(step.name, x + width / 2, y + 55); // 从y+50调整到y+55，适配85px高度
+      ctx.fillText(step.name, x + width / 2, y + 65); // 从y+55调整到y+65，适配95px高度
 
       // 状态图标
       if (isCompleted) {

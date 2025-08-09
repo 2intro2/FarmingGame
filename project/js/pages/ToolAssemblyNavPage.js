@@ -181,24 +181,24 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 初始化布局参数
    */
   initLayout() {
-    // 堆叠卡片布局参数 - 最大化尺寸但避免遮挡其他组件
-    // 可用垂直空间：SCREEN_HEIGHT - 80(顶部) - 120(底部) = SCREEN_HEIGHT - 200
-    const availableHeight = SCREEN_HEIGHT - 200; // 减去顶部和底部组件
-    const availableWidth = SCREEN_WIDTH - 40; // 留出左右边距
+    // 计算可用空间
+    const availableHeight = SCREEN_HEIGHT - 200;
+    const availableWidth = SCREEN_WIDTH - 40;
     
-    this.cardWidth = Math.min(750, availableWidth);  // 再次增大宽度，最大750px
-    this.cardHeight = Math.min(450, availableHeight * 0.85); // 再次增大高度，占可用空间85%
-    this.cardSpacing = 60;  // 卡片之间的间距
-    this.stackOffset = 130; // 增大堆叠偏移量适配更大卡片
-    this.scaleRatio = 0.75; // 进一步调整缩放比例，突出大小对比
-    this.maxVisibleCards = 2; // 保持显示2张卡片突出中心卡片
+    // 卡片布局参数
+    this.cardWidth = Math.min(750, availableWidth);
+    this.cardHeight = Math.min(450, availableHeight * 0.85);
+    this.cardSpacing = 60;
+    this.stackOffset = 130;
+    this.scaleRatio = 0.75;
+    this.maxVisibleCards = 2;
     
     // 滑动手势参数
-    this.swipeThreshold = 50; // 滑动触发阈值
-    this.swipeVelocityThreshold = 0.3; // 滑动速度阈值
-    this.isSwipeInProgress = false; // 滑动进行中标志
-    this.swipeStartX = 0; // 滑动起始X坐标
-    this.swipeStartTime = 0; // 滑动起始时间
+    this.swipeThreshold = 50;
+    this.swipeVelocityThreshold = 0.3;
+    this.isSwipeInProgress = false;
+    this.swipeStartX = 0;
+    this.swipeStartTime = 0;
     
     this.steps = [
       { id: 'step1', name: '观看视频', status: 'completed', title: '第一步 (已完成)' },
@@ -450,9 +450,7 @@ export default class ToolAssemblyNavPage extends BasePage {
           buttonSize, 
           buttonSize
         );
-        if (GameGlobal.logger) {
-          GameGlobal.logger.debug('返回按钮图片渲染成功', null, 'toolAssemblyNav');
-        }
+
       } catch (drawError) {
         if (GameGlobal.logger) {
           GameGlobal.logger.warn('返回按钮图片渲染失败，使用降级方案', { error: drawError.message }, 'toolAssemblyNav');
@@ -485,12 +483,7 @@ export default class ToolAssemblyNavPage extends BasePage {
           titleImageHeight
         );
         
-        if (GameGlobal.logger) {
-          GameGlobal.logger.debug('标题图片渲染成功', { 
-            width: titleImageWidth, 
-            height: titleImageHeight 
-          }, 'toolAssemblyNav');
-        }
+
       } catch (drawError) {
         if (GameGlobal.logger) {
           GameGlobal.logger.warn('标题图片渲染失败，使用降级方案', { error: drawError.message }, 'toolAssemblyNav');
@@ -547,7 +540,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       .sort((a, b) => a.zIndex - b.zIndex) // 从低到高排序
       .forEach(card => {
         this.renderStackedToolCard(ctx, card.tool, card.cardX, card.cardY, card.scale, card.isActive, card.zIndex);
-      });
+    });
   }
 
   /**
@@ -569,10 +562,10 @@ export default class ToolAssemblyNavPage extends BasePage {
       
       // 绘制卡片阴影（仅对活跃卡片）
       if (isActive) {
-        ctx.save();
+      ctx.save();
         ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'; // 增强中央卡片阴影
         ctx.shadowBlur = 16;
-        ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 8;
       }
       
@@ -582,21 +575,13 @@ export default class ToolAssemblyNavPage extends BasePage {
       // 绘制圆角矩形背景 - 使用非常大的圆角半径确保效果明显
       const borderRadius = Math.min(120, this.cardWidth / 4, this.cardHeight / 4); // 更大的圆角半径
       
-      if (GameGlobal.logger) {
-        GameGlobal.logger.debug(`绘制卡片圆角，半径: ${borderRadius}px`, { 
-          hasRoundRect: !!(ctx.roundRect && typeof ctx.roundRect === 'function'),
-          cardWidth: this.cardWidth,
-          cardHeight: this.cardHeight
-        }, 'toolAssemblyNav');
-      }
+
       
       // 直接使用兼容性最好的手动圆角绘制
       try {
         this.drawSimpleRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
-        ctx.fill();
-        if (GameGlobal.logger) {
-          GameGlobal.logger.debug('使用简化圆角绘制卡片背景', { borderRadius }, 'toolAssemblyNav');
-        }
+          ctx.fill();
+
       } catch (rectError) {
         // 如果圆角绘制失败，使用普通矩形
         ctx.fillRect(0, 0, this.cardWidth, this.cardHeight);
@@ -621,14 +606,12 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.lineWidth = 3; // 增强中央卡片边框
       } else {
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.lineWidth = 2;
+      ctx.lineWidth = 2;
       }
       try {
         this.drawSimpleRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
-        ctx.stroke();
-        if (GameGlobal.logger) {
-          GameGlobal.logger.debug('使用简化圆角绘制卡片边框', { borderRadius }, 'toolAssemblyNav');
-        }
+          ctx.stroke();
+
       } catch (rectError) {
         ctx.strokeRect(0, 0, this.cardWidth, this.cardHeight);
         if (GameGlobal.logger) {
@@ -706,157 +689,6 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
-   * 渲染单个工具卡片（保留旧方法以备用）
-   */
-  renderToolCard(ctx, tool, x, y, isSelected) {
-    try {
-      // 绘制卡片阴影
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 2;
-      
-      // 卡片背景（使用自然淡雅的纯色）
-      const cardColors = {
-        '#E3F2FD': '#F8FBFF', // 淡蓝色
-        '#E8F5E8': '#F5FCF5', // 淡绿色
-        '#FFF8E1': '#FFFEFF', // 淡黄色
-        '#F3E5F5': '#FDFAFF', // 淡紫色
-        '#E0F2F1': '#F5FFFE'  // 淡青色
-      };
-      
-      const backgroundColor = cardColors[tool.cardColor] || '#FFFFFF';
-      ctx.fillStyle = backgroundColor;
-      
-      // 绘制圆角矩形（更高的圆角程度）
-      try {
-        if (ctx.roundRect && typeof ctx.roundRect === 'function') {
-          ctx.roundRect(x, y, this.cardWidth, this.cardHeight, 85); // 增加圆角半径
-          ctx.fill();
-        } else {
-          // 降级方案
-          ctx.fillRect(x, y, this.cardWidth, this.cardHeight);
-        }
-      } catch (rectError) {
-        // 如果圆角矩形失败，使用普通矩形
-        ctx.fillRect(x, y, this.cardWidth, this.cardHeight);
-      }
-      
-      ctx.restore();
-
-      // 绘制白色轮廓
-      ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 2;
-      try {
-        if (ctx.roundRect && typeof ctx.roundRect === 'function') {
-          ctx.roundRect(x, y, this.cardWidth, this.cardHeight, 85); // 增加圆角半径
-          ctx.stroke();
-        } else {
-          // 降级方案
-          ctx.strokeRect(x, y, this.cardWidth, this.cardHeight);
-        }
-      } catch (rectError) {
-        ctx.strokeRect(x, y, this.cardWidth, this.cardHeight);
-      }
-
-      // 计算布局区域（适应800x500的卡片）
-      const imageWidth = 300;  // 增加图片宽度
-      const imageHeight = 300; // 增加图片高度
-      const imageX = x + 50;   // 增加左边距
-      const imageY = y + 80;   // 图片Y坐标（留出顶部空间给难度）
-      const contentX = x + imageWidth + 80; // 内容区域X坐标
-      const contentY = y + 80; // 内容区域Y坐标
-      const contentWidth = this.cardWidth - imageWidth - 130; // 内容区域宽度
-
-      // 难度横幅（在卡片右上角）
-      const bannerWidth = 120;
-      const bannerHeight = 35;
-      const bannerX = x + this.cardWidth - bannerWidth - 30; // 右上角
-      const bannerY = y + 30;
-      
-      const bannerGradient = ctx.createLinearGradient(bannerX, bannerY, bannerX + bannerWidth, bannerY + bannerHeight);
-      bannerGradient.addColorStop(0, '#42A5F5');
-      bannerGradient.addColorStop(1, '#1976D2');
-      
-      ctx.fillStyle = bannerGradient;
-      ctx.fillRect(bannerX, bannerY, bannerWidth, bannerHeight);
-      
-      // 难度横幅边框
-      ctx.strokeStyle = '#1565C0';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(bannerX, bannerY, bannerWidth, bannerHeight);
-      
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 14px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('难度:', bannerX + 10, bannerY + 22);
-
-      // 难度星级
-      this.renderDifficultyStars(ctx, tool.difficulty, bannerX + 10, bannerY + 32);
-
-      // 工具图片（左侧）
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
-      ctx.shadowBlur = 3;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 1;
-      
-      if (tool.imageLoaded && !tool.usePlaceholder && tool.imageElement) {
-        try {
-          ctx.drawImage(tool.imageElement, imageX, imageY, imageWidth, imageHeight);
-        } catch (drawError) {
-          if (GameGlobal.logger) {
-            GameGlobal.logger.warn('绘制图片失败，使用占位符', { error: drawError.message, tool: tool.name }, 'toolAssemblyNav');
-          }
-          this.renderImagePlaceholder(ctx, imageX, imageY, imageWidth, imageHeight);
-        }
-      } else {
-        // 占位符
-        this.renderImagePlaceholder(ctx, imageX, imageY, imageWidth, imageHeight);
-      }
-      
-      ctx.restore();
-
-      // 内容区域（右侧）
-      // 工具名称
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-      ctx.shadowBlur = 1;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 1;
-      
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 28px Arial'; // 增加字体大小
-      ctx.textAlign = 'left';
-      ctx.fillText(tool.name, contentX, contentY + 35);
-      
-      ctx.restore();
-
-      // 副标题
-      ctx.fillStyle = '#666666';
-      ctx.font = '18px Arial'; // 增加字体大小
-      ctx.textAlign = 'left';
-      ctx.fillText(tool.subtitle, contentX, contentY + 70);
-
-      // 描述文字（自动换行，限制行数）
-      ctx.fillStyle = '#666666';
-      ctx.font = '16px Arial'; // 增加字体大小
-      ctx.textAlign = 'left';
-      this.drawWrappedText(ctx, tool.description, contentX, contentY + 120, contentWidth - 20, 24, 6); // 限制6行
-
-      // 奖励信息（底部中央）
-      const rewardX = x + this.cardWidth / 2; // 水平居中
-      const rewardY = y + this.cardHeight - 50; // 底部
-      this.renderReward(ctx, tool.reward, rewardX, rewardY);
-    } catch (error) {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.error('渲染工具卡片失败', { error: error.message, tool: tool.name }, 'toolAssemblyNav');
-      }
-    }
-  }
-
-  /**
    * 简化的圆角矩形绘制（最大兼容性）
    */
   drawSimpleRoundedRect(ctx, x, y, width, height, radius) {
@@ -864,13 +696,7 @@ export default class ToolAssemblyNavPage extends BasePage {
     const maxRadius = Math.min(width / 2, height / 2);
     const r = Math.min(Math.max(0, radius), maxRadius);
     
-    if (GameGlobal.logger) {
-      GameGlobal.logger.debug(`简化圆角矩形绘制`, { 
-        x, y, width, height, 
-        requestedRadius: radius, 
-        effectiveRadius: r
-      }, 'toolAssemblyNav');
-    }
+    
     
     // 如果圆角半径为0或很小，直接绘制普通矩形
     if (r < 1) {
@@ -898,40 +724,10 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.beginPath();
       ctx.rect(x, y, width, height);
       ctx.closePath();
-      if (GameGlobal.logger) {
+          if (GameGlobal.logger) {
         GameGlobal.logger.warn('弧线绘制失败，使用矩形', { error: error.message }, 'toolAssemblyNav');
       }
     }
-  }
-
-  /**
-   * 手动绘制圆角矩形（兼容性方案 - 备用）
-   */
-  drawRoundedRect(ctx, x, y, width, height, radius) {
-    // 限制圆角半径不超过宽高的一半
-    const maxRadius = Math.min(width / 2, height / 2);
-    const effectiveRadius = Math.min(radius, maxRadius);
-    
-    if (GameGlobal.logger) {
-      GameGlobal.logger.debug(`手动绘制圆角矩形`, { 
-        x, y, width, height, 
-        requestedRadius: radius, 
-        effectiveRadius, 
-        maxRadius 
-      }, 'toolAssemblyNav');
-    }
-    
-    ctx.beginPath();
-    ctx.moveTo(x + effectiveRadius, y);
-    ctx.lineTo(x + width - effectiveRadius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + effectiveRadius);
-    ctx.lineTo(x + width, y + height - effectiveRadius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - effectiveRadius, y + height);
-    ctx.lineTo(x + effectiveRadius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - effectiveRadius);
-    ctx.lineTo(x, y + effectiveRadius);
-    ctx.quadraticCurveTo(x, y, x + effectiveRadius, y);
-    ctx.closePath();
   }
 
   /**
@@ -1031,7 +827,7 @@ export default class ToolAssemblyNavPage extends BasePage {
     // 使用更大的圆角半径，与难度标签保持一致
     const tagRadius = Math.min(25, tagHeight / 2); // 最大25px或标签高度的一半
     
-    if (GameGlobal.logger) {
+      if (GameGlobal.logger) {
       GameGlobal.logger.debug('绘制奖励标签圆角', { 
         tagWidth, tagHeight, tagRadius 
       }, 'toolAssemblyNav');
@@ -1173,7 +969,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       } else if (isCurrent) {
         bgColor = '#d9f7be'; // 第二张卡片：中等绿色背景
         textColor = '#333333'; // 正文颜色 - 深灰色
-      } else {
+        } else {
         bgColor = '#b7eb8f'; // 第三张卡片：较深绿色背景
         textColor = '#333333'; // 改为正文颜色，保持一致性
       }

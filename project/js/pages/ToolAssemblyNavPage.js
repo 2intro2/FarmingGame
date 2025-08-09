@@ -110,9 +110,63 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
+   * 加载状态图标
+   */
+  loadStatusIcons() {
+    // 加载已完成图标
+    try {
+      this.finishIcon = wx.createImage();
+      this.finishIcon.onload = () => {
+        this.finishIconLoaded = true;
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('已完成图标加载成功: finish.png', null, 'toolAssemblyNav');
+        }
+      };
+      this.finishIcon.onerror = () => {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('已完成图标加载失败: finish.png', null, 'toolAssemblyNav');
+        }
+        this.finishIconLoaded = false;
+      };
+      this.finishIcon.src = 'images/finish.png';
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('已完成图标加载异常', { error: error.message }, 'toolAssemblyNav');
+      }
+      this.finishIconLoaded = false;
+    }
+
+    // 加载锁定图标
+    try {
+      this.lockIcon = wx.createImage();
+      this.lockIcon.onload = () => {
+        this.lockIconLoaded = true;
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('锁定图标加载成功: lock.png', null, 'toolAssemblyNav');
+        }
+      };
+      this.lockIcon.onerror = () => {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('锁定图标加载失败: lock.png', null, 'toolAssemblyNav');
+        }
+        this.lockIconLoaded = false;
+      };
+      this.lockIcon.src = 'images/lock.png';
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('锁定图标加载异常', { error: error.message }, 'toolAssemblyNav');
+      }
+      this.lockIconLoaded = false;
+    }
+  }
+
+  /**
    * 加载资源
    */
   loadResources() {
+    // 加载状态图标
+    this.loadStatusIcons();
+    
     this.tools.forEach(tool => {
       try {
         const img = wx.createImage();
@@ -258,25 +312,25 @@ export default class ToolAssemblyNavPage extends BasePage {
     ctx.arc(buttonX, buttonY, buttonRadius, 0, 2 * Math.PI);
     ctx.stroke();
 
-    // 返回箭头（更精细的绘制，更亮）
+    // 返回箭头（适配按钮尺寸放大，更粗更清晰）
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
     ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 3; // 从2.5增加到3，线条更粗
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     
-    // 绘制箭头主体
+    // 绘制箭头主体（放大尺寸）
     ctx.beginPath();
-    ctx.moveTo(buttonX + 6, buttonY);
-    ctx.lineTo(buttonX - 4, buttonY);
+    ctx.moveTo(buttonX + 8, buttonY); // 从+6增加到+8
+    ctx.lineTo(buttonX - 6, buttonY); // 从-4增加到-6
     ctx.stroke();
     
-    // 绘制箭头头部
+    // 绘制箭头头部（放大尺寸）
     ctx.beginPath();
-    ctx.moveTo(buttonX - 2, buttonY - 3);
-    ctx.lineTo(buttonX - 4, buttonY);
-    ctx.lineTo(buttonX - 2, buttonY + 3);
+    ctx.moveTo(buttonX - 3, buttonY - 4); // 从-2,-3调整到-3,-4
+    ctx.lineTo(buttonX - 6, buttonY);     // 从-4调整到-6
+    ctx.lineTo(buttonX - 3, buttonY + 4); // 从-2,+3调整到-3,+4
     ctx.stroke();
     
     ctx.restore();
@@ -924,9 +978,9 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染进度步骤
    */
   renderProgressSteps(ctx) {
-    const startY = SCREEN_HEIGHT - 120;
-    const stepWidth = 140; // 从120增加到140，增大卡片宽度
-    const spacing = 35; // 从20增加到35，增大卡片间距
+    const startY = SCREEN_HEIGHT - 130; // 从-120调整到-130，为更大卡片留出空间
+    const stepWidth = 160; // 从140进一步增加到160，卡片更大
+    const spacing = 45; // 从35进一步增加到45，间距更宽
     const totalWidth = this.steps.length * stepWidth + (this.steps.length - 1) * spacing;
     const startX = (SCREEN_WIDTH - totalWidth) / 2;
 
@@ -946,8 +1000,8 @@ export default class ToolAssemblyNavPage extends BasePage {
       const isCurrent = step.status === 'current';
       const isLocked = step.status === 'locked';
       
-      // 使用绿色圆角卡片样式，增大高度
-      const cardHeight = 75; // 从60增加到75，增大卡片高度
+      // 使用绿色圆角卡片样式，进一步增大高度
+      const cardHeight = 85; // 从75进一步增加到85，适配更大卡片
       const borderRadius = 20; // 大圆角
       
       // 背景颜色 - 统一使用绿色背景，文字改为正文颜色
@@ -977,44 +1031,86 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.font = '12px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(step.title, x + width / 2, y + 22);
+      ctx.fillText(step.title, x + width / 2, y + 25); // 从y+22调整到y+25，适配85px高度
 
       // 步骤名称（第二行） - 现代化字体，比第一行大且加黑
       ctx.fillStyle = textColor;
       ctx.font = 'bold 16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-      ctx.fillText(step.name, x + width / 2, y + 50);
+      ctx.fillText(step.name, x + width / 2, y + 55); // 从y+50调整到y+55，适配85px高度
 
       // 状态图标
       if (isCompleted) {
-        // 已完成徽章 - 更精致的设计
-        ctx.fillStyle = '#52c41a';
-        ctx.beginPath();
-        ctx.arc(x + width - 15, y + 15, 8, 0, 2 * Math.PI);
-        ctx.fill();
+        // 已完成图标 - 使用finish.png图片
+        const iconSize = 24; // 图标尺寸
+        const iconX = x + width - iconSize - 8; // 右上角位置，留8px边距
+        const iconY = y + 8; // 顶部留8px边距
         
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 10px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('✓', x + width - 15, y + 15);
+        if (this.finishIconLoaded && this.finishIcon) {
+          try {
+            ctx.drawImage(this.finishIcon, iconX, iconY, iconSize, iconSize);
+          } catch (drawError) {
+            // 图片绘制失败，使用备用方案
+            this.drawFallbackCompletedIcon(ctx, x + width - 15, y + 15);
+          }
+        } else {
+          // 图片未加载，使用备用方案
+          this.drawFallbackCompletedIcon(ctx, x + width - 15, y + 15);
+        }
       } else if (isLocked) {
-        // 锁定图标 - 使用绿色主题
-        ctx.fillStyle = '#bfbfbf';
-        ctx.beginPath();
-        ctx.arc(x + width - 15, y + 15, 8, 0, 2 * Math.PI);
-        ctx.fill();
+        // 锁定图标 - 使用lock.png图片
+        const iconSize = 24; // 图标尺寸
+        const iconX = x + width - iconSize - 8; // 右上角位置，留8px边距
+        const iconY = y + 8; // 顶部留8px边距
         
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 10px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('🔒', x + width - 15, y + 15);
+        if (this.lockIconLoaded && this.lockIcon) {
+          try {
+            ctx.drawImage(this.lockIcon, iconX, iconY, iconSize, iconSize);
+          } catch (drawError) {
+            // 图片绘制失败，使用备用方案
+            this.drawFallbackLockedIcon(ctx, x + width - 15, y + 15);
+          }
+        } else {
+          // 图片未加载，使用备用方案
+          this.drawFallbackLockedIcon(ctx, x + width - 15, y + 15);
+        }
       }
     } catch (error) {
       if (GameGlobal.logger) {
         GameGlobal.logger.error('渲染进度步骤失败', { error: error.message, step: step.name }, 'toolAssemblyNav');
       }
     }
+  }
+
+  /**
+   * 绘制备用已完成图标
+   */
+  drawFallbackCompletedIcon(ctx, x, y) {
+    ctx.fillStyle = '#52c41a';
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 10px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('✓', x, y);
+  }
+
+  /**
+   * 绘制备用锁定图标
+   */
+  drawFallbackLockedIcon(ctx, x, y) {
+    ctx.fillStyle = '#bfbfbf';
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 10px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🔒', x, y);
   }
 
   /**

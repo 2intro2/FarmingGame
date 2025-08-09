@@ -1086,21 +1086,31 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
-   * 导航到指定卡片（添加动画支持）
+   * 导航到指定卡片（循环滑动支持）
    */
   navigateToCard(direction) {
-    const newIndex = this.selectedToolIndex + direction;
-    if (newIndex >= 0 && newIndex < this.tools.length) {
-      const oldIndex = this.selectedToolIndex;
-      this.selectedToolIndex = newIndex;
-      
-      // 触发平滑切换动画
-      this.animateCardTransition(oldIndex, newIndex);
-      
-      if (GameGlobal.logger) {
-        GameGlobal.logger.info(`切换到卡片: ${this.tools[this.selectedToolIndex].name}`, 
-          { oldIndex, newIndex, direction }, 'toolAssemblyNav');
-      }
+    const oldIndex = this.selectedToolIndex;
+    
+    // 使用模运算实现循环滑动
+    let newIndex = this.selectedToolIndex + direction;
+    
+    // 处理正向越界：第三张 -> 第一张
+    if (newIndex >= this.tools.length) {
+      newIndex = 0;
+    }
+    // 处理负向越界：第一张 -> 第三张
+    else if (newIndex < 0) {
+      newIndex = this.tools.length - 1;
+    }
+    
+    this.selectedToolIndex = newIndex;
+    
+    // 触发平滑切换动画
+    this.animateCardTransition(oldIndex, newIndex);
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info(`循环切换到卡片: ${this.tools[this.selectedToolIndex].name}`, 
+        { oldIndex, newIndex, direction, isCircular: oldIndex === 0 && newIndex === 2 || oldIndex === 2 && newIndex === 0 }, 'toolAssemblyNav');
     }
   }
 

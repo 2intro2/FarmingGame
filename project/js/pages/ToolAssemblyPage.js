@@ -345,20 +345,6 @@ export default class ToolAssemblyPage {
   }
 
   /**
-   * 显示页面
-   */
-  show() {
-    // 农具拼接页面显示逻辑
-  }
-
-  /**
-   * 隐藏页面
-   */
-  hide() {
-    // 农具拼接页面隐藏逻辑
-  }
-
-  /**
    * 更新页面
    */
   update() {

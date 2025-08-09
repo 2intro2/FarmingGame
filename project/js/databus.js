@@ -213,8 +213,10 @@ export default class DataBus {
     if (this.backgroundMusic && !this.isMusicPlaying) {
       try {
         this.backgroundMusic.play();
+        // 状态由onPlay事件回调自动更新，避免重复设置
       } catch (error) {
         console.warn('播放全局背景音乐失败:', error);
+        this.isMusicPlaying = false;
       }
     }
   }
@@ -224,20 +226,23 @@ export default class DataBus {
     if (this.backgroundMusic && this.isMusicPlaying) {
       try {
         this.backgroundMusic.pause();
+        // 状态由onPause事件回调自动更新，避免重复设置
       } catch (error) {
         console.warn('停止全局背景音乐失败:', error);
+        this.isMusicPlaying = false;
       }
     }
   }
 
   // 切换背景音乐播放状态
   toggleMusic() {
-    if (this.isMusicPlaying) {
+    const currentState = this.isMusicPlaying;
+    if (currentState) {
       this.stopMusic();
-      return false; // 返回当前状态：停止
+      return false; // 切换到停止状态
     } else {
       this.playMusic();
-      return true; // 返回当前状态：播放
+      return true; // 切换到播放状态
     }
   }
 

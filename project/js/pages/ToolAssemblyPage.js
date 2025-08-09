@@ -29,7 +29,7 @@ export default class ToolAssemblyPage {
         description: '石磨最早出现于战国时期，是古代粮食加工的重要工具。粮食从进料孔落入磨盘间，通过旋转摩擦被碾碎，粉末从边缘流出。',
         difficulty: 2,
         reward: 20,
-        image: 'images/tool1.png',
+        image: 'images/tool_hoe.png',
         status: 'active'
       },
       {

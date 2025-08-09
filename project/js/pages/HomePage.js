@@ -1,10 +1,11 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
 import { showToast, showSuccessToast, showErrorToast } from '../utils/toast';
+import BasePage from './BasePage';
 
 /**
  * 主页面
  */
-export default class HomePage {
+export default class HomePage extends BasePage {
   modules = [];
   buttons = {};
   infoBar = {};
@@ -47,6 +48,7 @@ export default class HomePage {
   userAvatarImage = null; // 登录用户头像
 
   constructor() {
+    super(); // 调用BasePage的构造函数
     this.loadResources();
     this.initModules();
     this.initButtons();
@@ -173,9 +175,9 @@ export default class HomePage {
     this.moduleImages.iconButton1.src = 'images/icon.png';
     this.moduleImages.iconButton2.src = 'images/icon.png';
     this.moduleImages.iconButton3.src = 'images/icon.png';
-    this.moduleImages.noodleLife.src = 'images/bg08.png';
-    this.moduleImages.emergencyChallenge.src = 'images/bg09.png';
-    this.moduleImages.cornGrowth.src = 'images/bg10.png';
+    this.moduleImages.noodleLife.src = 'images/bg12.png';
+    this.moduleImages.emergencyChallenge.src = 'images/bg13.png';
+    this.moduleImages.cornGrowth.src = 'images/bg01.jpeg';
     // 错误处理
     Object.entries(this.moduleImages).forEach(([k, img]) => {
       img.onerror = () => {
@@ -271,10 +273,10 @@ export default class HomePage {
   }
 
   /**
-   * 渲染主页面
+   * 渲染主页面内容（支持动画）
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
-  render(ctx) {
+  renderContent(ctx) {
     // 绘制首页背景图（失败则使用渐变）
     if (this.homeBgImage && this.homeBgImage.complete && this.homeBgImage.naturalWidth !== 0) {
       try {
@@ -686,8 +688,8 @@ export default class HomePage {
       
       if (isInModule) {
         console.log('点击农具拼装按钮');
-        GameGlobal.pageManager.switchToPage('toolAssembly');
-        this.showToast('进入农具拼装');
+        GameGlobal.pageManager.switchToPage('toolAssemblyNav');
+        this.showToast('进入农具拼装导航');
         return;
       }
     }
@@ -747,14 +749,9 @@ export default class HomePage {
   showToast(message) {
     console.log('尝试显示Toast:', message);
     
-    // 使用导入的showToast函数
+    // 只使用自定义Toast组件，避免重复显示
     const { showToast: showToastUtil } = require('../utils/toast');
     showToastUtil(message);
-    
-    // 同时使用微信原生Toast作为备用
-    if (GameGlobal.wechatAPI) {
-      GameGlobal.wechatAPI.showToast(message);
-    }
   }
 
   /**

@@ -1283,22 +1283,22 @@ export default class VideoLearningPage {
       
       // 检查是否所有卡片都已匹配成功
       if (this.checkAllCardsMatched()) {
-        // 所有卡片都已匹配成功，返回首页
-        console.log("所有卡片匹配成功，返回首页");
+        // 所有卡片都已匹配成功，跳转到3D拼装页面
+        console.log("所有卡片匹配成功，跳转到3D拼装页面");
         showSuccessToast("恭喜您完成所有连线！");
         
-        // 延迟一下再返回首页，让用户看到成功提示
+        // 延迟一下再跳转到3D拼装页面，让用户看到成功提示
         setTimeout(() => {
           try {
             if (GameGlobal && GameGlobal.pageManager && typeof GameGlobal.pageManager.switchToPage === 'function') {
-              GameGlobal.pageManager.switchToPage('home');
+              GameGlobal.pageManager.switchToPage('threeDAssembly');
     } else {
               console.error('页面管理器不可用');
-              showErrorToast('返回首页失败');
+              showErrorToast('页面跳转失败');
             }
           } catch (error) {
-            console.error('返回首页时出错:', error);
-            showErrorToast('返回首页失败');
+            console.error('页面跳转时出错:', error);
+            showErrorToast('页面跳转失败');
           }
         }, 1500);
       } else {

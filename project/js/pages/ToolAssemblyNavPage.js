@@ -1547,8 +1547,8 @@ export default class ToolAssemblyNavPage extends BasePage {
         if (this.toolQylStatus >= 0 && this.toolQylStatus < this.starStatusPositions.length) {
           const position = this.starStatusPositions[this.toolQylStatus];
           
-          // 计算状态图片的实际位置（相对于背景图片）- 增大尺寸
-          const starSize = Math.min(bgWidth * 0.15, bgHeight * 0.3, 60); // 状态图片大小：宽度15%/高度30%，最大60px
+          // 计算状态图片的实际位置（相对于背景图片）- 进一步增大尺寸
+          const starSize = Math.min(bgWidth * 0.2, bgHeight * 0.4, 80); // 状态图片大小：宽度20%/高度40%，最大80px
           const starX = bgX + bgWidth * position.x - starSize / 2; // 以位置为中心
           const starY = bgY + bgHeight * position.y - starSize / 2; // 以位置为中心
           

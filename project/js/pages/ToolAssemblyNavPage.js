@@ -23,10 +23,10 @@ export default class ToolAssemblyNavPage extends BasePage {
   
   // 状态图片位置配置 - 四个位置供用户指定 (相对于底部导航栏背景的位置)
   starStatusPositions = [
-    { x: 0.2, y: 0.3 }, // 位置0 - 左上 (相对比例位置，需要用户调整)
-    { x: 0.8, y: 0.3 }, // 位置1 - 右上 (相对比例位置，需要用户调整)
-    { x: 0.2, y: 0.7 }, // 位置2 - 左下 (相对比例位置，需要用户调整)
-    { x: 0.8, y: 0.7 }  // 位置3 - 右下 (相对比例位置，需要用户调整)
+    { x: 0.2, y: 0.3 }, 
+    { x: 0.8, y: 0.3 }, 
+    { x: 0.2, y: 0.7 }, 
+    { x: 0.8, y: 0.7 }  
   ];
 
   constructor() {
@@ -1547,8 +1547,8 @@ export default class ToolAssemblyNavPage extends BasePage {
         if (this.toolQylStatus >= 0 && this.toolQylStatus < this.starStatusPositions.length) {
           const position = this.starStatusPositions[this.toolQylStatus];
           
-          // 计算状态图片的实际位置（相对于背景图片）
-          const starSize = Math.min(bgWidth * 0.1, bgHeight * 0.2, 40); // 状态图片大小，最大40px
+          // 计算状态图片的实际位置（相对于背景图片）- 增大尺寸
+          const starSize = Math.min(bgWidth * 0.15, bgHeight * 0.3, 60); // 状态图片大小：宽度15%/高度30%，最大60px
           const starX = bgX + bgWidth * position.x - starSize / 2; // 以位置为中心
           const starY = bgY + bgHeight * position.y - starSize / 2; // 以位置为中心
           

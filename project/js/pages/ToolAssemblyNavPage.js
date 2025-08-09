@@ -310,27 +310,50 @@ export default class ToolAssemblyNavPage extends BasePage {
       this.titleImageLoaded = false;
     }
 
-    // 加载背景图片
+    // 加载主背景图片
     try {
       this.backgroundImage = wx.createImage();
       this.backgroundImage.onload = () => {
         this.backgroundImageLoaded = true;
         if (GameGlobal.logger) {
-          GameGlobal.logger.info('背景图片加载成功: background.png', null, 'toolAssemblyNav');
+          GameGlobal.logger.info('主背景图片加载成功: background.png', null, 'toolAssemblyNav');
         }
       };
       this.backgroundImage.onerror = () => {
         if (GameGlobal.logger) {
-          GameGlobal.logger.warn('背景图片加载失败: background.png', null, 'toolAssemblyNav');
+          GameGlobal.logger.warn('主背景图片加载失败: background.png', null, 'toolAssemblyNav');
         }
         this.backgroundImageLoaded = false;
       };
       this.backgroundImage.src = 'images/background.png';
     } catch (error) {
       if (GameGlobal.logger) {
-        GameGlobal.logger.error('背景图片加载异常', { error: error.message }, 'toolAssemblyNav');
+        GameGlobal.logger.error('主背景图片加载异常', { error: error.message }, 'toolAssemblyNav');
       }
       this.backgroundImageLoaded = false;
+    }
+
+    // 加载工具区域背景图片
+    try {
+      this.toolBackgroundImage = wx.createImage();
+      this.toolBackgroundImage.onload = () => {
+        this.toolBackgroundImageLoaded = true;
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('工具背景图片加载成功: bg_tool.png', null, 'toolAssemblyNav');
+        }
+      };
+      this.toolBackgroundImage.onerror = () => {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('工具背景图片加载失败: bg_tool.png', null, 'toolAssemblyNav');
+        }
+        this.toolBackgroundImageLoaded = false;
+      };
+      this.toolBackgroundImage.src = 'images/bg_tool.png';
+    } catch (error) {
+      if (GameGlobal.logger) {
+        GameGlobal.logger.error('工具背景图片加载异常', { error: error.message }, 'toolAssemblyNav');
+      }
+      this.toolBackgroundImageLoaded = false;
     }
   }
 
@@ -379,6 +402,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       
       // 绘制背景 - 优先使用背景图片，否则使用白色背景
       this.renderBackground(ctx);
+      
+      // 绘制工具区域背景 - 在主背景之上，UI元素之下
+      this.renderToolBackground(ctx);
       
       this.renderTopNav(ctx);
       this.renderToolCards(ctx);
@@ -1510,5 +1536,46 @@ export default class ToolAssemblyNavPage extends BasePage {
   renderFallbackBackground(ctx) {
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+  }
+
+  /**
+   * 渲染工具区域背景
+   */
+  renderToolBackground(ctx) {
+    if (this.toolBackgroundImageLoaded && this.toolBackgroundImage) {
+      try {
+        // 计算工具区域范围：卡片区域 + 底部导航栏区域
+        const topNavHeight = 80; // 顶部导航栏高度
+        const toolAreaY = topNavHeight; // 工具区域起始Y坐标
+        const toolAreaHeight = SCREEN_HEIGHT - topNavHeight; // 工具区域高度（包含卡片和底部导航）
+        
+        // 绘制工具背景图片到整个工具区域
+        ctx.drawImage(
+          this.toolBackgroundImage,
+          0, // 源图X
+          0, // 源图Y
+          this.toolBackgroundImage.naturalWidth, // 源图宽度
+          this.toolBackgroundImage.naturalHeight, // 源图高度
+          0, // 目标X
+          toolAreaY, // 目标Y - 从顶部导航栏下方开始
+          SCREEN_WIDTH, // 目标宽度 - 覆盖整个屏幕宽度
+          toolAreaHeight // 目标高度 - 覆盖卡片和底部导航区域
+        );
+        
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info('工具背景图片渲染成功', {
+            toolAreaY,
+            toolAreaHeight,
+            screenWidth: SCREEN_WIDTH
+          }, 'toolAssemblyNav');
+        }
+      } catch (drawError) {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('工具背景图片渲染失败', { error: drawError.message }, 'toolAssemblyNav');
+        }
+        // 工具背景渲染失败时不做任何处理，让主背景显示
+      }
+    }
+    // 如果工具背景未加载，不做任何处理，让主背景显示
   }
 } 

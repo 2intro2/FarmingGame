@@ -23,7 +23,7 @@ export default class ToolAssemblyNavPage extends BasePage {
   
   // 状态图片位置配置 - 四个位置供用户指定 (相对于底部导航栏背景的位置)
   starStatusPositions = [
-    { x: 0.2, y: 0.9 }, 
+    { x: 0.2, y: 0.3 }, 
     { x: 0.8, y: 0.3 }, 
     { x: 0.2, y: 0.7 }, 
     { x: 0.8, y: 0.7 }  
@@ -1552,6 +1552,10 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   renderStarStatus(ctx, bgX, bgY, bgWidth, bgHeight) {
     try {
+      // 临时强制设置状态值为0，确保每次渲染都使用位置0
+      // TODO: 测试完成后请删除此行
+      this.toolQylStatus = 0;
+      
       if (this.starStatusImageLoaded && this.starStatusImage) {
         // 获取当前状态对应的位置配置
         if (this.toolQylStatus >= 0 && this.toolQylStatus < this.starStatusPositions.length) {
@@ -1568,6 +1572,18 @@ export default class ToolAssemblyNavPage extends BasePage {
             starX, starY,
             starSize, starSize
           );
+          
+          // 直接在控制台输出调试信息，确保用户能看到
+          console.log('🌟 状态图片渲染详情:', {
+            toolQylStatus: this.toolQylStatus,
+            selectedPosition: position,
+            '当前位置配置x': position.x,
+            '当前位置配置y': position.y,
+            allPositions: this.starStatusPositions,
+            backgroundArea: `${Math.round(bgX)}, ${Math.round(bgY)}, ${Math.round(bgWidth)}x${Math.round(bgHeight)}`,
+            calculatedStarPosition: `${Math.round(starX)}, ${Math.round(starY)}`,
+            starSize: Math.round(starSize)
+          });
           
           if (GameGlobal.logger) {
             GameGlobal.logger.info('状态图片渲染详情', {

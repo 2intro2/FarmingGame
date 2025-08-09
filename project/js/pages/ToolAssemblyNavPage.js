@@ -14,8 +14,6 @@ export default class ToolAssemblyNavPage extends BasePage {
   cardWidth = 300;
   cardHeight = 450;
   cardSpacing = 30;
-  steps = []; // 步骤状态将在构造函数中动态计算
-  
   // 状态相关属性
   toolQylStatus = 0; // 存储中的tool_qyl状态值 (0,1,2,3)
   starStatusImage = null; // star_status.png图片对象
@@ -34,113 +32,11 @@ export default class ToolAssemblyNavPage extends BasePage {
     try {
       this.initTools();
       this.initLayout();
-  
       this.loadResources();
     } catch (error) {
       if (GameGlobal.logger) {
         GameGlobal.logger.error('ToolAssemblyNavPage构造函数错误', { error: error.message }, 'toolAssemblyNav');
       }
-    }
-  }
-
-  /**
-   * 检查第一步是否完成（模拟函数，实际由同事实现）
-   * @returns {boolean} 第一步是否完成
-   */
-  checkStep1Completed() {
-    // 模拟逻辑：这里可以根据需要返回不同值来测试
-    // 实际实现时这里会调用同事提供的函数
-    return true; // 模拟第一步已完成，可改为false测试
-  }
-
-  /**
-   * 检查第二步是否完成（模拟函数，实际由同事实现）
-   * @returns {boolean} 第二步是否完成
-   */
-  checkStep2Completed() {
-    // 模拟逻辑：这里可以根据需要返回不同值来测试
-    // 实际实现时这里会调用同事提供的函数
-    return false; // 模拟第二步未完成，可改为true测试
-  }
-
-  /**
-   * 检查第三步是否完成（模拟函数，实际由同事实现）
-   * @returns {boolean} 第三步是否完成
-   */
-  checkStep3Completed() {
-    // 模拟逻辑：这里可以根据需要返回不同值来测试
-    // 实际实现时这里会调用同事提供的函数
-    return false; // 模拟第三步未完成，可改为true测试
-  }
-
-  /**
-   * 动态计算步骤状态
-   * 根据步骤完成情况返回正确的状态和文案
-   */
-  calculateStepStatus() {
-    const step1Completed = this.checkStep1Completed();
-    const step2Completed = this.checkStep2Completed();
-    const step3Completed = this.checkStep3Completed();
-
-    // 根据完成状态计算每个步骤的状态
-    let step1Status, step2Status, step3Status;
-    let step1Title, step2Title, step3Title;
-
-    if (!step1Completed) {
-      // 第一步未完成：第一步进行中，其余待解锁
-      step1Status = 'current';
-      step1Title = '第一步 (进行中)';
-      step2Status = 'locked';
-      step2Title = '第二步 (待解锁)';
-      step3Status = 'locked';
-      step3Title = '第三步 (待解锁)';
-    } else if (step1Completed && !step2Completed) {
-      // 第一步完成，第二步未完成：第一步已完成，第二步进行中，第三步待解锁
-      step1Status = 'completed';
-      step1Title = '第一步 (已完成)';
-      step2Status = 'current';
-      step2Title = '第二步 (进行中)';
-      step3Status = 'locked';
-      step3Title = '第三步 (待解锁)';
-    } else if (step1Completed && step2Completed && !step3Completed) {
-      // 前两步完成，第三步未完成：前两步已完成，第三步进行中
-      step1Status = 'completed';
-      step1Title = '第一步 (已完成)';
-      step2Status = 'completed';
-      step2Title = '第二步 (已完成)';
-      step3Status = 'current';
-      step3Title = '第三步 (进行中)';
-    } else {
-      // 全部完成：所有步骤都已完成
-      step1Status = 'completed';
-      step1Title = '第一步 (已完成)';
-      step2Status = 'completed';
-      step2Title = '第二步 (已完成)';
-      step3Status = 'completed';
-      step3Title = '第三步 (已完成)';
-    }
-
-    // 返回更新后的步骤数组
-    return [
-      { id: 'step1', name: '观看视频', status: step1Status, title: step1Title },
-      { id: 'step2', name: '基础认知', status: step2Status, title: step2Title },
-      { id: 'step3', name: '立体组装', status: step3Status, title: step3Title }
-    ];
-  }
-
-  /**
-   * 更新步骤状态
-   * 重新计算并更新步骤状态
-   */
-  updateStepStatus() {
-    this.steps = this.calculateStepStatus();
-    
-    if (GameGlobal.logger) {
-      GameGlobal.logger.info('步骤状态已更新', { 
-        step1: this.steps[0].status,
-        step2: this.steps[1].status,
-        step3: this.steps[2].status
-      }, 'toolAssemblyNav');
     }
   }
 
@@ -352,15 +248,9 @@ export default class ToolAssemblyNavPage extends BasePage {
         const img = wx.createImage();
         img.onload = () => {
           tool.imageLoaded = true;
-          tool.imageElement = img; // 保存图片元素
-          if (GameGlobal.logger) {
-            GameGlobal.logger.info(`图片加载成功: ${tool.image}`, null, 'toolAssemblyNav');
-          }
+          tool.imageElement = img;
         };
         img.onerror = () => {
-          if (GameGlobal.logger) {
-            GameGlobal.logger.warn(`图片加载失败: ${tool.image}`, null, 'toolAssemblyNav');
-          }
           tool.usePlaceholder = true;
           tool.imageLoaded = false;
         };
@@ -380,13 +270,8 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   renderContent(ctx) {
     try {
-      
-      // 绘制背景 - 优先使用背景图片，否则使用白色背景
       this.renderBackground(ctx);
-      
-      // 绘制工具区域背景 - 在主背景之上，UI元素之下
       this.renderToolBackground(ctx);
-      
       this.renderTopNav(ctx);
       this.renderToolCards(ctx);
       this.renderBottomNavBg(ctx);
@@ -394,7 +279,6 @@ export default class ToolAssemblyNavPage extends BasePage {
       if (GameGlobal.logger) {
         GameGlobal.logger.error('渲染页面内容失败', { error: error.message }, 'toolAssemblyNav');
       }
-      // 备用渲染方案
       this.renderFallbackContent(ctx);
     }
   }
@@ -612,13 +496,7 @@ export default class ToolAssemblyNavPage extends BasePage {
             drawWidth, drawHeight // 目标尺寸
           );
           
-          if (GameGlobal.logger && isActive) {
-            GameGlobal.logger.info(`卡片图片渲染成功: ${tool.name}`, {
-              image: tool.image,
-              cardWidth: this.cardWidth,
-              cardHeight: this.cardHeight
-            }, 'toolAssemblyNav');
-          }
+
         } catch (drawError) {
           if (GameGlobal.logger) {
             GameGlobal.logger.warn(`卡片图片渲染失败: ${tool.name}`, { 
@@ -638,8 +516,6 @@ export default class ToolAssemblyNavPage extends BasePage {
       if (isActive) {
         ctx.restore();
       }
-
-
       
     } catch (error) {
       if (GameGlobal.logger) {
@@ -657,8 +533,6 @@ export default class ToolAssemblyNavPage extends BasePage {
     // 限制圆角半径，确保不会过大
     const maxRadius = Math.min(width / 2, height / 2);
     const r = Math.min(Math.max(0, radius), maxRadius);
-    
-    
     
     // 如果圆角半径为0或很小，直接绘制普通矩形
     if (r < 1) {
@@ -732,168 +606,6 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
-   * 渲染难度标签
-   */
-  renderDifficultyTag(ctx, difficulty, x, y, tool) {
-    const tagWidth = 110; // 适配最大卡片的标签宽度
-    const tagHeight = 40;  // 适配最大卡片的标签高度
-    
-    // 使用工具指定的难度标签颜色
-    ctx.fillStyle = tool.difficultyColor || '#4096ff';
-    // 使用更大的圆角半径，确保效果明显
-    const tagRadius = Math.min(25, tagHeight / 2); // 最大25px或标签高度的一半
-    
-    if (GameGlobal.logger) {
-      GameGlobal.logger.debug('绘制难度标签圆角', { 
-        tagWidth, tagHeight, tagRadius 
-      }, 'toolAssemblyNav');
-    }
-    
-    // 直接使用兼容性最好的圆角绘制方法
-    try {
-      this.drawSimpleRoundedRect(ctx, x, y, tagWidth, tagHeight, tagRadius);
-      ctx.fill();
-    } catch (rectError) {
-      ctx.fillRect(x, y, tagWidth, tagHeight);
-      if (GameGlobal.logger) {
-        GameGlobal.logger.warn('难度标签圆角绘制失败', { error: rectError.message }, 'toolAssemblyNav');
-      }
-    }
-    
-    // 绘制星级（适配最大标签，现代化字体）
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    let stars = '';
-    for (let i = 0; i < 5; i++) {
-      stars += i < difficulty ? '★' : '☆';
-    }
-    ctx.fillText(stars, x + tagWidth / 2, y + tagHeight / 2);
-  }
-
-  /**
-   * 渲染奖励标签
-   */
-  renderRewardTag(ctx, reward, x, y) {
-    const tagWidth = 120; // 增加宽度以适应"奖励"文本前缀
-    const tagHeight = 35; // 适配最大卡片的标签高度
-    
-    // 绘制标签背景
-    const gradient = ctx.createLinearGradient(x, y - tagHeight, x + tagWidth, y);
-    gradient.addColorStop(0, '#FFB74D');
-    gradient.addColorStop(1, '#FF9800');
-    
-    ctx.fillStyle = gradient;
-    // 使用更大的圆角半径，与难度标签保持一致
-    const tagRadius = Math.min(25, tagHeight / 2); // 最大25px或标签高度的一半
-    
-      if (GameGlobal.logger) {
-      GameGlobal.logger.debug('绘制奖励标签圆角', { 
-        tagWidth, tagHeight, tagRadius 
-      }, 'toolAssemblyNav');
-    }
-    
-    // 直接使用兼容性最好的圆角绘制方法
-    try {
-      this.drawSimpleRoundedRect(ctx, x, y - tagHeight, tagWidth, tagHeight, tagRadius);
-      ctx.fill();
-    } catch (rectError) {
-      ctx.fillRect(x, y - tagHeight, tagWidth, tagHeight);
-      if (GameGlobal.logger) {
-        GameGlobal.logger.warn('奖励标签圆角绘制失败', { error: rectError.message }, 'toolAssemblyNav');
-      }
-    }
-    
-    // 绘制奖励文本和数值（添加"奖励:"前缀，现代化字体）
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 16px "Nunito", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`奖励:${reward}`, x + tagWidth / 2, y - tagHeight / 2);
-  }
-
-  /**
-   * 渲染图片占位符
-   */
-  renderImagePlaceholder(ctx, x, y, width, height) {
-    ctx.fillStyle = '#F5F5F5';
-    ctx.fillRect(x, y, width, height);
-    
-    // 绘制边框
-    ctx.strokeStyle = '#E0E0E0';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x, y, width, height);
-    
-    // 绘制占位符文字
-    ctx.fillStyle = '#999999';
-    ctx.font = '10px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('加载中', x + width / 2, y + height / 2);
-  }
-
-  /**
-   * 渲染难度星级
-   */
-  renderDifficultyStars(ctx, difficulty, x, y) {
-    // 绘制星级背景
-    ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
-    ctx.fillRect(x - 2, y - 8, 62, 16);
-    
-    // 绘制星级边框
-    ctx.strokeStyle = '#FFD700';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x - 2, y - 8, 62, 16);
-    
-    // 绘制星星
-    for (let i = 0; i < 5; i++) {
-      if (i < difficulty) {
-        // 实心星星（金色）
-        ctx.fillStyle = '#FFD700';
-        ctx.font = 'bold 12px Arial';
-      } else {
-        // 空心星星（灰色）
-        ctx.fillStyle = '#CCCCCC';
-        ctx.font = '12px Arial';
-      }
-      ctx.textAlign = 'left';
-      const star = i < difficulty ? '★' : '☆';
-      ctx.fillText(star, x + i * 12, y);
-    }
-  }
-
-  /**
-   * 渲染奖励信息
-   */
-  renderReward(ctx, reward, centerX, y) {
-    // 绘制奖励背景
-    const rewardWidth = 120;
-    const rewardHeight = 35;
-    const rewardX = centerX - rewardWidth / 2; // 居中显示
-    
-    // 渐变背景
-    const gradient = ctx.createLinearGradient(rewardX, y, rewardX + rewardWidth, y + rewardHeight);
-    gradient.addColorStop(0, '#FFB74D');
-    gradient.addColorStop(1, '#FF9800');
-    
-    ctx.fillStyle = gradient;
-    ctx.fillRect(rewardX, y - 25, rewardWidth, rewardHeight);
-    
-    // 边框
-    ctx.strokeStyle = '#F57C00';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(rewardX, y - 25, rewardWidth, rewardHeight);
-    
-    // 文字
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 16px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${reward}`, centerX, y - 5);
-  }
-
-  /**
    * 渲染底部导航栏背景图片
    */
   renderBottomNavBg(ctx) {
@@ -957,10 +669,6 @@ export default class ToolAssemblyNavPage extends BasePage {
       }
     }
   }
-
-
-
-
 
   /**
    * 绘制自动换行文字
@@ -1559,28 +1267,7 @@ export default class ToolAssemblyNavPage extends BasePage {
             starSize, starSize
           );
           
-          // 直接在控制台输出调试信息，确保用户能看到
-          console.log('🌟 状态图片渲染详情:', {
-            toolQylStatus: this.toolQylStatus,
-            selectedPosition: position,
-            '当前位置配置x': position.x,
-            '当前位置配置y': position.y,
-            allPositions: this.starStatusPositions,
-            backgroundArea: `${Math.round(bgX)}, ${Math.round(bgY)}, ${Math.round(bgWidth)}x${Math.round(bgHeight)}`,
-            calculatedStarPosition: `${Math.round(starX)}, ${Math.round(starY)}`,
-            starSize: Math.round(starSize)
-          });
-          
-          if (GameGlobal.logger) {
-            GameGlobal.logger.info('状态图片渲染详情', {
-              toolQylStatus: this.toolQylStatus,
-              selectedPosition: position,
-              allPositions: this.starStatusPositions,
-              backgroundArea: `${Math.round(bgX)}, ${Math.round(bgY)}, ${Math.round(bgWidth)}x${Math.round(bgHeight)}`,
-              calculatedStarPosition: `${Math.round(starX)}, ${Math.round(starY)}`,
-              starSize: Math.round(starSize)
-            }, 'toolAssemblyNav');
-          }
+
         } else {
           if (GameGlobal.logger) {
             GameGlobal.logger.warn('tool_qyl状态值超出位置配置范围', { 

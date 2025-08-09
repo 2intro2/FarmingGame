@@ -678,29 +678,31 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 处理卡片点击
    */
   handleCardClick(tool) {
+    console.log('卡片点击事件:', tool);
     
     if (tool.unlocked) {
-      // 第一张卡片（曲辕犁）- 跳转到指定页面
+      // 第一张卡片（曲辕犁）- 跳转到视频学习页面
       if (tool.id === 'quyuan_plow') {
-        // TODO: 替换为实际的页面名称和参数
-        // 参数说明：
-        // - 第一个参数：目标页面名称（字符串），例如：'ToolAssemblyDetailPage'
-        // - 第二个参数：传递的数据对象，例如：{ toolData: tool, level: 1 }
-
+        console.log('点击曲辕犁卡片，准备跳转到视频学习页面');
         
-        // 示例跳转代码（需要根据实际页面名称替换）：
-        // GameGlobal.pageManager.switchToPage('TARGET_PAGE_NAME', { 
-        //   toolData: tool,
-        //   // 可以添加其他需要传递的参数
-        //   level: 1,
-        //   difficulty: 'normal'
-        // });
-        
+        try {
+          // 跳转到视频学习页面
+          if (GameGlobal && GameGlobal.pageManager && typeof GameGlobal.pageManager.switchToPage === 'function') {
+            GameGlobal.pageManager.switchToPage('videoLearning');
+            console.log('成功跳转到视频学习页面');
+          } else {
+            console.error('页面管理器不可用');
+            Toast.show('页面跳转失败，请重试', { type: 'error', duration: 2000 });
+          }
+        } catch (error) {
+          console.error('页面跳转时出错:', error);
+          Toast.show('页面跳转失败，请重试', { type: 'error', duration: 2000 });
+        }
       }
     } else {
       // 后两张卡片（石磨、水车）- 显示未解锁Toast
       Toast.show('功能未解锁，敬请期待～', { duration: 2000 });
-      
+      console.log('点击未解锁卡片:', tool.name);
     }
   }
 

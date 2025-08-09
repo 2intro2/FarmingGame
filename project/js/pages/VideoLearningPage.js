@@ -155,7 +155,7 @@ export default class VideoLearningPage {
       y: this.layout.video.y,
       width: this.layout.video.width,
       height: this.layout.video.height,
-      src: 'https://bjhnewmda2.bdstatic.com/524741487a706d75434e594d58326e4e/4e527a7a544d6231/b6a22a9db7b090766af99e2075267dff0f7d3b0fe0dcf53d6cbea7a5da877916d8d0d19c1431ce36a7a6ca644020b1d9d7171dedce0ecf50ae64858adee1510d0b43264f57f7702ed5bb7c305b09dd74.mp4?auth_key=1754736534-0-0-2fa40d270154cbaad6e6f1d3311d63a6', // 使用测试视频，实际使用时请替换为真实视频URL
+      src: 'https://vdept3.bdstatic.com/mda-rh8cg4epe3fse7r9/cae_h264/1754732696078638116/mda-rh8cg4epe3fse7r9.mp4?v_from_s=hkapp-haokan-hbe&auth_key=1754758663-0-0-09d88080b67d166a43065a2d7a8a1f11&bcevod_channel=searchbox_feed&cr=0&cd=0&pd=1&pt=3&logid=3463781893&vid=4260617882103308770&klogid=3463781893&abtest=', // 使用测试视频，实际使用时请替换为真实视频URL
       autoplay: false,
       loop: false,
       muted: false,
@@ -403,7 +403,7 @@ export default class VideoLearningPage {
    * 加载选中状态图片
    */
   loadCheckedImage() {
-    ImageLoader.loadImage('pages/checked.png', { timeout: 5000 })
+    ImageLoader.loadImage('images/checked.png', { timeout: 5000 })
       .then(img => {
         this.checkedImage = img;
         console.log('选中状态图片加载成功');
@@ -1362,7 +1362,7 @@ export default class VideoLearningPage {
       isPlaying: false,
       isFullScreen: false,
       volume: 1,
-      isCompleted: false
+      isCompleted: true // 临时设置为true，方便测试卡片匹配功能
     };
     
     // 重置卡片状态
@@ -1390,6 +1390,8 @@ export default class VideoLearningPage {
    * 显示页面
    */
   show() {
+    console.log('VideoLearningPage.show() 被调用');
+    
     // 重置所有状态
     this.resetAllStates();
     
@@ -1398,18 +1400,25 @@ export default class VideoLearningPage {
     
     // 延迟初始化视频组件
     if (!this.video) {
+      console.log('视频组件不存在，开始初始化');
       this.initVideo();
     }
     
     if (this.video) {
+      console.log('视频组件已创建，尝试显示视频');
       try {
         // 检查视频对象是否有show方法
         if (typeof this.video.show === 'function') {
       this.video.show();
+          console.log('视频显示成功');
+        } else {
+          console.log('视频对象没有show方法');
         }
       } catch (error) {
         console.warn('视频显示时出错:', error);
       }
+    } else {
+      console.error('视频组件创建失败');
     }
   }
 

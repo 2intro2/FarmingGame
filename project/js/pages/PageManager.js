@@ -25,7 +25,8 @@ export default class PageManager {
       home: new HomePage(),
       toolAssemblyNav: new ToolAssemblyNavPage(),
       toolAssembly: new ToolAssemblyPage(),
-      threeDAssembly: new ThreeDAssemblyPage()
+      threeDAssembly: new ThreeDAssemblyPage(),
+      videoLearning: new VideoLearningPage()
     };
     
     // 设置默认页面
@@ -68,8 +69,18 @@ export default class PageManager {
         this.animatePageTransition(fromPage, toPage, options.animationType || 'fade');
       } else {
         // 直接切换页面
+        // 隐藏当前页面
+        if (fromPage && fromPage.hide && typeof fromPage.hide === 'function') {
+          fromPage.hide();
+        }
+        
         this.currentPage = toPage;
         GameGlobal.databus.switchPage(pageName);
+        
+        // 显示新页面
+        if (toPage && toPage.show && typeof toPage.show === 'function') {
+          toPage.show();
+        }
 
         if (GameGlobal.logger) {
           GameGlobal.logger.info(`页面直接切换完成`, {
@@ -104,6 +115,11 @@ export default class PageManager {
   animatePageTransition(fromPage, toPage, animationType = 'fade') {
     this.isAnimating = true;
 
+    // 隐藏当前页面
+    if (fromPage && fromPage.hide && typeof fromPage.hide === 'function') {
+      fromPage.hide();
+    }
+
     // 创建动画
     const animation = GameGlobal.animationManager.createPresetAnimation(animationType, {
       fromPage: fromPage,
@@ -112,11 +128,21 @@ export default class PageManager {
         this.isAnimating = false;
         this.currentPage = toPage;
         GameGlobal.databus.switchPage(toPage.constructor.name.toLowerCase().replace('page', ''));
+        
+        // 显示新页面
+        if (toPage && toPage.show && typeof toPage.show === 'function') {
+          toPage.show();
+        }
       },
       onCancel: () => {
         this.isAnimating = false;
         this.currentPage = toPage;
         GameGlobal.databus.switchPage(toPage.constructor.name.toLowerCase().replace('page', ''));
+        
+        // 显示新页面
+        if (toPage && toPage.show && typeof toPage.show === 'function') {
+          toPage.show();
+        }
       }
     });
 

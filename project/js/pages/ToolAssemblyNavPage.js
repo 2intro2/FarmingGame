@@ -1,5 +1,6 @@
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
 import BasePage from './BasePage';
+import { showToast } from '../utils/toast';
 
 /**
  * 农具拼装导航页面
@@ -146,14 +147,14 @@ export default class ToolAssemblyNavPage extends BasePage {
         id: 'stone_mill', 
         name: '石磨',
         image: 'images/card_sm.png',
-        unlocked: true,
+        unlocked: false, // 设置为未解锁状态
         completed: false
       },
       {
         id: 'water_wheel',
         name: '水车',
         image: 'images/card_sc.png',
-        unlocked: true,
+        unlocked: false, // 设置为未解锁状态
         completed: false
       }
     ];
@@ -1044,11 +1045,33 @@ export default class ToolAssemblyNavPage extends BasePage {
     }
     
     if (tool.unlocked) {
-      // TODO: 实现跳转到具体的农具拼装场景
-      console.log(`开始 ${tool.name} 的拼装教程`);
-      // GameGlobal.pageManager.switchToPage('toolAssemblyScene', { toolData: tool });
+      // 第一张卡片（曲辕犁）- 跳转到指定页面
+      if (tool.id === 'quyuan_plow') {
+        // TODO: 替换为实际的页面名称和参数
+        // 参数说明：
+        // - 第一个参数：目标页面名称（字符串），例如：'ToolAssemblyDetailPage'
+        // - 第二个参数：传递的数据对象，例如：{ toolData: tool, level: 1 }
+        console.log(`跳转到 ${tool.name} 的拼装页面`);
+        
+        // 示例跳转代码（需要根据实际页面名称替换）：
+        // GameGlobal.pageManager.switchToPage('TARGET_PAGE_NAME', { 
+        //   toolData: tool,
+        //   // 可以添加其他需要传递的参数
+        //   level: 1,
+        //   difficulty: 'normal'
+        // });
+        
+        if (GameGlobal.logger) {
+          GameGlobal.logger.info(`${tool.name} 页面跳转触发`, { toolId: tool.id }, 'toolAssemblyNav');
+        }
+      }
     } else {
-      console.log(`${tool.name} 尚未解锁`);
+      // 后两张卡片（石磨、水车）- 显示未解锁Toast
+      showToast('功能未解锁，敬请期待～', 2000);
+      
+      if (GameGlobal.logger) {
+        GameGlobal.logger.info(`${tool.name} 功能未解锁`, { toolId: tool.id }, 'toolAssemblyNav');
+      }
     }
   }
 

@@ -23,7 +23,7 @@ export default class ToolAssemblyNavPage extends BasePage {
   
   // 状态图片位置配置 - 四个位置供用户指定 (相对于底部导航栏背景的位置)
   starStatusPositions = [
-    { x: 0.2, y: 0.3 }, 
+    { x: 0.2, y: 0.9 }, 
     { x: 0.8, y: 0.3 }, 
     { x: 0.2, y: 0.7 }, 
     { x: 0.8, y: 0.7 }  
@@ -1324,6 +1324,16 @@ export default class ToolAssemblyNavPage extends BasePage {
         }, 'toolAssemblyNav');
       }
     }
+    
+    // 临时强制设置状态值为0，用于测试位置变化
+    // TODO: 测试完成后请删除此行
+    this.toolQylStatus = 0;
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.info('临时强制设置toolQylStatus=0，用于测试位置变化', { 
+        finalStatus: this.toolQylStatus 
+      }, 'toolAssemblyNav');
+    }
   }
 
   /**
@@ -1560,10 +1570,12 @@ export default class ToolAssemblyNavPage extends BasePage {
           );
           
           if (GameGlobal.logger) {
-            GameGlobal.logger.debug('状态图片渲染成功', {
-              status: this.toolQylStatus,
-              position: position,
-              starPosition: `${Math.round(starX)}, ${Math.round(starY)}`,
+            GameGlobal.logger.info('状态图片渲染详情', {
+              toolQylStatus: this.toolQylStatus,
+              selectedPosition: position,
+              allPositions: this.starStatusPositions,
+              backgroundArea: `${Math.round(bgX)}, ${Math.round(bgY)}, ${Math.round(bgWidth)}x${Math.round(bgHeight)}`,
+              calculatedStarPosition: `${Math.round(starX)}, ${Math.round(starY)}`,
               starSize: Math.round(starSize)
             }, 'toolAssemblyNav');
           }

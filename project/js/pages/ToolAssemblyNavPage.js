@@ -407,25 +407,24 @@ export default class ToolAssemblyNavPage extends BasePage {
         }, 'toolAssemblyNav');
       }
       
+      // 直接使用兼容性最好的手动圆角绘制
       try {
-        if (ctx.roundRect && typeof ctx.roundRect === 'function') {
-          ctx.roundRect(0, 0, this.cardWidth, this.cardHeight, borderRadius);
-          ctx.fill();
-          if (GameGlobal.logger) {
-            GameGlobal.logger.debug('使用原生roundRect绘制卡片背景', {}, 'toolAssemblyNav');
-          }
-        } else {
-          // 降级方案 - 手动绘制圆角矩形
-          this.drawRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
-          ctx.fill();
-          if (GameGlobal.logger) {
-            GameGlobal.logger.debug('使用手动drawRoundedRect绘制卡片背景', {}, 'toolAssemblyNav');
-          }
+        this.drawSimpleRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
+        ctx.fill();
+        if (GameGlobal.logger) {
+          GameGlobal.logger.debug('使用简化圆角绘制卡片背景', { borderRadius }, 'toolAssemblyNav');
         }
       } catch (rectError) {
+        // 如果圆角绘制失败，使用普通矩形
         ctx.fillRect(0, 0, this.cardWidth, this.cardHeight);
         if (GameGlobal.logger) {
-          GameGlobal.logger.warn('圆角绘制失败，使用普通矩形', { error: rectError.message }, 'toolAssemblyNav');
+          GameGlobal.logger.warn('圆角绘制失败，使用普通矩形', { 
+            error: rectError.message,
+            stack: rectError.stack,
+            borderRadius,
+            cardWidth: this.cardWidth,
+            cardHeight: this.cardHeight
+          }, 'toolAssemblyNav');
         }
       }
       
@@ -442,17 +441,18 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.lineWidth = 2;
       }
       try {
-        if (ctx.roundRect && typeof ctx.roundRect === 'function') {
-          ctx.roundRect(0, 0, this.cardWidth, this.cardHeight, borderRadius);
-          ctx.stroke();
-        } else {
-          this.drawRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
-          ctx.stroke();
+        this.drawSimpleRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
+        ctx.stroke();
+        if (GameGlobal.logger) {
+          GameGlobal.logger.debug('使用简化圆角绘制卡片边框', { borderRadius }, 'toolAssemblyNav');
         }
       } catch (rectError) {
         ctx.strokeRect(0, 0, this.cardWidth, this.cardHeight);
         if (GameGlobal.logger) {
-          GameGlobal.logger.warn('圆角边框绘制失败，使用普通边框', { error: rectError.message }, 'toolAssemblyNav');
+          GameGlobal.logger.warn('圆角边框绘制失败，使用普通边框', { 
+            error: rectError.message,
+            borderRadius 
+          }, 'toolAssemblyNav');
         }
       }
       
@@ -660,7 +660,55 @@ export default class ToolAssemblyNavPage extends BasePage {
   }
 
   /**
-   * 手动绘制圆角矩形（兼容性方案）
+   * 简化的圆角矩形绘制（最大兼容性）
+   */
+  drawSimpleRoundedRect(ctx, x, y, width, height, radius) {
+    // 限制圆角半径，确保不会过大
+    const maxRadius = Math.min(width / 2, height / 2);
+    const r = Math.min(Math.max(0, radius), maxRadius);
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug(`简化圆角矩形绘制`, { 
+        x, y, width, height, 
+        requestedRadius: radius, 
+        effectiveRadius: r
+      }, 'toolAssemblyNav');
+    }
+    
+    // 如果圆角半径为0或很小，直接绘制普通矩形
+    if (r < 1) {
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.closePath();
+      return;
+    }
+    
+    // 使用最基础的arc方法绘制圆角
+    try {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + width - r, y);
+      ctx.arc(x + width - r, y + r, r, -Math.PI/2, 0);
+      ctx.lineTo(x + width, y + height - r);
+      ctx.arc(x + width - r, y + height - r, r, 0, Math.PI/2);
+      ctx.lineTo(x + r, y + height);
+      ctx.arc(x + r, y + height - r, r, Math.PI/2, Math.PI);
+      ctx.lineTo(x, y + r);
+      ctx.arc(x + r, y + r, r, Math.PI, -Math.PI/2);
+      ctx.closePath();
+    } catch (error) {
+      // 如果arc方法也失败，使用最基础的rect
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.closePath();
+      if (GameGlobal.logger) {
+        GameGlobal.logger.warn('弧线绘制失败，使用矩形', { error: error.message }, 'toolAssemblyNav');
+      }
+    }
+  }
+
+  /**
+   * 手动绘制圆角矩形（兼容性方案 - 备用）
    */
   drawRoundedRect(ctx, x, y, width, height, radius) {
     // 限制圆角半径不超过宽高的一半
@@ -746,7 +794,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.roundRect(x, y, tagWidth, tagHeight, 12);
         ctx.fill();
       } else {
-        this.drawRoundedRect(ctx, x, y, tagWidth, tagHeight, 12);
+        this.drawSimpleRoundedRect(ctx, x, y, tagWidth, tagHeight, 12);
         ctx.fill();
       }
     } catch (rectError) {
@@ -784,7 +832,7 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.roundRect(x, y - tagHeight, tagWidth, tagHeight, 10);
         ctx.fill();
       } else {
-        this.drawRoundedRect(ctx, x, y - tagHeight, tagWidth, tagHeight, 10);
+        this.drawSimpleRoundedRect(ctx, x, y - tagHeight, tagWidth, tagHeight, 10);
         ctx.fill();
       }
     } catch (rectError) {

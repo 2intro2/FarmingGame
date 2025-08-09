@@ -109,12 +109,16 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 初始化布局参数
    */
   initLayout() {
-    // 堆叠卡片布局参数 - 大幅增加尺寸占据屏幕主要区域
-    this.cardWidth = 600;   // 大幅增加卡片宽度，接近屏幕宽度的80%
-    this.cardHeight = 350;  // 大幅增加卡片高度，保持16:9的合理比例
+    // 堆叠卡片布局参数 - 最大化尺寸但避免遮挡其他组件
+    // 可用垂直空间：SCREEN_HEIGHT - 80(顶部) - 120(底部) = SCREEN_HEIGHT - 200
+    const availableHeight = SCREEN_HEIGHT - 200; // 减去顶部和底部组件
+    const availableWidth = SCREEN_WIDTH - 40; // 留出左右边距
+    
+    this.cardWidth = Math.min(650, availableWidth);  // 进一步增大宽度，最大650px
+    this.cardHeight = Math.min(400, availableHeight * 0.8); // 增大高度，占可用空间80%
     this.cardSpacing = 60;  // 卡片之间的间距
-    this.stackOffset = 120; // 进一步增大堆叠偏移量适配更大卡片
-    this.scaleRatio = 0.78; // 调整非活跃卡片的缩放比例，突出大小对比
+    this.stackOffset = 130; // 增大堆叠偏移量适配更大卡片
+    this.scaleRatio = 0.75; // 进一步调整缩放比例，突出大小对比
     this.maxVisibleCards = 2; // 保持显示2张卡片突出中心卡片
     
     // 滑动手势参数
@@ -315,7 +319,10 @@ export default class ToolAssemblyNavPage extends BasePage {
    */
   renderToolCards(ctx) {
     const centerX = SCREEN_WIDTH / 2; // 屏幕中心X坐标
-    const centerY = SCREEN_HEIGHT / 2 - 50; // 垂直居中偏上一点
+    // 在顶部导航栏(80px)和底部步骤指示器(120px)之间居中
+    const availableTop = 80;
+    const availableBottom = SCREEN_HEIGHT - 120;
+    const centerY = (availableTop + availableBottom) / 2; // 在可用空间中居中
     
     // 按Z-order渲染（从后往前）
     for (let i = -this.maxVisibleCards; i <= this.maxVisibleCards; i++) {
@@ -402,9 +409,9 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.strokeRect(0, 0, this.cardWidth, this.cardHeight);
       }
       
-      // 渲染工具图标（左侧，进一步增大）
-      const iconSize = 140; // 进一步增大图标尺寸
-      const iconX = 40;
+      // 渲染工具图标（左侧，适配最大卡片）
+      const iconSize = 160; // 适配更大卡片的图标尺寸
+      const iconX = 50;
       const iconY = (this.cardHeight - iconSize) / 2;
       
       if (tool.imageLoaded && !tool.usePlaceholder && tool.imageElement) {
@@ -417,33 +424,33 @@ export default class ToolAssemblyNavPage extends BasePage {
         this.renderImagePlaceholder(ctx, iconX, iconY, iconSize, iconSize);
       }
       
-      // 渲染文本内容（右侧，适配大卡片）
-      const textX = iconX + iconSize + 35;
-      const textY = 50;
+      // 渲染文本内容（右侧，适配最大卡片）
+      const textX = iconX + iconSize + 40;
+      const textY = 60;
       
-      // 工具名称（大字体）
+      // 工具名称（最大字体）
       ctx.fillStyle = '#333333';
-      ctx.font = 'bold 28px Arial'; // 进一步增大字体
+      ctx.font = 'bold 32px Arial'; // 适配最大卡片的字体
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(tool.name, textX, textY);
       
       // 副标题（大字体）
       ctx.fillStyle = '#666666';
-      ctx.font = '20px Arial'; // 进一步增大字体
-      ctx.fillText(tool.subtitle, textX, textY + 45);
+      ctx.font = '22px Arial'; // 适配最大卡片的字体
+      ctx.fillText(tool.subtitle, textX, textY + 50);
       
-      // 描述文字（适配大空间，增加行数）
+      // 描述文字（适配最大空间）
       ctx.fillStyle = '#888888';
-      ctx.font = '16px Arial'; // 进一步增大字体
-      const maxDescWidth = this.cardWidth - textX - 40;
-      this.drawTruncatedText(ctx, tool.description, textX, textY + 85, maxDescWidth, 120);
+      ctx.font = '18px Arial'; // 适配最大卡片的字体
+      const maxDescWidth = this.cardWidth - textX - 50;
+      this.drawTruncatedText(ctx, tool.description, textX, textY + 95, maxDescWidth, 140);
       
-      // 渲染难度标签（右上角，适配大卡片）
-      this.renderDifficultyTag(ctx, tool.difficulty, this.cardWidth - 110, 25);
+      // 渲染难度标签（右上角，适配最大卡片）
+      this.renderDifficultyTag(ctx, tool.difficulty, this.cardWidth - 120, 30);
       
-      // 渲染奖励信息（右下角，适配大卡片）
-      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 90, this.cardHeight - 35);
+      // 渲染奖励信息（右下角，适配最大卡片）
+      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 100, this.cardHeight - 40);
       
     } catch (error) {
       if (GameGlobal.logger) {
@@ -665,8 +672,8 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染难度标签
    */
   renderDifficultyTag(ctx, difficulty, x, y) {
-    const tagWidth = 100; // 进一步增大标签宽度
-    const tagHeight = 35;  // 进一步增大标签高度
+    const tagWidth = 110; // 适配最大卡片的标签宽度
+    const tagHeight = 40;  // 适配最大卡片的标签高度
     
     // 绘制标签背景
     const gradient = ctx.createLinearGradient(x, y, x + tagWidth, y + tagHeight);
@@ -686,9 +693,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillRect(x, y, tagWidth, tagHeight);
     }
     
-    // 绘制星级（适配大标签）
+    // 绘制星级（适配最大标签）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '16px Arial'; // 进一步增大字体
+    ctx.font = '18px Arial'; // 适配最大标签的字体
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
@@ -703,8 +710,8 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 渲染奖励标签
    */
   renderRewardTag(ctx, reward, x, y) {
-    const tagWidth = 70; // 进一步增大标签宽度
-    const tagHeight = 30; // 进一步增大标签高度
+    const tagWidth = 80; // 适配最大卡片的标签宽度
+    const tagHeight = 35; // 适配最大卡片的标签高度
     
     // 绘制标签背景
     const gradient = ctx.createLinearGradient(x, y - tagHeight, x + tagWidth, y);
@@ -724,9 +731,9 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillRect(x, y - tagHeight, tagWidth, tagHeight);
     }
     
-    // 绘制奖励数值（适配大标签）
+    // 绘制奖励数值（适配最大标签）
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 16px Arial'; // 进一步增大字体
+    ctx.font = 'bold 18px Arial'; // 适配最大标签的字体
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${reward}`, x + tagWidth / 2, y - tagHeight / 2);
@@ -1054,8 +1061,16 @@ export default class ToolAssemblyNavPage extends BasePage {
     if (Math.abs(deltaX) > 10) {
       this.isDragging = true;
       
-      // 防止页面滚动
-      event.preventDefault();
+      // 防止页面滚动（微信小游戏兼容性处理）
+      try {
+        if (event.preventDefault && typeof event.preventDefault === 'function') {
+          event.preventDefault();
+        }
+      } catch (error) {
+        if (GameGlobal.logger) {
+          GameGlobal.logger.debug('preventDefault不支持', { error: error.message }, 'toolAssemblyNav');
+        }
+      }
       
       if (GameGlobal.logger) {
         GameGlobal.logger.debug('触摸移动', { deltaX, deltaTime }, 'toolAssemblyNav');

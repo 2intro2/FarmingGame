@@ -92,9 +92,9 @@ export default class VideoLearningPage {
       }
     },
     submitButton: {
-      x: SCREEN_WIDTH * 0.68,
+      x: SCREEN_WIDTH * 0.66,
       y: SCREEN_HEIGHT - 200,
-      width: SCREEN_WIDTH * 0.3,
+      width: SCREEN_WIDTH * 0.25,
       height: 100
     },
     backButton: {

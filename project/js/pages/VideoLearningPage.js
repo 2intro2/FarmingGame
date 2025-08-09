@@ -36,6 +36,9 @@ export default class VideoLearningPage {
 
   // 确认提交按钮图片
   submitButtonImage = null;
+  
+  // 返回按钮图片
+  backButtonImage = null;
 
   // 进度条拖动状态
   progressDrag = {
@@ -201,6 +204,9 @@ export default class VideoLearningPage {
     
     // 加载确认提交按钮图片
     this.loadSubmitButtonImage();
+    
+    // 加载返回按钮图片
+    this.loadBackButtonImage();
   }
 
   /**
@@ -211,6 +217,8 @@ export default class VideoLearningPage {
     const cardImages = this.cards.column1.map(card => card.image);
     // 测试确认提交按钮图片
     cardImages.push('images/confirmSubmission.png');
+    // 测试返回按钮图片
+    cardImages.push('images/left.png');
     ImageTest.testImages(cardImages);
   }
 
@@ -242,6 +250,21 @@ export default class VideoLearningPage {
       .catch(error => {
         console.warn('确认提交按钮图片加载失败:', error);
         this.submitButtonImage = null;
+      });
+  }
+
+  /**
+   * 加载返回按钮图片
+   */
+  loadBackButtonImage() {
+    ImageLoader.loadImage('images/left.png', { timeout: 5000 })
+      .then(img => {
+        this.backButtonImage = img;
+        console.log('返回按钮图片加载成功');
+      })
+      .catch(error => {
+        console.warn('返回按钮图片加载失败:', error);
+        this.backButtonImage = null;
       });
   }
 
@@ -728,6 +751,24 @@ export default class VideoLearningPage {
   renderBackButton(ctx) {
     const { x, y, width, height } = this.layout.backButton;
     
+    // 如果有返回按钮图片且加载完成，绘制图片
+    if (this.backButtonImage && ImageLoader.isValidImage(this.backButtonImage)) {
+      try {
+        ctx.drawImage(this.backButtonImage, x, y, width, height);
+      } catch (error) {
+        console.warn('返回按钮图片绘制失败:', error);
+        this.renderBackButtonFallback(ctx, x, y, width, height);
+      }
+    } else {
+      // 没有图片或图片加载失败，使用备用按钮
+      this.renderBackButtonFallback(ctx, x, y, width, height);
+    }
+  }
+
+  /**
+   * 绘制备用返回按钮（当图片加载失败时）
+   */
+  renderBackButtonFallback(ctx, x, y, width, height) {
     // 绘制按钮背景
     ctx.fillStyle = '#4CAF50';
     ctx.fillRect(x, y, width, height);

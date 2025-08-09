@@ -51,6 +51,12 @@ export default class VideoLearningPage {
   
   // 选中状态图片
   checkedImage = null;
+  
+  // 连线图片
+  lineImage = null;
+  
+  // 存储匹配的卡片连线信息
+  matchedConnections = [];
 
 
 
@@ -233,6 +239,9 @@ export default class VideoLearningPage {
     
     // 加载选中状态图片
     this.loadCheckedImage();
+    
+    // 加载连线图片
+    this.loadLineImage();
   }
 
   /**
@@ -256,6 +265,8 @@ export default class VideoLearningPage {
     cardImages.push('images/start.png');
     // 测试选中状态图片
     cardImages.push('pages/checked.png');
+    // 测试连线图片
+    cardImages.push('images/line.png');
     ImageTest.testImages(cardImages);
   }
 
@@ -383,6 +394,21 @@ export default class VideoLearningPage {
   }
 
   /**
+   * 加载连线图片
+   */
+  loadLineImage() {
+    ImageLoader.loadImage('images/line.png', { timeout: 5000 })
+      .then(img => {
+        this.lineImage = img;
+        console.log('连线图片加载成功');
+      })
+      .catch(error => {
+        console.warn('连线图片加载失败:', error);
+        this.lineImage = null;
+      });
+  }
+
+  /**
    * 渲染页面
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
@@ -398,6 +424,9 @@ export default class VideoLearningPage {
     
     // 绘制卡片
     this.renderCards(ctx);
+    
+    // 绘制连线
+    this.renderConnections(ctx);
     
     // 绘制提交按钮
     this.renderSubmitButton(ctx);
@@ -699,6 +728,95 @@ export default class VideoLearningPage {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('✓', x + width / 2, y + height / 2);
+  }
+
+  /**
+   * 绘制连线
+   */
+  renderConnections(ctx) {
+    this.matchedConnections.forEach(connection => {
+      this.renderSingleConnection(ctx, connection);
+    });
+  }
+
+  /**
+   * 绘制单条连线
+   */
+  renderSingleConnection(ctx, connection) {
+    const { startX, startY, endX, endY } = connection;
+    
+    // 计算连线的长度和角度
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const angle = Math.atan2(dy, dx);
+    
+    // 保存当前变换状态
+    ctx.save();
+    
+    // 移动到起始点并旋转
+    ctx.translate(startX, startY);
+    ctx.rotate(angle);
+    
+    if (this.lineImage && ImageLoader.isValidImage(this.lineImage)) {
+      try {
+        // 绘制连线图片，拉伸到计算出的长度
+        ctx.drawImage(this.lineImage, 0, -10, length, 20);
+      } catch (error) {
+        console.warn('连线图片绘制失败:', error);
+        this.renderConnectionFallback(ctx, 0, 0, length);
+      }
+    } else {
+      // 没有图片或图片加载失败，使用备用连线
+      this.renderConnectionFallback(ctx, 0, 0, length);
+    }
+    
+    // 恢复变换状态
+    ctx.restore();
+  }
+
+  /**
+   * 绘制备用连线（当图片加载失败时）
+   */
+  renderConnectionFallback(ctx, x, y, length) {
+    // 绘制简单的线条
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + length, y);
+    ctx.stroke();
+  }
+
+  /**
+   * 添加连线信息
+   */
+  addConnection(card1, card2) {
+    // 计算第一列卡片的中心点
+    const card1Index = this.cards.column1.findIndex(c => c.id === card1.id);
+    const card1Layout = this.layout.cards.column1;
+    const card1CenterX = card1Layout.x + card1Layout.width;
+    const card1CenterY = card1Layout.y + card1Index * (card1Layout.height + card1Layout.gap) + card1Layout.height / 2;
+    
+    // 计算第二列卡片的中心点
+    const card2Index = this.cards.column2.findIndex(c => c.id === card2.id);
+    const card2Layout = this.layout.cards.column2;
+    const card2CenterX = card2Layout.x;
+    const card2CenterY = card2Layout.y + card2Index * (card2Layout.height + card2Layout.gap) + card2Layout.height / 2;
+    
+    // 创建连线信息
+    const connection = {
+      startX: card1CenterX,
+      startY: card1CenterY,
+      endX: card2CenterX,
+      endY: card2CenterY,
+      card1Id: card1.id,
+      card2Id: card2.id
+    };
+    
+    this.matchedConnections.push(connection);
+    console.log('添加连线:', connection);
   }
 
   /**
@@ -1016,6 +1134,9 @@ export default class VideoLearningPage {
               selectedCard1.selected = false;
               selectedCard2.selected = false;
               
+              // 添加连线信息
+              this.addConnection(selectedCard1, selectedCard2);
+              
               this.selectedCardIds["column1"] = null;
               this.selectedCardIds["column2"] = null;
               
@@ -1145,6 +1266,9 @@ export default class VideoLearningPage {
       column1: null,
       column2: null
     };
+    
+    // 清空连线信息
+    this.matchedConnections = [];
     
     console.log('卡片状态已重置');
   }

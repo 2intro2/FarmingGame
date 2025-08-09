@@ -8,7 +8,19 @@ export default class HomePage {
   modules = [];
   buttons = {};
   infoBar = {};
-  characterImage = null; // 左下角角色图片
+
+  // 中间四个模块背后的背景图样式（直接修改这里的 x/y/width/height 来调整位置和大小；为 null 则自动适配模块区域）
+  // bg13.png 的位置和大小设置
+  modulesBackdropStyle = { 
+    x: SCREEN_WIDTH * -0.88,           // 距离左边10%
+    y: SCREEN_HEIGHT * 0.17,          // 距离顶部30%
+    width: SCREEN_WIDTH * 2.8,       // 宽度为屏幕宽度的80%
+    height: SCREEN_HEIGHT * 0.8      // 高度为屏幕高度的40%
+  };
+  modulesBackdropImage = null; // 中间四个模块背后背景图
+  moduleImages = {}; // 各模块背景图
+  homeBgImage = null; // 首页背景图
+  userAvatarImage = null; // 登录用户头像
 
   constructor() {
     this.loadResources();
@@ -21,22 +33,21 @@ export default class HomePage {
    * 加载资源
    */
   loadResources() {
-    // 加载左下角角色图片
-    this.characterImage = wx.createImage();
-    this.characterImage.src = 'images/bg05.png';
-    
-    // 添加图片加载错误处理
-    this.characterImage.onerror = () => {
-      console.warn('角色图片加载失败，将使用默认矩形');
-      this.characterImage = null;
+    // 首页背景图
+    this.homeBgImage = wx.createImage();
+    this.homeBgImage.src = 'images/bg12.png';
+    this.homeBgImage.onerror = () => {
+      console.warn('首页背景图加载失败');
+      this.homeBgImage = null;
     };
+    // （已移除左下角角色图片加载）
 
     // 加载按钮图片
     this.buttonImages = {};
     
     // 设置按钮图片
     this.buttonImages.settings = wx.createImage();
-    this.buttonImages.settings.src = 'images/icon02.jpeg';
+    this.buttonImages.settings.src = 'images/icon02.png';
     this.buttonImages.settings.onerror = () => {
       console.warn('设置按钮图片加载失败');
       this.buttonImages.settings = null;
@@ -44,7 +55,7 @@ export default class HomePage {
     
     // 消息按钮图片
     this.buttonImages.message = wx.createImage();
-    this.buttonImages.message.src = 'images/icon04.png';
+    this.buttonImages.message.src = 'images/icon03.png';
     this.buttonImages.message.onerror = () => {
       console.warn('消息按钮图片加载失败');
       this.buttonImages.message = null;
@@ -58,126 +69,139 @@ export default class HomePage {
       this.buttonImages.nextPage = null;
     };
     
-    // 奖杯图片
-    this.buttonImages.trophy = wx.createImage();
-    this.buttonImages.trophy.src = 'images/icon03.jpeg';
-    this.buttonImages.trophy.onerror = () => {
-      console.warn('奖杯图片加载失败');
-      this.buttonImages.trophy = null;
+    // 音乐控制按钮图片
+    this.buttonImages.musicPlaying = wx.createImage();
+    this.buttonImages.musicPlaying.src = 'images/icon11.png';
+    this.buttonImages.musicPlaying.onerror = () => {
+      console.warn('音乐播放按钮图片加载失败');
+      this.buttonImages.musicPlaying = null;
     };
+
+    this.buttonImages.musicPaused = wx.createImage();
+    this.buttonImages.musicPaused.src = 'images/icon12.png';
+    this.buttonImages.musicPaused.onerror = () => {
+      console.warn('音乐暂停按钮图片加载失败');
+      this.buttonImages.musicPaused = null;
+    };
+
+    // 用户信息底图（icon06.png）
+    this.buttonImages.userInfo = wx.createImage();
+    this.buttonImages.userInfo.src = 'images/icon06.png';
+    this.buttonImages.userInfo.onerror = () => {
+      console.warn('用户信息底图加载失败');
+      this.buttonImages.userInfo = null;
+    };
+
+    // 中间四个模块背后的背景图 bg06.png
+    this.modulesBackdropImage = wx.createImage();
+    this.modulesBackdropImage.src = 'images/bg13.png';
+    this.modulesBackdropImage.onerror = () => {
+      console.warn('模块区域背景图加载失败');
+      this.modulesBackdropImage = null;
+    };
+
+    // 各模块背景图
+    this.moduleImages = {
+      toolAssembly: wx.createImage(), // icon09.png
+      toolAssemblyTop: wx.createImage(), // icon10.png
+      noodleLife: wx.createImage(),   // bg08.png
+      emergencyChallenge: wx.createImage(), // bg09.png（名称显示为天气挑战）
+      cornGrowth: wx.createImage()    // bg10.png（名称显示为害虫挑战）
+    };
+    this.moduleImages.toolAssembly.src = 'images/icon09.png';
+    this.moduleImages.toolAssemblyTop.src = 'images/icon10.png';
+    this.moduleImages.noodleLife.src = 'images/bg08.png';
+    this.moduleImages.emergencyChallenge.src = 'images/bg09.png';
+    this.moduleImages.cornGrowth.src = 'images/bg10.png';
+    // 错误处理
+    Object.entries(this.moduleImages).forEach(([k, img]) => {
+      img.onerror = () => {
+        console.warn(`模块背景图加载失败: ${k}`);
+        this.moduleImages[k] = null;
+      };
+    });
   }
 
   /**
    * 初始化游戏模块
    */
   initModules() {
-    const moduleWidth = SCREEN_WIDTH * 0.4;
-    const moduleHeight = SCREEN_HEIGHT * 0.25;
-    const startX = SCREEN_WIDTH * 0.1;
-    const startY = SCREEN_HEIGHT * 0.35; // 为信息栏留出空间
+    // 只初始化农具拼装按钮
+    const buttonWidth = SCREEN_WIDTH * 0.24;  // 按钮宽度为屏幕宽度的30%
+    const buttonHeight = buttonWidth * 0.33;  // 按钮高度为宽度的40%
+    const buttonX = SCREEN_WIDTH * 0.25;      // 距离左边10%
+    const buttonY = SCREEN_HEIGHT * 0.48;     // 距离顶部20%
 
     this.modules = [
       {
         key: 'toolAssembly',
-        name: '农具拼装',
-        x: startX,
-        y: startY,
-        width: moduleWidth,
-        height: moduleHeight,
+        name: '',
+        x: buttonX,
+        y: buttonY,
+        width: buttonWidth,
+        height: buttonHeight,
         unlocked: true,
-        image: null
-      },
-      {
-        key: 'noodleLife',
-        name: '面条的一生',
-        x: startX + moduleWidth + 20,
-        y: startY,
-        width: moduleWidth,
-        height: moduleHeight,
-        unlocked: false,
-        image: null
-      },
-      {
-        key: 'emergencyChallenge',
-        name: '突发状况挑战',
-        x: startX,
-        y: startY + moduleHeight + 20,
-        width: moduleWidth,
-        height: moduleHeight,
-        unlocked: false,
-        image: null
-      },
-      {
-        key: 'cornGrowth',
-        name: '玉米生长过程',
-        x: startX + moduleWidth + 20,
-        y: startY + moduleHeight + 20,
-        width: moduleWidth,
-        height: moduleHeight,
-        unlocked: false,
         image: null
       }
     ];
   }
 
-
-
   /**
    * 初始化信息栏
    */
   initInfoBar() {
-    this.infoBar = {
-      x: 20,
-      y: 100, // 在用户信息下方
-      width: SCREEN_WIDTH - 40,
-      height: 60,
-      stats: [
-        { label: '进行中的任务', value: GameGlobal.databus.tasksInProgress || 1, icon: '🚀' },
-        { label: '已完成任务', value: GameGlobal.databus.tasksCompleted || 10, icon: '✅' },
-        { label: '已完成挑战', value: GameGlobal.databus.challengesCompleted || 4, icon: '🎯' },
-        { label: '奖杯数', value: GameGlobal.databus.trophyCount || 5, icon: '🏆' }
-      ]
-    };
+    // 信息栏已移除
+    this.infoBar = {};
   }
+
+
 
   /**
    * 初始化按钮
    */
   initButtons() {
     this.buttons = {
-      // 左上角用户信息（粉色圆角矩形）
+      // 左上角用户信息（改为图片按钮区域，显示 icon06.png + 用户头像/昵称）
       userInfo: {
         x: 20,
         y: 20,
-        width: 200,
-        height: 60,
-        nickname: '可心'
+        width: 310,
+        height: 100,
+        nickname: ''
       },
-      // 右上角消息按钮（圆形+文字）
+      // 右上角消息按钮（图片）
       message: {
-        x: SCREEN_WIDTH - 200,
-        y: 20,
-        width: 80,
-        height: 40,
+        x: SCREEN_WIDTH - 330,
+        y: 33,
+        width: 100,
+        height: 100,
         text: '消息',
         icon: '🔔',
-        unreadCount: 1
+        unreadCount: 0  // 设置为0，不显示红点
       },
-      // 右上角设置按钮（圆形+文字）
+      // 音乐控制按钮（位于消息与设置之间，图片）
+      music: {
+        x: SCREEN_WIDTH - 225,
+        y: 33,
+        width: 100,
+        height: 100,
+        text: '音乐'
+      },
+      // 右上角设置按钮（图片）
       settings: {
         x: SCREEN_WIDTH - 120,
-        y: 20,
-        width: 80,
-        height: 40,
+        y: 33,
+        width: 100,
+        height: 100,
         text: '设置',
         icon: '⚙️'
       },
       // 右侧圆形导航按钮
       nextPage: {
-        x: SCREEN_WIDTH - 80,
+        x: SCREEN_WIDTH - 100,
         y: SCREEN_HEIGHT / 2 - 30,
-        width: 60,
-        height: 60,
+        width: 90,
+        height: 90,
         icon: '>'
       }
     };
@@ -188,123 +212,129 @@ export default class HomePage {
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
   render(ctx) {
-    // 绘制绿色渐变背景
-    const gradient = ctx.createLinearGradient(0, 0, 0, SCREEN_HEIGHT);
-    gradient.addColorStop(0, '#90EE90');
-    gradient.addColorStop(1, '#98FB98');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    // 绘制首页背景图（失败则使用渐变）
+    if (this.homeBgImage && this.homeBgImage.complete && this.homeBgImage.naturalWidth !== 0) {
+      try {
+        ctx.drawImage(this.homeBgImage, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+      } catch (e) {
+        console.warn('首页背景图绘制失败，使用渐变');
+        const gradient = ctx.createLinearGradient(0, 0, 0, SCREEN_HEIGHT);
+        gradient.addColorStop(0, '#90EE90');
+        gradient.addColorStop(1, '#98FB98');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+      }
+    } else {
+      const gradient = ctx.createLinearGradient(0, 0, 0, SCREEN_HEIGHT);
+      gradient.addColorStop(0, '#90EE90');
+      gradient.addColorStop(1, '#98FB98');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
 
-    // 绘制信息栏
-    this.renderInfoBar(ctx);
-
-    // 绘制游戏模块
+    // 绘制游戏模块（内部会先绘制模块区域背景图，再绘制各模块）
     this.renderModules(ctx);
 
     // 绘制按钮
     this.renderButtons(ctx);
 
-    // 绘制角色和对话气泡
-    this.renderCharacter(ctx);
+    // （已移除左下角角色与对话气泡）
   }
 
 
 
-  /**
-   * 渲染信息栏
-   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
-   */
-  renderInfoBar(ctx) {
-    const bar = this.infoBar;
-    const statWidth = bar.width / bar.stats.length;
 
-    bar.stats.forEach((stat, index) => {
-      const x = bar.x + index * statWidth;
-      
-      // 绘制白色卡片背景（带圆角和阴影）
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(x + 5, bar.y + 5, statWidth - 10, bar.height - 10);
-      
-      // 添加阴影效果
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-      ctx.shadowBlur = 5;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
-      
-      // 绘制图标（如果是奖杯且有图片，使用图片；否则使用文字图标）
-      if (stat.label === '奖杯数' && this.buttonImages && this.buttonImages.trophy && 
-          this.buttonImages.trophy.complete && this.buttonImages.trophy.naturalWidth !== 0) {
-        try {
-          // 绘制奖杯图片
-          const iconSize = 24;
-          const iconX = x + statWidth / 2 - iconSize / 2;
-          const iconY = bar.y + 20 - iconSize / 2;
-          ctx.drawImage(this.buttonImages.trophy, iconX, iconY, iconSize, iconSize);
-        } catch (error) {
-          console.warn('奖杯图片绘制失败，使用默认图标:', error);
-          // 使用默认文字图标
-          ctx.font = '20px Arial';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#333333';
-          ctx.fillText(stat.icon, x + statWidth / 2, bar.y + 20);
-        }
-      } else {
-        // 使用默认文字图标
-        ctx.font = '20px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#333333';
-        ctx.fillText(stat.icon, x + statWidth / 2, bar.y + 20);
-      }
-
-      // 绘制数值
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText(stat.value.toString(), x + statWidth / 2, bar.y + 35);
-
-      // 绘制标签
-      ctx.fillStyle = '#666666';
-      ctx.font = '12px Arial';
-      ctx.fillText(stat.label, x + statWidth / 2, bar.y + 50);
-      
-      // 重置阴影
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-    });
-  }
 
   /**
    * 渲染游戏模块
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
   renderModules(ctx) {
-    this.modules.forEach(module => {
-      // 绘制白色卡片背景（带阴影）
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(module.x, module.y, module.width, module.height);
-      
-      // 添加阴影效果
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-      ctx.shadowBlur = 5;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
+    // 先绘制背景图（bg13.png）
+    if (this.modulesBackdropImage && this.modulesBackdropImage.complete && this.modulesBackdropImage.naturalWidth !== 0) {
+      try {
+        // 使用设置的位置和大小
+        const { x, y, width, height } = this.modulesBackdropStyle;
+        
+        // 保持图片原比例
+        const imgRatio = this.modulesBackdropImage.naturalWidth / this.modulesBackdropImage.naturalHeight;
+        let drawWidth, drawHeight, drawX, drawY;
+        
+        if (width / height > imgRatio) {
+          // 区域比图片更宽，以高度为准
+          drawHeight = height;
+          drawWidth = drawHeight * imgRatio;
+          drawX = x + (width - drawWidth) / 2;
+          drawY = y;
+        } else {
+          // 区域比图片更高，以宽度为准
+          drawWidth = width;
+          drawHeight = drawWidth / imgRatio;
+          drawX = x;
+          drawY = y + (height - drawHeight) / 2;
+        }
 
-      // 绘制模块名称
-      ctx.fillStyle = '#333333';
-      ctx.font = 'bold 16px Arial';
+        ctx.drawImage(this.modulesBackdropImage, drawX, drawY, drawWidth, drawHeight);
+      } catch (e) {
+        console.warn('模块区域背景图绘制失败:', e);
+      }
+    }
+
+    // 绘制农具拼装按钮
+    const toolAssembly = this.modules[0]; // 现在只有一个模块
+    if (toolAssembly) {
+      // 绘制农具拼装按钮背景（icon09.png）
+      const bgImg = this.moduleImages && this.moduleImages.toolAssembly;
+      if (bgImg && bgImg.complete && bgImg.naturalWidth !== 0) {
+        try {
+          // 保持图片原比例
+          const imgRatio = bgImg.naturalWidth / bgImg.naturalHeight;
+          const drawHeight = toolAssembly.height;
+          const drawWidth = drawHeight * imgRatio;
+          const drawX = toolAssembly.x + (toolAssembly.width - drawWidth) / 2;
+          ctx.drawImage(bgImg, drawX, toolAssembly.y, drawWidth, drawHeight);
+        } catch (e) {
+          console.warn('农具拼装按钮背景绘制失败:', e);
+        }
+      }
+    }
+
+    // 在农具拼装按钮上方绘制 icon10.png
+    if (toolAssembly) {
+      const topImg = this.moduleImages && this.moduleImages.toolAssemblyTop;
+      if (topImg && topImg.complete && topImg.naturalWidth !== 0) {
+        try {
+          // 保持图片原比例
+          const imgRatio = topImg.naturalWidth / topImg.naturalHeight;
+          const drawHeight = toolAssembly.height * 1.5; // 设置为模块高度的40%
+          const drawWidth = drawHeight * imgRatio;
+          const drawX = toolAssembly.x + (toolAssembly.width - drawWidth) / 2;
+          const drawY = toolAssembly.y - drawHeight - 5; // 在模块上方10像素
+          ctx.drawImage(topImg, drawX, drawY, drawWidth, drawHeight);
+        } catch (e) {
+          console.warn('农具拼装上方图片绘制失败:', e);
+        }
+      }
+    }
+
+    // 在所有图层绘制完成后，最后绘制农具拼装文字（白色），确保显示在最上层
+    if (toolAssembly && toolAssembly.name) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 18px Arial';
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillText(module.name, module.x + module.width / 2, module.y + 20);
-      
+      ctx.textBaseline = 'middle';
+      // 添加文字阴影效果，增强可读性
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      ctx.shadowBlur = 2;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+      ctx.fillText(toolAssembly.name, toolAssembly.x + toolAssembly.width / 2, toolAssembly.y + toolAssembly.height / 2);
       // 重置阴影
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
-    });
+    }
   }
 
   /**
@@ -332,28 +362,65 @@ export default class HomePage {
    * @param {Object} userInfo - 用户信息对象
    */
   renderUserInfo(ctx, userInfo) {
-    // 绘制粉色圆角矩形背景
-    ctx.fillStyle = '#FFB6C1';
-    ctx.fillRect(userInfo.x, userInfo.y, userInfo.width, userInfo.height);
-    
-    // 绘制边框
-    ctx.strokeStyle = '#87CEEB';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(userInfo.x, userInfo.y, userInfo.width, userInfo.height);
+    // 背景底图：icon06.png
+    if (this.buttonImages.userInfo && this.buttonImages.userInfo.complete && this.buttonImages.userInfo.naturalWidth !== 0) {
+      try {
+        ctx.drawImage(this.buttonImages.userInfo, userInfo.x, userInfo.y, userInfo.width, userInfo.height);
+      } catch (e) {
+        console.warn('用户信息底图绘制失败');
+      }
+    }
 
-    // 绘制小猪图标
-    ctx.fillStyle = '#FF69B4';
-    ctx.font = '24px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🐷', userInfo.x + 30, userInfo.y + 30);
+    // 确保头像资源加载
+    this.ensureUserAvatarLoaded();
 
-    // 绘制昵称
-    ctx.fillStyle = '#333333';
-    ctx.font = 'bold 16px Arial';
+    // 绘制用户头像（圆形裁剪）
+    const avatarSize = 80;
+    const avatarX = userInfo.x + 11;
+    const avatarY = userInfo.y + (userInfo.height - avatarSize) / 2;
+    if (this.userAvatarImage && this.userAvatarImage.complete && this.userAvatarImage.naturalWidth !== 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+      ctx.clip();
+      try {
+        ctx.drawImage(this.userAvatarImage, avatarX, avatarY, avatarSize, avatarSize);
+      } catch (e) {
+        console.warn('用户头像绘制失败');
+      }
+      ctx.restore();
+    }
+
+    // 绘制昵称（登录获取），白色显示在icon06.png上方
+    const nickname = (GameGlobal.databus.userInfo && GameGlobal.databus.userInfo.nickName) ? GameGlobal.databus.userInfo.nickName : '';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 22px Arial';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(userInfo.nickname, userInfo.x + 70, userInfo.y + 30);
+    // 添加文字阴影效果，增强可读性
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    ctx.fillText(nickname, avatarX + avatarSize + 10, userInfo.y + userInfo.height / 2);
+    // 重置阴影
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+  }
+
+  // 确保已加载用户头像图片
+  ensureUserAvatarLoaded() {
+    const avatarUrl = GameGlobal.databus && GameGlobal.databus.userInfo && GameGlobal.databus.userInfo.avatarUrl;
+    if (!avatarUrl) return;
+    if (this.userAvatarImage && this.userAvatarImage.src === avatarUrl) return;
+    this.userAvatarImage = wx.createImage();
+    this.userAvatarImage.src = avatarUrl;
+    this.userAvatarImage.onerror = () => {
+      console.warn('用户头像加载失败');
+      this.userAvatarImage = null;
+    };
   }
 
   /**
@@ -406,7 +473,16 @@ export default class HomePage {
   renderNormalButton(ctx, button) {
     // 根据按钮类型获取对应的图片
     const buttonKey = this.getButtonKey(button);
-    const buttonImage = this.buttonImages && this.buttonImages[buttonKey];
+    let buttonImage;
+    
+    // 如果是音乐按钮，根据播放状态选择图片
+    if (buttonKey === 'music') {
+      buttonImage = GameGlobal.databus.isMusicPlaying 
+        ? this.buttonImages.musicPlaying 
+        : this.buttonImages.musicPaused;
+    } else {
+      buttonImage = this.buttonImages && this.buttonImages[buttonKey];
+    }
     
     if (buttonImage && buttonImage.complete && buttonImage.naturalWidth !== 0) {
       try {
@@ -445,6 +521,7 @@ export default class HomePage {
     // 根据按钮属性判断类型
     if (button.text === '消息') return 'message';
     if (button.text === '设置') return 'settings';
+    if (button.text === '音乐') return 'music';
     if (button.icon === '>') return 'nextPage';
     return 'unknown';
   }
@@ -508,52 +585,9 @@ export default class HomePage {
     }
   }
 
-  /**
-   * 渲染角色和对话气泡
-   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
-   */
-  renderCharacter(ctx) {
-    // 绘制左下角角色图片
-    if (this.characterImage && this.characterImage.complete && this.characterImage.naturalWidth !== 0) {
-      try {
-        // 图片位置和大小设置
-        const imgX = 6; // 图片X坐标（距离左边20像素）
-        const imgY = SCREEN_HEIGHT - 60; // 图片Y坐标（距离底部120像素）
-        const imgWidth = 400; // 图片宽度
-        const imgHeight = 400; // 图片高度
-        
-        ctx.drawImage(this.characterImage, imgX, imgY, imgWidth, imgHeight);
-      } catch (error) {
-        console.warn('角色图片绘制失败，使用默认矩形:', error);
-        this.renderDefaultCharacter(ctx);
-      }
-    } else {
-      // 图片未加载或加载失败，使用默认矩形
-      this.renderDefaultCharacter(ctx);
-    }
+  
 
-    // 绘制对话气泡
-    ctx.fillStyle = '#90EE90';
-    ctx.fillRect(110, SCREEN_HEIGHT - 140, 250, 60);
-
-    // 绘制对话文字
-    ctx.fillStyle = '#333333';
-    ctx.font = '14px Arial';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillText('Hello, 小朋友早上好!', 120, SCREEN_HEIGHT - 130);
-    ctx.fillText('快来农耕小天地探索吧', 120, SCREEN_HEIGHT - 110);
-  }
-
-  /**
-   * 渲染默认角色（当图片加载失败时）
-   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
-   */
-  renderDefaultCharacter(ctx) {
-    // 绘制角色（蓝色矩形）
-    ctx.fillStyle = '#87CEEB';
-    ctx.fillRect(20, SCREEN_HEIGHT - 120, 60, 80);
-  }
+  
 
   /**
    * 处理触摸事件
@@ -566,18 +600,21 @@ export default class HomePage {
 
     console.log('触摸位置:', x, y);
 
-    // 检查游戏模块点击
-    this.modules.forEach(module => {
-      const isInModule = x >= module.x && x <= module.x + module.width &&
-                        y >= module.y && y <= module.y + module.height;
+    // 优先检查农具拼装按钮点击（顶层优先）
+    const toolAssembly = this.modules[0]; // 现在只有一个模块
+    if (toolAssembly) {
+      const isInModule = x >= toolAssembly.x && x <= toolAssembly.x + toolAssembly.width &&
+                        y >= toolAssembly.y && y <= toolAssembly.y + toolAssembly.height;
       
       if (isInModule) {
-        console.log('点击模块:', module.name, '位置:', module.x, module.y, module.width, module.height);
-        this.handleModuleClick(module);
+        console.log('点击农具拼装按钮');
+        GameGlobal.pageManager.switchToPage('toolAssembly');
+        this.showToast('进入农具拼装');
+        return;
       }
-    });
+    }
 
-    // 检查按钮点击
+    // 检查其他按钮点击
     Object.entries(this.buttons).forEach(([key, button]) => {
       const isInButton = x >= button.x && x <= button.x + button.width &&
                         y >= button.y && y <= button.y + button.height;
@@ -585,27 +622,20 @@ export default class HomePage {
       if (isInButton) {
         console.log('点击按钮:', key);
         this.handleButtonClick(key);
+        return;
       }
     });
-  }
 
-  /**
-   * 处理模块点击
-   * @param {Object} module - 模块对象
-   */
-  handleModuleClick(module) {
-    console.log('点击模块:', module.key, '解锁状态:', module.unlocked);
-    
-    if (module.unlocked) {
-      if (module.key === 'toolAssembly') {
-        GameGlobal.pageManager.switchToPage('toolAssembly');
-        this.showToast('进入农具拼装');
-      }
-    } else {
-      console.log('显示活动未开启提示');
-      this.showToast('活动未开启');
+    // 最后检查是否点击了背景图区域
+    const { x: bgX, y: bgY, width: bgWidth, height: bgHeight } = this.modulesBackdropStyle;
+    if (x >= bgX && x <= bgX + bgWidth && y >= bgY && y <= bgY + bgHeight) {
+      console.log('点击背景图区域');
+      this.showToast('活动未开启～');
+      return;
     }
   }
+
+
 
   /**
    * 处理按钮点击
@@ -618,6 +648,10 @@ export default class HomePage {
         break;
       case 'message':
         this.showMessageDialog();
+        break;
+      case 'music':
+        const isPlaying = GameGlobal.databus.toggleMusic();
+        this.showToast(isPlaying ? '音乐已播放' : '音乐已暂停');
         break;
       case 'settings':
         this.showSettingsDialog();
@@ -726,16 +760,20 @@ export default class HomePage {
     }
   }
 
+
+
   /**
    * 更新页面
    */
   update() {
-    // 更新未读消息数量
-    this.buttons.message.unreadCount = GameGlobal.databus.unreadCount || 1;
+    // 不再显示未读消息数量
+    this.buttons.message.unreadCount = 0;
     
     // 更新用户信息
     if (GameGlobal.databus.userInfo) {
       this.buttons.userInfo.nickname = GameGlobal.databus.userInfo.nickName || '可心';
     }
   }
+
+
 }

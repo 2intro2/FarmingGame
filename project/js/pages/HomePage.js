@@ -432,7 +432,7 @@ export default class HomePage {
         this.showToast('进入农具拼装');
       } else if (module.key === 'videoLearning') {
         GameGlobal.pageManager.switchToPage('videoLearning');
-        this.showToast('进入视频学习');
+        // 移除重复的Toast，页面切换时会有相应的提示
       }
     } else {
       console.log('显示活动未开启提示');

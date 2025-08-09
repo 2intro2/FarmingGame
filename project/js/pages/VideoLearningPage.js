@@ -87,7 +87,7 @@ export default class VideoLearningPage {
       x: SCREEN_WIDTH * 0.68,
       y: SCREEN_HEIGHT - 200,
       width: SCREEN_WIDTH * 0.3,
-      height: 50
+      height: 100
     },
     backButton: {
       x: 20,

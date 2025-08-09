@@ -44,6 +44,10 @@ export default class VideoLearningPage {
   
   // 次背景图片
   secondaryBackgroundImage = null;
+  
+  // 进度相关图片
+  progressImage = null;
+  startImage = null;
 
 
 
@@ -58,7 +62,7 @@ export default class VideoLearningPage {
       x: SCREEN_WIDTH * 0.065,
       y: SCREEN_HEIGHT * 0.20,
       width: SCREEN_WIDTH * 0.53,
-      height: SCREEN_WIDTH * 0.40 * (3 / 4) // 16:9比例
+      height: SCREEN_WIDTH * 0.50 * (3 / 4) // 16:9比例
     },
 
     cards: {
@@ -88,6 +92,20 @@ export default class VideoLearningPage {
       y: 20,
       width: 60,
       height: 60
+    },
+    progressImages: {
+      progressImage: {
+        x: SCREEN_WIDTH * 0.065,
+        y: SCREEN_HEIGHT * 0.28 + SCREEN_WIDTH * 0.40 * (3 / 4) + 20, // 视频下方20px
+        width: SCREEN_WIDTH * 0.53,
+        height: SCREEN_WIDTH * 0.53 * 0.3 // 保持合适的高度比例
+      },
+      startImage: {
+        x: SCREEN_WIDTH * 0.065 + SCREEN_WIDTH * 0.53 * 0.42, // 在progress图片中央偏左
+        y: SCREEN_HEIGHT * 0.30 + SCREEN_WIDTH * 0.40 * (3 / 4) + 15, // 比progress图片高15px
+        width: SCREEN_WIDTH * 0.53 * 0.12, // 更小的尺寸（从20%减小到12%）
+        height: SCREEN_WIDTH * 0.53 * 0.12 * 0.8 // 保持合适的高度比例
+      }
     }
   };
 
@@ -200,6 +218,10 @@ export default class VideoLearningPage {
     
     // 加载次背景图片
     this.loadSecondaryBackgroundImage();
+    
+    // 加载进度相关图片
+    this.loadProgressImage();
+    this.loadStartImage();
   }
 
   /**
@@ -216,6 +238,9 @@ export default class VideoLearningPage {
     cardImages.push('images/main.png');
     // 测试次背景图片
     cardImages.push('images/background.png');
+    // 测试进度相关图片
+    cardImages.push('images/progress.png');
+    cardImages.push('images/start.png');
     ImageTest.testImages(cardImages);
   }
 
@@ -296,6 +321,36 @@ export default class VideoLearningPage {
   }
 
   /**
+   * 加载进度图片
+   */
+  loadProgressImage() {
+    ImageLoader.loadImage('images/progress.png', { timeout: 5000 })
+      .then(img => {
+        this.progressImage = img;
+        console.log('进度图片加载成功');
+      })
+      .catch(error => {
+        console.warn('进度图片加载失败:', error);
+        this.progressImage = null;
+      });
+  }
+
+  /**
+   * 加载开始图片
+   */
+  loadStartImage() {
+    ImageLoader.loadImage('images/start.png', { timeout: 5000 })
+      .then(img => {
+        this.startImage = img;
+        console.log('开始图片加载成功');
+      })
+      .catch(error => {
+        console.warn('开始图片加载失败:', error);
+        this.startImage = null;
+      });
+  }
+
+  /**
    * 渲染页面
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
@@ -305,6 +360,9 @@ export default class VideoLearningPage {
     
     // 绘制返回按钮
     this.renderBackButton(ctx);
+    
+    // 绘制进度相关图片
+    this.renderProgressImages(ctx);
     
     // 绘制卡片
     this.renderCards(ctx);
@@ -402,6 +460,101 @@ export default class VideoLearningPage {
 
 
   /**
+   * 绘制进度相关图片
+   */
+  renderProgressImages(ctx) {
+    // 绘制 progress 图片（底层）
+    this.renderProgressImage(ctx);
+    
+    // 绘制 start 图片（上层，较小）
+    this.renderStartImage(ctx);
+  }
+
+  /**
+   * 绘制进度图片
+   */
+  renderProgressImage(ctx) {
+    const { x, y, width, height } = this.layout.progressImages.progressImage;
+    
+    if (this.progressImage && ImageLoader.isValidImage(this.progressImage)) {
+      try {
+        ctx.drawImage(this.progressImage, x, y, width, height);
+      } catch (error) {
+        console.warn('进度图片绘制失败:', error);
+        this.renderProgressImageFallback(ctx, x, y, width, height);
+      }
+    } else {
+      // 没有图片或图片加载失败，使用备用图片
+      this.renderProgressImageFallback(ctx, x, y, width, height);
+    }
+  }
+
+  /**
+   * 绘制开始图片
+   */
+  renderStartImage(ctx) {
+    const { x, y, width, height } = this.layout.progressImages.startImage;
+    
+    if (this.startImage && ImageLoader.isValidImage(this.startImage)) {
+      try {
+        ctx.drawImage(this.startImage, x, y, width, height);
+      } catch (error) {
+        console.warn('开始图片绘制失败:', error);
+        this.renderStartImageFallback(ctx, x, y, width, height);
+      }
+    } else {
+      // 没有图片或图片加载失败，使用备用图片
+      this.renderStartImageFallback(ctx, x, y, width, height);
+    }
+  }
+
+  /**
+   * 绘制备用进度图片（当图片加载失败时）
+   */
+  renderProgressImageFallback(ctx, x, y, width, height) {
+    // 绘制一个简单的进度条样式背景
+    ctx.fillStyle = '#E8F5E8';
+    ctx.fillRect(x, y, width, height);
+    
+    // 绘制边框
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, width, height);
+    
+    // 绘制文字
+    ctx.fillStyle = '#4CAF50';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('学习进度', x + width / 2, y + height / 2);
+  }
+
+  /**
+   * 绘制备用开始图片（当图片加载失败时）
+   */
+  renderStartImageFallback(ctx, x, y, width, height) {
+    // 绘制一个圆形按钮样式
+    const centerX = x + width / 2;
+    const centerY = y + height / 2;
+    const radius = Math.min(width, height) / 2;
+    
+    // 绘制圆形背景
+    ctx.fillStyle = '#2196F3';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 绘制播放三角形
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.moveTo(centerX - radius * 0.3, centerY - radius * 0.4);
+    ctx.lineTo(centerX - radius * 0.3, centerY + radius * 0.4);
+    ctx.lineTo(centerX + radius * 0.4, centerY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  /**
    * 绘制卡片
    */
   renderCards(ctx) {
@@ -431,7 +584,7 @@ export default class VideoLearningPage {
       } else if (!isCardEnabled) {
         ctx.fillStyle = '#F5F5F5'; // 灰色表示锁定
       } else {
-        ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
+      ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
       }
       ctx.fillRect(x, cardY, width, height);
       
@@ -440,8 +593,8 @@ export default class VideoLearningPage {
         ctx.strokeStyle = '#2E7D32';
         ctx.lineWidth = 3;
       } else if (!isCardEnabled) {
-        ctx.strokeStyle = '#CCCCCC';
-        ctx.lineWidth = 2;
+      ctx.strokeStyle = '#CCCCCC';
+      ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]); // 虚线边框表示锁定
       } else {
         ctx.strokeStyle = '#CCCCCC';
@@ -464,17 +617,17 @@ export default class VideoLearningPage {
       
       // 绘制图片
       if (isCardEnabled) {
-        ImageLoader.safeDrawImage(
-          ctx, 
-          card.imageObj, 
-          x + 10, 
-          cardY + 10, 
-          width - 20, 
-          height - 20,
-          (ctx, x, y, width, height) => {
-            this.drawImagePlaceholder(ctx, x, y, width, height, card.label);
-          }
-        );
+      ImageLoader.safeDrawImage(
+        ctx, 
+        card.imageObj, 
+        x + 10, 
+        cardY + 10, 
+        width - 20, 
+        height - 20,
+        (ctx, x, y, width, height) => {
+          this.drawImagePlaceholder(ctx, x, y, width, height, card.label);
+        }
+      );
       } else {
         // 锁定状态下绘制半透明图片
         ctx.save();
@@ -535,7 +688,7 @@ export default class VideoLearningPage {
       } else if (!isCardEnabled) {
         ctx.fillStyle = '#F5F5F5'; // 灰色表示锁定
       } else {
-        ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
+      ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
       }
       ctx.fillRect(x, cardY, width, height);
       
@@ -544,8 +697,8 @@ export default class VideoLearningPage {
         ctx.strokeStyle = '#2E7D32';
         ctx.lineWidth = 3;
       } else if (!isCardEnabled) {
-        ctx.strokeStyle = '#CCCCCC';
-        ctx.lineWidth = 2;
+      ctx.strokeStyle = '#CCCCCC';
+      ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]); // 虚线边框表示锁定
       } else {
         ctx.strokeStyle = '#CCCCCC';
@@ -568,15 +721,15 @@ export default class VideoLearningPage {
       
       // 绘制文字内容
       if (isCardEnabled) {
-        // 绘制拼音
+      // 绘制拼音
         ctx.fillStyle = card.permanentlySelected ? '#FFFFFF' : '#333333';
-        ctx.font = '16px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(card.pinyin, x + width / 2, cardY + height / 2 - 10);
-        
-        // 绘制汉字
-        ctx.font = '24px Arial';
-        ctx.fillText(card.chinese, x + width / 2, cardY + height / 2 + 20);
+      ctx.font = '16px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(card.pinyin, x + width / 2, cardY + height / 2 - 10);
+      
+      // 绘制汉字
+      ctx.font = '24px Arial';
+      ctx.fillText(card.chinese, x + width / 2, cardY + height / 2 + 20);
       } else {
         // 锁定状态下绘制半透明文字
         ctx.save();
@@ -716,15 +869,15 @@ export default class VideoLearningPage {
     // 仅在触摸结束时处理点击事件
     if (eventType === 'touchend') {
       console.log('处理点击事件');
-      
-      // 检查返回按钮点击
-      this.checkBackButtonClick(x, y);
-      
-      // 检查卡片选择
-      this.checkCardSelection(x, y);
-      
-      // 检查提交按钮点击
-      this.checkSubmitButtonClick(x, y);
+    
+    // 检查返回按钮点击
+    this.checkBackButtonClick(x, y);
+    
+    // 检查卡片选择
+    this.checkCardSelection(x, y);
+    
+    // 检查提交按钮点击
+    this.checkSubmitButtonClick(x, y);
     }
   }
 
@@ -744,7 +897,7 @@ export default class VideoLearningPage {
       
       try {
         if (GameGlobal && GameGlobal.pageManager && typeof GameGlobal.pageManager.switchToPage === 'function') {
-          GameGlobal.pageManager.switchToPage('home');
+      GameGlobal.pageManager.switchToPage('home');
         } else {
           console.error('页面管理器不可用');
           showErrorToast('返回首页失败');
@@ -805,12 +958,12 @@ export default class VideoLearningPage {
               c.selected = false;
             }
           });
-          
-          // 选中当前卡片
-          card.selected = true;
-          this.selectedCardIds[columnKey] = card.id;
-          
-          console.log(`选中${columnKey}卡片:`, card);
+        
+        // 选中当前卡片
+        card.selected = true;
+        this.selectedCardIds[columnKey] = card.id;
+        
+        console.log(`选中${columnKey}卡片:`, card);
         }
         
         // 检查是否两列都有卡片被选中
@@ -936,7 +1089,7 @@ export default class VideoLearningPage {
           try {
             if (GameGlobal && GameGlobal.pageManager && typeof GameGlobal.pageManager.switchToPage === 'function') {
               GameGlobal.pageManager.switchToPage('home');
-            } else {
+    } else {
               console.error('页面管理器不可用');
               showErrorToast('返回首页失败');
             }
@@ -1040,7 +1193,7 @@ export default class VideoLearningPage {
       try {
         // 检查视频对象是否有show方法
         if (typeof this.video.show === 'function') {
-          this.video.show();
+      this.video.show();
         }
       } catch (error) {
         console.warn('视频显示时出错:', error);
@@ -1058,12 +1211,12 @@ export default class VideoLearningPage {
       try {
         // 检查视频对象是否有hide方法
         if (typeof this.video.hide === 'function') {
-          this.video.hide();
+      this.video.hide();
         }
         
         // 检查视频对象是否有destroy方法
         if (typeof this.video.destroy === 'function') {
-          this.video.destroy();
+      this.video.destroy();
         }
       } catch (error) {
         console.warn('视频隐藏时出错:', error);
@@ -1094,7 +1247,7 @@ export default class VideoLearningPage {
       try {
         // 检查视频对象是否有destroy方法
         if (typeof this.video.destroy === 'function') {
-          this.video.destroy();
+      this.video.destroy();
         }
       } catch (error) {
         console.warn('视频销毁时出错:', error);

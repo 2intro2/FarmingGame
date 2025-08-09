@@ -694,6 +694,18 @@ export default class HomePage extends BasePage {
       }
     }
 
+    // 检查icon按钮点击（button1, button2, button3）
+    Object.entries(this.iconButtonsConfig).forEach(([buttonKey, config]) => {
+      const isInButton = x >= config.x && x <= config.x + config.width &&
+                        y >= config.y && y <= config.y + config.height;
+      
+      if (isInButton) {
+        console.log('点击icon按钮:', buttonKey);
+        this.handleIconButtonClick(buttonKey);
+        return;
+      }
+    });
+
     // 检查其他按钮点击
     Object.entries(this.buttons).forEach(([key, button]) => {
       const isInButton = x >= button.x && x <= button.x + button.width &&
@@ -715,7 +727,28 @@ export default class HomePage extends BasePage {
     }
   }
 
-
+  /**
+   * 处理icon按钮点击
+   * @param {string} buttonKey - 按钮键名
+   */
+  handleIconButtonClick(buttonKey) {
+    switch (buttonKey) {
+      case 'button1':
+        this.showToast('按钮1功能开发中...');
+        break;
+      case 'button2':
+        this.showToast('按钮2功能开发中...');
+        break;
+      case 'button3':
+        console.log('点击button3，跳转到noodleLife页面');
+        GameGlobal.pageManager.switchToPage('noodleLife');
+        this.showToast('进入面条的一生');
+        break;
+      default:
+        this.showToast('未知按钮');
+        break;
+    }
+  }
 
   /**
    * 处理按钮点击

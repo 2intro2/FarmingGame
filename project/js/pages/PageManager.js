@@ -4,6 +4,12 @@ import ToolAssemblyNavPage from './ToolAssemblyNavPage';
 import ToolAssemblyPage from './ToolAssemblyPage';
 import ThreeDAssemblyPage from './ThreeDAssemblyPage';
 import animationManager from '../utils/animationManager';
+import NoodleChallengePage from './NoodleChallengePage';
+import NoodleChallengePage2 from './NoodleChallengePage2';
+import NoodleChallengePage3 from './NoodleChallengePage3';
+import NoodleChallengePage4 from './NoodleChallengePage4';
+import NoodleEndPage from './NoodleEndPage';
+import NoodleLifePage from './NoodleLifePage';
 
 /**
  * 页面管理器
@@ -24,7 +30,13 @@ export default class PageManager {
       home: new HomePage(),
       toolAssemblyNav: new ToolAssemblyNavPage(),
       toolAssembly: new ToolAssemblyPage(),
-      threeDAssembly: new ThreeDAssemblyPage()
+      threeDAssembly: new ThreeDAssemblyPage(),
+      noodleLife: new NoodleLifePage(),
+      noodleChallenge: new NoodleChallengePage(),
+      noodleChallenge2: new NoodleChallengePage2(),
+      noodleChallenge3: new NoodleChallengePage3(),
+      noodleChallenge4: new NoodleChallengePage4(),
+      noodleEnd: new NoodleEndPage()
     };
     
     // 设置默认页面

@@ -2,10 +2,12 @@ import './render'; // 初始化Canvas
 import DataBus from './databus'; // 导入数据类，用于管理游戏状态和数据
 import PageManager from './pages/PageManager'; // 导入页面管理器
 import WechatAPI from './utils/wechat'; // 导入微信API工具
+import animationManager from './utils/animationManager'; // 导入动画管理器
 
 const ctx = canvas.getContext('2d'); // 获取canvas的2D绘图上下文
 
 GameGlobal.databus = new DataBus(); // 全局数据管理，用于管理游戏状态和数据
+GameGlobal.animationManager = animationManager; // 全局动画管理器
 GameGlobal.pageManager = new PageManager(); // 全局页面管理器
 GameGlobal.wechatAPI = new WechatAPI(); // 全局微信API管理实例
 
@@ -49,6 +51,9 @@ export default class Main {
       // 每次启动都默认显示登录页面，不自动跳转到主页
       console.log('默认显示登录页面');
       GameGlobal.pageManager.switchToPage('login');
+      // 每次启动默认进入立体组装页
+      // console.log('默认显示立体组装页');
+      // GameGlobal.pageManager.switchToPage('threeDAssembly');
       
       // 如果有登录信息，设置到数据总线但不切换页面
       if (loginInfo && loginInfo.isLoggedIn && loginInfo.userInfo) {
@@ -60,6 +65,8 @@ export default class Main {
       // 出错时默认进入登录页
       console.log('登录状态检查出错，默认进入登录页');
       GameGlobal.pageManager.switchToPage('login');
+      // console.log('登录状态检查出错，默认进入立体组装页');
+      // GameGlobal.pageManager.switchToPage('threeDAssembly');
     }
   }
 

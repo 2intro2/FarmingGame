@@ -106,25 +106,18 @@ export default class Toast {
 
     // 绘制背景
     ctx.fillStyle = bgColor;
-    ctx.beginPath();
-    
-    // 使用兼容的方式绘制圆角矩形
-    const x = toast.x - width / 2;
-    const y = toast.y - height / 2;
-    const radius = 8;
-    
-    // 绘制圆角矩形路径
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-    ctx.fill();
+    try {
+      if (ctx.roundRect && typeof ctx.roundRect === 'function') {
+        ctx.roundRect(toast.x - width / 2, toast.y - height / 2, width, height, 8);
+        ctx.fill();
+      } else {
+        // 降级方案
+        ctx.fillRect(toast.x - width / 2, toast.y - height / 2, width, height);
+      }
+    } catch (error) {
+      // 如果圆角矩形失败，使用普通矩形
+      ctx.fillRect(toast.x - width / 2, toast.y - height / 2, width, height);
+    }
 
     // 绘制文字
     ctx.fillStyle = textColor;
@@ -175,4 +168,19 @@ export default class Toast {
   }
 }
 
-
+// 为CanvasRenderingContext2D添加roundRect方法（如果不存在）
+if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+    this.beginPath();
+    this.moveTo(x + radius, y);
+    this.lineTo(x + width - radius, y);
+    this.quadraticCurveTo(x + width, y, x + width, y + radius);
+    this.lineTo(x + width, y + height - radius);
+    this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    this.lineTo(x + radius, y + height);
+    this.quadraticCurveTo(x, y + height, x, y + height - radius);
+    this.lineTo(x, y + radius);
+    this.quadraticCurveTo(x, y, x + radius, y);
+    this.closePath();
+  };
+}

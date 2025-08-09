@@ -493,11 +493,15 @@ export default class ToolAssemblyNavPage extends BasePage {
       const maxDescWidth = this.cardWidth - textX - 50;
       this.drawTruncatedText(ctx, tool.description, textX, textY + 95, maxDescWidth, 140);
       
-      // 渲染难度标签（右上角，适配最大卡片）
-      this.renderDifficultyTag(ctx, tool.difficulty, this.cardWidth - 120, 30);
+      // 渲染难度标签（右上角，确保不超出卡片边界）
+      const difficultyTagWidth = 110;
+      const difficultyX = this.cardWidth - difficultyTagWidth - 15; // 增加15px安全边距
+      this.renderDifficultyTag(ctx, tool.difficulty, difficultyX, 30);
       
-      // 渲染奖励信息（右下角，适配更宽的奖励标签）
-      this.renderRewardTag(ctx, tool.reward, this.cardWidth - 140, this.cardHeight - 40);
+      // 渲染奖励信息（右下角，确保不超出卡片边界）
+      const rewardTagWidth = 120;
+      const rewardX = this.cardWidth - rewardTagWidth - 15; // 增加15px安全边距
+      this.renderRewardTag(ctx, tool.reward, rewardX, this.cardHeight - 40);
       
     } catch (error) {
       if (GameGlobal.logger) {
@@ -839,12 +843,12 @@ export default class ToolAssemblyNavPage extends BasePage {
       ctx.fillRect(x, y - tagHeight, tagWidth, tagHeight);
     }
     
-    // 绘制奖励文本和数值（添加"奖励"前缀）
+    // 绘制奖励文本和数值（添加"奖励:"前缀）
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 18px Arial'; // 适配最大标签的字体
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`奖励${reward}`, x + tagWidth / 2, y - tagHeight / 2);
+    ctx.fillText(`奖励:${reward}`, x + tagWidth / 2, y - tagHeight / 2);
   }
 
   /**

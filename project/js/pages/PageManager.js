@@ -153,8 +153,8 @@ export default class PageManager {
       const fromPage = this.currentPage;
       const toPage = lastEntry.page;
       
-      // 执行返回动画
-      this.animatePageTransition(fromPage, toPage, 'slideRight');
+      // 执行返回动画（与跳转动画保持一致）
+      this.animatePageTransition(fromPage, toPage, 'fade');
       
       // 记录返回日志
       if (GameGlobal.logger) {

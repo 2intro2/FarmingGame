@@ -39,6 +39,12 @@ export default class VideoLearningPage {
   
   // 返回按钮图片
   backButtonImage = null;
+  
+  // 背景图片
+  backgroundImage = null;
+  
+  // 次背景图片
+  secondaryBackgroundImage = null;
 
   // 进度条拖动状态
   progressDrag = {
@@ -207,6 +213,12 @@ export default class VideoLearningPage {
     
     // 加载返回按钮图片
     this.loadBackButtonImage();
+    
+    // 加载背景图片
+    this.loadBackgroundImage();
+    
+    // 加载次背景图片
+    this.loadSecondaryBackgroundImage();
   }
 
   /**
@@ -219,6 +231,10 @@ export default class VideoLearningPage {
     cardImages.push('images/confirmSubmission.png');
     // 测试返回按钮图片
     cardImages.push('images/left.png');
+    // 测试背景图片
+    cardImages.push('images/main.png');
+    // 测试次背景图片
+    cardImages.push('images/background.png');
     ImageTest.testImages(cardImages);
   }
 
@@ -269,6 +285,36 @@ export default class VideoLearningPage {
   }
 
   /**
+   * 加载背景图片
+   */
+  loadBackgroundImage() {
+    ImageLoader.loadImage('images/main.png', { timeout: 5000 })
+      .then(img => {
+        this.backgroundImage = img;
+        console.log('背景图片加载成功');
+      })
+      .catch(error => {
+        console.warn('背景图片加载失败:', error);
+        this.backgroundImage = null;
+      });
+  }
+
+  /**
+   * 加载次背景图片
+   */
+  loadSecondaryBackgroundImage() {
+    ImageLoader.loadImage('images/background.png', { timeout: 5000 })
+      .then(img => {
+        this.secondaryBackgroundImage = img;
+        console.log('次背景图片加载成功');
+      })
+      .catch(error => {
+        console.warn('次背景图片加载失败:', error);
+        this.secondaryBackgroundImage = null;
+      });
+  }
+
+  /**
    * 渲染页面
    * @param {CanvasRenderingContext2D} ctx - Canvas上下文
    */
@@ -296,17 +342,44 @@ export default class VideoLearningPage {
    * 绘制背景
    */
   renderBackground(ctx) {
-    // 整体背景
-    ctx.fillStyle = '#E0F2F1';
-    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    // 第一层：主背景图片 (main.png) - 最底层
+    if (this.backgroundImage && ImageLoader.isValidImage(this.backgroundImage)) {
+      try {
+        ctx.drawImage(this.backgroundImage, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+      } catch (error) {
+        console.warn('背景图片绘制失败:', error);
+        this.renderBackgroundFallback(ctx);
+      }
+    } else {
+      // 没有图片或图片加载失败，使用备用背景
+      this.renderBackgroundFallback(ctx);
+    }
     
-    // 左侧面板背景 - 添加圆角
+    // 第二层：次背景图片 (background.png) - 次低层
+    if (this.secondaryBackgroundImage && ImageLoader.isValidImage(this.secondaryBackgroundImage)) {
+      try {
+        ctx.drawImage(this.secondaryBackgroundImage, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+      } catch (error) {
+        console.warn('次背景图片绘制失败:', error);
+      }
+    }
+    
+    // 第三层：左侧面板背景 - 添加圆角（半透明覆盖）
     const leftPanelX = this.layout.video.x;
     const leftPanelY = this.layout.progress.y - 10;
     const leftPanelWidth = this.layout.video.width;
     const leftPanelHeight = SCREEN_HEIGHT - (this.layout.progress.y - 10) - this.layout.video.y;
     
-    this.drawRoundedRect(ctx, leftPanelX, leftPanelY, leftPanelWidth, leftPanelHeight, 20, '#C8E6C9', '#A5D6A7', 2);
+    this.drawRoundedRect(ctx, leftPanelX, leftPanelY, leftPanelWidth, leftPanelHeight, 20, 'rgba(200, 230, 201, 0.9)', '#A5D6A7', 2);
+  }
+
+  /**
+   * 绘制备用背景（当图片加载失败时）
+   */
+  renderBackgroundFallback(ctx) {
+    // 整体背景
+    ctx.fillStyle = '#E0F2F1';
+    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
   }
 
   /**

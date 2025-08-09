@@ -853,15 +853,31 @@ export default class ToolAssemblyNavPage extends BasePage {
             // 状态值超出范围，使用默认值0
             this.toolQylStatus = 0;
           }
+          // 存储读取完成后，强制重新渲染页面
+          this.forceRender();
         },
         fail: (error) => {
           // 读取失败，使用默认值0
           this.toolQylStatus = 0;
+          this.forceRender();
         }
       });
     } catch (error) {
       // 异常情况，使用默认值0
       this.toolQylStatus = 0;
+      this.forceRender();
+    }
+  }
+
+  /**
+   * 强制重新渲染页面
+   */
+  forceRender() {
+    // 触发页面重新渲染，确保状态图片位置更新
+    if (this.game && this.game.render) {
+      this.game.render();
+    } else if (GameGlobal && GameGlobal.render) {
+      GameGlobal.render();
     }
   }
 

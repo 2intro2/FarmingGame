@@ -44,8 +44,8 @@ export default class ToolAssemblyNavPage extends BasePage {
         description: '曲辕犁是中国古代农业技术的巅峰之作，体现了"天人合一"的哲学思想。牛或人力拉动犁辕，犁铧切入土壤并翻动，犁箭调节深度以适应不同土质。',
         difficulty: 2,
         reward: 20,
-        cardColor: '#E3F2FD',
-        gradientColors: ['#E3F2FD', '#BBDEFB', '#90CAF9'], // 蓝色渐变
+        cardColor: '#e6f4ff', // 新的蓝色背景
+        difficultyColor: '#4096ff', // 蓝色难度标签
         image: 'images/tool_hoe.png',
         unlocked: true,
         completed: false
@@ -57,8 +57,8 @@ export default class ToolAssemblyNavPage extends BasePage {
         description: '石磨最早出现于战国时期，是古代粮食加工的重要工具。粮食从进料孔落入磨盘间，通过旋转摩擦被碾碎，粉末从边缘流出。',
         difficulty: 2,
         reward: 25,
-        cardColor: '#E8F5E8',
-        gradientColors: ['#E8F5E8', '#C8E6C8', '#A5D6A7'], // 绿色渐变
+        cardColor: '#d9f7be', // 新的绿色背景
+        difficultyColor: '#73d13d', // 绿色难度标签
         image: 'images/tool_shovel.png',
         unlocked: true,
         completed: false
@@ -70,8 +70,8 @@ export default class ToolAssemblyNavPage extends BasePage {
         description: '水车最早可追溯至汉代，是中国古代重要的水利灌溉工具。水流冲击叶片带动水轮旋转，提水斗将水从低处舀起，升至高处后倒入灌溉渠。',
         difficulty: 3,
         reward: 30,
-        cardColor: '#F3E5F5',
-        gradientColors: ['#F3E5F5', '#E1BEE7', '#CE93D8'], // 紫色渐变
+        cardColor: '#fff1b8', // 新的黄色背景
+        difficultyColor: '#ffc53d', // 黄色难度标签
         image: 'images/tool_rake.png',
         unlocked: true,
         completed: false
@@ -361,14 +361,8 @@ export default class ToolAssemblyNavPage extends BasePage {
         ctx.shadowOffsetY = 8;
       }
       
-      // 创建渐变背景
-      const gradient = ctx.createLinearGradient(0, 0, this.cardWidth, this.cardHeight);
-      const colors = tool.gradientColors || ['#FFFFFF', '#F5F5F5', '#EEEEEE'];
-      gradient.addColorStop(0, colors[0]);
-      gradient.addColorStop(0.5, colors[1]);
-      gradient.addColorStop(1, colors[2]);
-      
-      ctx.fillStyle = gradient;
+      // 使用纯色背景
+      ctx.fillStyle = tool.cardColor || '#FFFFFF';
       
       // 绘制圆角矩形背景 - 使用非常大的圆角半径确保效果明显
       const borderRadius = Math.min(120, this.cardWidth / 4, this.cardHeight / 4); // 更大的圆角半径
@@ -470,7 +464,7 @@ export default class ToolAssemblyNavPage extends BasePage {
       // 渲染难度标签（右上角，向左移动更多以优化视觉平衡）
       const difficultyTagWidth = 110;
       const difficultyX = this.cardWidth - difficultyTagWidth - 80; // 增加左移距离到80px
-      this.renderDifficultyTag(ctx, tool.difficulty, difficultyX, 30);
+      this.renderDifficultyTag(ctx, tool.difficulty, difficultyX, 30, tool);
       
       if (GameGlobal.logger && isActive) {
         GameGlobal.logger.debug('标签位置计算', { 
@@ -767,16 +761,12 @@ export default class ToolAssemblyNavPage extends BasePage {
   /**
    * 渲染难度标签
    */
-  renderDifficultyTag(ctx, difficulty, x, y) {
+  renderDifficultyTag(ctx, difficulty, x, y, tool) {
     const tagWidth = 110; // 适配最大卡片的标签宽度
     const tagHeight = 40;  // 适配最大卡片的标签高度
     
-    // 绘制标签背景
-    const gradient = ctx.createLinearGradient(x, y, x + tagWidth, y + tagHeight);
-    gradient.addColorStop(0, '#42A5F5');
-    gradient.addColorStop(1, '#1976D2');
-    
-    ctx.fillStyle = gradient;
+    // 使用工具指定的难度标签颜色
+    ctx.fillStyle = tool.difficultyColor || '#4096ff';
     // 使用更大的圆角半径，确保效果明显
     const tagRadius = Math.min(25, tagHeight / 2); // 最大25px或标签高度的一半
     

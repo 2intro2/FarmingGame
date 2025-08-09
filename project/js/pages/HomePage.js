@@ -27,6 +27,39 @@ export default class HomePage {
     this.initModules();
     this.initButtons();
     this.initInfoBar();
+    this.initStorage();
+  }
+
+  /**
+   * 初始化存储检查
+   */
+  initStorage() {
+    try {
+      // 检查 tool_qyl 键是否存在
+      wx.getStorage({
+        key: 'tool_qyl',
+        success: (res) => {
+          // 如果存在，不做任何操作
+          console.log('tool_qyl 已存在，值为:', res.data);
+        },
+        fail: (err) => {
+          // 如果不存在，设置值为 0
+          console.log('tool_qyl 不存在，设置初始值为 0');
+          wx.setStorage({
+            key: 'tool_qyl',
+            data: 0,
+            success: () => {
+              console.log('tool_qyl 初始化成功');
+            },
+            fail: (setErr) => {
+              console.warn('设置 tool_qyl 失败:', setErr);
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.warn('存储初始化失败:', error);
+    }
   }
 
   /**
@@ -165,13 +198,13 @@ export default class HomePage {
       userInfo: {
         x: 20,
         y: 20,
-        width: 310,
+        width: 305,
         height: 100,
         nickname: ''
       },
       // 右上角消息按钮（图片）
       message: {
-        x: SCREEN_WIDTH - 330,
+        x: SCREEN_WIDTH - 335,
         y: 33,
         width: 100,
         height: 100,

@@ -862,21 +862,49 @@ export default class ToolAssemblyNavPage extends BasePage {
   renderBottomNavBg(ctx) {
     try {
       if (this.bottomNavBgImageLoaded && this.bottomNavBgImage) {
-        // 计算底部导航栏位置 - 在屏幕底部
-        const navHeight = 150; // 底部导航栏高度
-        const navY = SCREEN_HEIGHT - navHeight; // 底部位置
+        // 获取图片原始尺寸
+        const imgOriginalWidth = this.bottomNavBgImage.naturalWidth || this.bottomNavBgImage.width;
+        const imgOriginalHeight = this.bottomNavBgImage.naturalHeight || this.bottomNavBgImage.height;
         
-        // 绘制底部导航栏背景图片，拉伸至全屏宽度
-        ctx.drawImage(
-          this.bottomNavBgImage, 
-          0, navY, // 起始位置：左边缘，底部
-          SCREEN_WIDTH, navHeight // 拉伸至全屏宽度，固定高度
-        );
-        
-        if (GameGlobal.logger) {
-          GameGlobal.logger.debug('底部导航栏背景图片渲染成功', null, 'toolAssemblyNav');
-        }
+        if (imgOriginalWidth && imgOriginalHeight) {
+          // 计算底部导航栏区域
+          const maxNavHeight = 120; // 减小最大高度，避免图片过大
+          const maxNavWidth = Math.min(SCREEN_WIDTH * 0.9, 600); // 最大宽度限制为屏幕90%或600px
+          
+          // 计算缩放比例，保持宽高比
+          const scaleX = maxNavWidth / imgOriginalWidth;
+          const scaleY = maxNavHeight / imgOriginalHeight;
+          const scale = Math.min(scaleX, scaleY); // 使用较小的缩放比例确保图片完全显示
+          
+          // 计算实际渲染尺寸
+          const renderWidth = imgOriginalWidth * scale;
+          const renderHeight = imgOriginalHeight * scale;
+          
+          // 计算居中位置
+          const navY = SCREEN_HEIGHT - maxNavHeight - 20; // 距离底部20px
+          const navX = (SCREEN_WIDTH - renderWidth) / 2; // 水平居中
+          
+          // 绘制底部导航栏背景图片，保持宽高比和清晰度
+          ctx.drawImage(
+            this.bottomNavBgImage,
+            navX, navY, // 居中位置
+            renderWidth, renderHeight // 保持比例的尺寸
+          );
+          
+          if (GameGlobal.logger) {
+            GameGlobal.logger.debug('底部导航栏背景图片渲染成功', {
+              originalSize: `${imgOriginalWidth}x${imgOriginalHeight}`,
+              renderSize: `${Math.round(renderWidth)}x${Math.round(renderHeight)}`,
+              position: `${Math.round(navX)}, ${Math.round(navY)}`,
+              scale: scale.toFixed(3)
+            }, 'toolAssemblyNav');
+          }
         } else {
+          if (GameGlobal.logger) {
+            GameGlobal.logger.warn('无法获取底部导航栏背景图片尺寸', null, 'toolAssemblyNav');
+          }
+        }
+      } else {
         // 图片未加载成功，使用备用方案（暂时为空，因为用户要求完全删除原有导航栏）
         if (GameGlobal.logger) {
           GameGlobal.logger.warn('底部导航栏背景图片未加载，跳过渲染', null, 'toolAssemblyNav');

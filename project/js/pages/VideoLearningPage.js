@@ -16,7 +16,8 @@ export default class VideoLearningPage {
     isPlaying: false,
     isFullScreen: false,
     volume: 1,
-    lastModuleIndex: -1 // 记录上次的模块索引，用于检测模块切换
+    lastModuleIndex: -1, // 记录上次的模块索引，用于检测模块切换
+    isCompleted: false // 视频是否播放完成
   };
 
   // 卡片数据
@@ -161,7 +162,9 @@ export default class VideoLearningPage {
 
     this.video.onEnded(() => {
       this.videoState.isPlaying = false;
-      console.log('视频播放结束');
+      this.videoState.isCompleted = true;
+      console.log('视频播放结束，卡片已解锁');
+      showToast('视频播放完成，现在可以进行连线了！');
     });
 
     this.video.onTimeUpdate((res) => {
@@ -539,27 +542,39 @@ export default class VideoLearningPage {
    */
   renderImageCards(ctx) {
     const { x, y, width, height, gap } = this.layout.cards.column1;
+    const isVideoCompleted = this.videoState.isCompleted;
     
     this.cards.column1.forEach((card, index) => {
       const cardY = y + index * (height + gap);
       
-      // 绘制卡片背景 - 永久选中的卡片使用特殊颜色
+      // 判断卡片是否可用（视频完成或已永久选中）
+      const isCardEnabled = isVideoCompleted || card.permanentlySelected;
+      
+      // 绘制卡片背景
       if (card.permanentlySelected) {
         ctx.fillStyle = '#4CAF50'; // 深绿色表示永久选中
+      } else if (!isCardEnabled) {
+        ctx.fillStyle = '#F5F5F5'; // 灰色表示锁定
       } else {
         ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
       }
       ctx.fillRect(x, cardY, width, height);
       
-      // 绘制边框 - 永久选中的卡片使用特殊边框
+      // 绘制边框
       if (card.permanentlySelected) {
         ctx.strokeStyle = '#2E7D32';
         ctx.lineWidth = 3;
+      } else if (!isCardEnabled) {
+        ctx.strokeStyle = '#CCCCCC';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]); // 虚线边框表示锁定
       } else {
         ctx.strokeStyle = '#CCCCCC';
         ctx.lineWidth = 2;
+        ctx.setLineDash([]); // 恢复实线
       }
       ctx.strokeRect(x, cardY, width, height);
+      ctx.setLineDash([]); // 确保恢复实线
       
       // 如果永久选中，绘制选中指示器
       if (card.permanentlySelected) {
@@ -573,17 +588,35 @@ export default class VideoLearningPage {
       }
       
       // 绘制图片
-      ImageLoader.safeDrawImage(
-        ctx, 
-        card.imageObj, 
-        x + 10, 
-        cardY + 10, 
-        width - 20, 
-        height - 20,
-        (ctx, x, y, width, height) => {
-          this.drawImagePlaceholder(ctx, x, y, width, height, card.label);
-        }
-      );
+      if (isCardEnabled) {
+        ImageLoader.safeDrawImage(
+          ctx, 
+          card.imageObj, 
+          x + 10, 
+          cardY + 10, 
+          width - 20, 
+          height - 20,
+          (ctx, x, y, width, height) => {
+            this.drawImagePlaceholder(ctx, x, y, width, height, card.label);
+          }
+        );
+      } else {
+        // 锁定状态下绘制半透明图片
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ImageLoader.safeDrawImage(
+          ctx, 
+          card.imageObj, 
+          x + 10, 
+          cardY + 10, 
+          width - 20, 
+          height - 20,
+          (ctx, x, y, width, height) => {
+            this.drawImagePlaceholder(ctx, x, y, width, height, card.label);
+          }
+        );
+        ctx.restore();
+      }
     });
   }
 
@@ -613,27 +646,39 @@ export default class VideoLearningPage {
    */
   renderTextCards(ctx) {
     const { x, y, width, height, gap } = this.layout.cards.column2;
+    const isVideoCompleted = this.videoState.isCompleted;
     
     this.cards.column2.forEach((card, index) => {
       const cardY = y + index * (height + gap);
       
-      // 绘制卡片背景 - 永久选中的卡片使用特殊颜色
+      // 判断卡片是否可用（视频完成或已永久选中）
+      const isCardEnabled = isVideoCompleted || card.permanentlySelected;
+      
+      // 绘制卡片背景
       if (card.permanentlySelected) {
         ctx.fillStyle = '#4CAF50'; // 深绿色表示永久选中
+      } else if (!isCardEnabled) {
+        ctx.fillStyle = '#F5F5F5'; // 灰色表示锁定
       } else {
         ctx.fillStyle = card.selected ? '#A5D6A7' : '#FFFFFF';
       }
       ctx.fillRect(x, cardY, width, height);
       
-      // 绘制边框 - 永久选中的卡片使用特殊边框
+      // 绘制边框
       if (card.permanentlySelected) {
         ctx.strokeStyle = '#2E7D32';
         ctx.lineWidth = 3;
+      } else if (!isCardEnabled) {
+        ctx.strokeStyle = '#CCCCCC';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]); // 虚线边框表示锁定
       } else {
         ctx.strokeStyle = '#CCCCCC';
         ctx.lineWidth = 2;
+        ctx.setLineDash([]); // 恢复实线
       }
       ctx.strokeRect(x, cardY, width, height);
+      ctx.setLineDash([]); // 确保恢复实线
       
       // 如果永久选中，绘制选中指示器
       if (card.permanentlySelected) {
@@ -646,15 +691,34 @@ export default class VideoLearningPage {
         ctx.fillText('✓', x + width - 7.5, cardY + 7.5);
       }
       
-      // 绘制拼音
-      ctx.fillStyle = card.permanentlySelected ? '#FFFFFF' : '#333333';
-      ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(card.pinyin, x + width / 2, cardY + height / 2 - 10);
-      
-      // 绘制汉字
-      ctx.font = '24px Arial';
-      ctx.fillText(card.chinese, x + width / 2, cardY + height / 2 + 20);
+      // 绘制文字内容
+      if (isCardEnabled) {
+        // 绘制拼音
+        ctx.fillStyle = card.permanentlySelected ? '#FFFFFF' : '#333333';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(card.pinyin, x + width / 2, cardY + height / 2 - 10);
+        
+        // 绘制汉字
+        ctx.font = '24px Arial';
+        ctx.fillText(card.chinese, x + width / 2, cardY + height / 2 + 20);
+      } else {
+        // 锁定状态下绘制半透明文字
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        
+        // 绘制拼音
+        ctx.fillStyle = '#666666';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(card.pinyin, x + width / 2, cardY + height / 2 - 10);
+        
+        // 绘制汉字
+        ctx.font = '24px Arial';
+        ctx.fillText(card.chinese, x + width / 2, cardY + height / 2 + 20);
+        
+        ctx.restore();
+      }
     });
   }
 
@@ -943,6 +1007,13 @@ export default class VideoLearningPage {
       if (touchX >= x && touchX <= x + width &&
           touchY >= cardY && touchY <= cardY + height) {
         
+        // 检查视频是否播放完成
+        if (!this.videoState.isCompleted) {
+          console.log('视频未播放完成，卡片不能点击');
+          showToast('请先观看视频再连线呦～');
+          return;
+        }
+        
         // 检查当前卡片是否已经被选中
         if (card.selected) {
           // 如果卡片是永久选中的，则不允许取消选中
@@ -1162,7 +1233,8 @@ export default class VideoLearningPage {
       isPlaying: false,
       isFullScreen: false,
       volume: 1,
-      lastModuleIndex: -1
+      lastModuleIndex: -1,
+      isCompleted: false
     };
     
     // 重置卡片状态

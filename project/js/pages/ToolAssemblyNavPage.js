@@ -396,19 +396,37 @@ export default class ToolAssemblyNavPage extends BasePage {
       
       ctx.fillStyle = gradient;
       
-      // 绘制圆角矩形背景
-      const borderRadius = 60; // 大幅增加圆角半径，创造更圆润的效果
+      // 绘制圆角矩形背景 - 使用非常大的圆角半径确保效果明显
+      const borderRadius = Math.min(120, this.cardWidth / 4, this.cardHeight / 4); // 更大的圆角半径
+      
+      if (GameGlobal.logger) {
+        GameGlobal.logger.debug(`绘制卡片圆角，半径: ${borderRadius}px`, { 
+          hasRoundRect: !!(ctx.roundRect && typeof ctx.roundRect === 'function'),
+          cardWidth: this.cardWidth,
+          cardHeight: this.cardHeight
+        }, 'toolAssemblyNav');
+      }
+      
       try {
         if (ctx.roundRect && typeof ctx.roundRect === 'function') {
           ctx.roundRect(0, 0, this.cardWidth, this.cardHeight, borderRadius);
           ctx.fill();
+          if (GameGlobal.logger) {
+            GameGlobal.logger.debug('使用原生roundRect绘制卡片背景', {}, 'toolAssemblyNav');
+          }
         } else {
           // 降级方案 - 手动绘制圆角矩形
           this.drawRoundedRect(ctx, 0, 0, this.cardWidth, this.cardHeight, borderRadius);
           ctx.fill();
+          if (GameGlobal.logger) {
+            GameGlobal.logger.debug('使用手动drawRoundedRect绘制卡片背景', {}, 'toolAssemblyNav');
+          }
         }
       } catch (rectError) {
         ctx.fillRect(0, 0, this.cardWidth, this.cardHeight);
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('圆角绘制失败，使用普通矩形', { error: rectError.message }, 'toolAssemblyNav');
+        }
       }
       
       if (isActive) {
@@ -433,6 +451,9 @@ export default class ToolAssemblyNavPage extends BasePage {
         }
       } catch (rectError) {
         ctx.strokeRect(0, 0, this.cardWidth, this.cardHeight);
+        if (GameGlobal.logger) {
+          GameGlobal.logger.warn('圆角边框绘制失败，使用普通边框', { error: rectError.message }, 'toolAssemblyNav');
+        }
       }
       
       // 渲染工具图标（左侧，适配最大卡片）
@@ -642,16 +663,29 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 手动绘制圆角矩形（兼容性方案）
    */
   drawRoundedRect(ctx, x, y, width, height, radius) {
+    // 限制圆角半径不超过宽高的一半
+    const maxRadius = Math.min(width / 2, height / 2);
+    const effectiveRadius = Math.min(radius, maxRadius);
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug(`手动绘制圆角矩形`, { 
+        x, y, width, height, 
+        requestedRadius: radius, 
+        effectiveRadius, 
+        maxRadius 
+      }, 'toolAssemblyNav');
+    }
+    
     ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.moveTo(x + effectiveRadius, y);
+    ctx.lineTo(x + width - effectiveRadius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + effectiveRadius);
+    ctx.lineTo(x + width, y + height - effectiveRadius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - effectiveRadius, y + height);
+    ctx.lineTo(x + effectiveRadius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - effectiveRadius);
+    ctx.lineTo(x, y + effectiveRadius);
+    ctx.quadraticCurveTo(x, y, x + effectiveRadius, y);
     ctx.closePath();
   }
 

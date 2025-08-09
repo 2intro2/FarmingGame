@@ -16,7 +16,6 @@ export default class VideoLearningPage {
     isPlaying: false,
     isFullScreen: false,
     volume: 1,
-    lastModuleIndex: -1, // 记录上次的模块索引，用于检测模块切换
     isCompleted: false // 视频是否播放完成
   };
 
@@ -46,13 +45,7 @@ export default class VideoLearningPage {
   // 次背景图片
   secondaryBackgroundImage = null;
 
-  // 进度条拖动状态
-  progressDrag = {
-    isDragging: false,
-    dragProgress: 0, // 拖动时的临时进度值 (0-1)
-    startX: 0,
-    startY: 0
-  };
+
 
   selectedCardIds = {
     column1: null,
@@ -67,12 +60,7 @@ export default class VideoLearningPage {
       width: SCREEN_WIDTH * 0.53,
       height: SCREEN_WIDTH * 0.40 * (3 / 4) // 16:9比例
     },
-    progress: {
-      x: SCREEN_WIDTH * 0.02,
-      y: SCREEN_HEIGHT * 0.95 * (9 / 16) + SCREEN_HEIGHT * 0.12 + 20,
-      width: SCREEN_WIDTH * 0.55,
-      height: 30,
-    },
+
     cards: {
       column1: {
         x: SCREEN_WIDTH * 0.68,
@@ -179,13 +167,6 @@ export default class VideoLearningPage {
     this.video.onTimeUpdate((res) => {
       this.videoState.currentTime = res.position;
       this.videoState.duration = res.duration;
-      
-      // 检测模块切换
-      this.checkModuleChange();
-    //   console.error('视频当前时间:', res.position);
-    //   console.error('视频总时长:', res.duration);
-      // 实时更新进度显示
-      // console.log(`视频进度: ${this.formatTime(res.position)} / ${this.formatTime(res.duration)} (${Math.round((res.position / res.duration) * 100)}%)`);
     });
 
     this.video.onError((error) => {
@@ -325,9 +306,6 @@ export default class VideoLearningPage {
     // 绘制返回按钮
     this.renderBackButton(ctx);
     
-    // 绘制学习进度区域
-    this.renderProgressSection(ctx);
-    
     // 绘制卡片
     this.renderCards(ctx);
     
@@ -364,13 +342,7 @@ export default class VideoLearningPage {
       }
     }
     
-    // 第三层：左侧面板背景 - 添加圆角（半透明覆盖）
-    const leftPanelX = this.layout.video.x;
-    const leftPanelY = this.layout.progress.y - 10;
-    const leftPanelWidth = this.layout.video.width;
-    const leftPanelHeight = SCREEN_HEIGHT - (this.layout.progress.y - 10) - this.layout.video.y;
-    
-    this.drawRoundedRect(ctx, leftPanelX, leftPanelY, leftPanelWidth, leftPanelHeight, 20, 'rgba(200, 230, 201, 0.9)', '#A5D6A7', 2);
+
   }
 
   /**
@@ -415,264 +387,19 @@ export default class VideoLearningPage {
     ctx.restore();
   }
 
-  /**
-   * 绘制学习进度区域
-   */
-  renderProgressSection(ctx) {
-    // 获取圆角方框的实际区域
-    const leftPanelX = this.layout.video.x;
-    const leftPanelY = this.layout.progress.y - 10;
-    const leftPanelWidth = this.layout.video.width;
-    const leftPanelHeight = SCREEN_HEIGHT - (this.layout.progress.y - 10) - this.layout.video.y;
-    
-    // 在圆角方框内居中布局，添加内边距
-    const padding = 20;
-    const contentX = leftPanelX + padding;
-    const contentY = leftPanelY + padding;
-    const contentWidth = leftPanelWidth - padding * 2;
-    
-    // 绘制标题
-    ctx.fillStyle = '#333333';
-    ctx.font = '20px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('学习进度', contentX + contentWidth / 2, contentY + 30);
-    
-    // 绘制播放进度文字
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'left';
-    const currentTime = this.videoState.currentTime;
-    const duration = this.videoState.duration;
-    const progressPercent = this.videoState.duration > 0 ? 
-      Math.round((this.videoState.currentTime / this.videoState.duration) * 100) : 0;
-    ctx.fillText(`播放进度: ${currentTime} / ${duration} (${progressPercent}%)`, contentX, contentY + 70);
-    
-    // 绘制视频播放进度条
-    this.renderVideoProgressBar(ctx, contentX, contentY + 85, contentWidth);
-    
-    // 绘制当前学习模块
-    const currentModule = this.getCurrentLearningModule();
-    if (currentModule) {
-      ctx.fillStyle = '#4CAF50';
-      ctx.font = '14px Arial';
-      ctx.fillText(`当前学习: ${currentModule}`, contentX, contentY + 110);
-    }
-    
-    // 绘制学习模块进度条
-    this.renderLearningProgress(ctx, contentX, contentY + 130, contentWidth);
-  }
 
-  /**
-   * 绘制学习模块进度条
-   */
-  renderLearningProgress(ctx, x, y, width) {
-    const moduleNames = ['曲辕犁的历史', '结构组成', '使用技巧'];
-    const availableWidth = width || (this.layout.progress.width - 40);
-    const moduleWidth = availableWidth / 3;
-    const moduleHeight = 20;
-    
-    // 计算视频播放进度百分比
-    const videoProgress = this.videoState.duration > 0 ? 
-      this.videoState.currentTime / this.videoState.duration : 0;
-    
-    // 根据视频进度计算各个模块的进度
-    const moduleProgress = this.calculateModuleProgress(videoProgress);
-    
-    moduleNames.forEach((name, index) => {
-      const moduleX = x + 20 + index * moduleWidth;
-      
-      // 绘制背景
-      ctx.fillStyle = '#BBDEFB';
-      ctx.fillRect(moduleX, y, moduleWidth, moduleHeight);
-      
-      // 绘制进度
-      if (moduleProgress[index] > 0) {
-        ctx.fillStyle = '#4CAF50';
-        ctx.fillRect(moduleX, y, moduleWidth * moduleProgress[index], moduleHeight);
-      }
-      
-      // 绘制文字
-      ctx.fillStyle = '#333333';
-      ctx.font = '14px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(name, moduleX + moduleWidth / 2, y + moduleHeight + 20);
-      
-      // 绘制进度百分比
-      const progressPercent = Math.round(moduleProgress[index] * 100);
-      ctx.fillStyle = '#666666';
-      ctx.font = '12px Arial';
-      ctx.fillText(`${progressPercent}%`, moduleX + moduleWidth / 2, y + moduleHeight + 40);
-    });
-  }
 
-  /**
-   * 根据视频进度计算各个模块的进度
-   * @param {number} videoProgress - 视频播放进度 (0-1)
-   * @returns {Array} 各个模块的进度数组
-   */
-  calculateModuleProgress(videoProgress) {
-    // 定义各个模块的时间段（占总视频时长的比例）
-    const moduleTimeRanges = [
-      { start: 0, end: 0.33 },    // 第一个模块：0-33%
-      { start: 0.33, end: 0.66 }, // 第二个模块：33%-66%
-      { start: 0.66, end: 1.0 }   // 第三个模块：66%-100%
-    ];
-    
-    return moduleTimeRanges.map(range => {
-      if (videoProgress <= range.start) {
-        return 0; // 还没到这个模块
-      } else if (videoProgress >= range.end) {
-        return 1; // 这个模块已完成
-      } else {
-        // 计算当前模块的进度
-        const moduleProgress = (videoProgress - range.start) / (range.end - range.start);
-        return Math.min(moduleProgress, 1);
-      }
-    });
-  }
 
-  /**
-   * 获取当前学习模块名称
-   * @returns {string|null} 当前学习模块名称
-   */
-  getCurrentLearningModule() {
-    const moduleNames = ['曲辕犁的历史', '结构组成', '使用技巧'];
-    const videoProgress = this.videoState.duration > 0 ? 
-      this.videoState.currentTime / this.videoState.duration : 0;
-    
-    if (videoProgress <= 0.33) {
-      return moduleNames[0];
-    } else if (videoProgress <= 0.66) {
-      return moduleNames[1];
-    } else if (videoProgress <= 1.0) {
-      return moduleNames[2];
-    }
-    
-    return null;
-  }
 
-  /**
-   * 检测模块切换
-   */
-  checkModuleChange() {
-    const videoProgress = this.videoState.duration > 0 ? 
-      this.videoState.currentTime / this.videoState.duration : 0;
-    
-    let currentModuleIndex = -1;
-    if (videoProgress <= 0.33) {
-      currentModuleIndex = 0;
-    } else if (videoProgress <= 0.66) {
-      currentModuleIndex = 1;
-    } else if (videoProgress <= 1.0) {
-      currentModuleIndex = 2;
-    }
-    
-    // 如果模块发生变化，显示提示
-    if (currentModuleIndex !== this.videoState.lastModuleIndex && currentModuleIndex !== -1) {
-      const moduleNames = ['曲辕犁的历史', '结构组成', '使用技巧'];
-      const moduleName = moduleNames[currentModuleIndex];
-      console.log(`进入新模块: ${moduleName}`);
-      showToast(`进入学习模块: ${moduleName}`);
-      this.videoState.lastModuleIndex = currentModuleIndex;
-    }
-  }
 
-  /**
-   * 绘制视频播放进度条
-   * @param {CanvasRenderingContext2D} ctx - Canvas上下文
-   * @param {number} x - x坐标
-   * @param {number} y - y坐标
-   * @param {number} width - 宽度
-   */
-  renderVideoProgressBar(ctx, x, y, width) {
-    const barHeight = 12; // 增加高度便于拖动
-    
-    // 使用拖动进度或实际播放进度
-    const progress = this.progressDrag.isDragging ? 
-      this.progressDrag.dragProgress : 
-      (this.videoState.duration > 0 ? this.videoState.currentTime / this.videoState.duration : 0);
-    
-    // 绘制进度条背景（扩大可点击区域）
-    const trackHeight = barHeight + 8;
-    const trackY = y - 4;
-    ctx.fillStyle = this.progressDrag.isDragging ? '#F5F5F5' : '#E0E0E0';
-    ctx.fillRect(x, trackY, width, trackHeight);
-    
-    // 绘制进度条主体
-    ctx.fillStyle = '#E0E0E0';
-    ctx.fillRect(x, y, width, barHeight);
-    
-    // 绘制进度条填充
-    if (progress > 0) {
-      ctx.fillStyle = this.progressDrag.isDragging ? '#1976D2' : '#2196F3';
-      ctx.fillRect(x, y, width * progress, barHeight);
-    }
-    
-    // 绘制进度条边框
-    ctx.strokeStyle = this.progressDrag.isDragging ? '#1976D2' : '#BDBDBD';
-    ctx.lineWidth = this.progressDrag.isDragging ? 2 : 1;
-    ctx.strokeRect(x, y, width, barHeight);
-    
-    // 绘制拖动滑块
-    if (progress >= 0) {
-      const sliderX = x + width * progress;
-      const sliderRadius = this.progressDrag.isDragging ? 8 : 6;
-      
-      // 滑块阴影
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      ctx.beginPath();
-      ctx.arc(sliderX + 1, y + barHeight / 2 + 1, sliderRadius, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // 滑块主体
-      ctx.fillStyle = this.progressDrag.isDragging ? '#1976D2' : '#2196F3';
-      ctx.beginPath();
-      ctx.arc(sliderX, y + barHeight / 2, sliderRadius, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // 拖动时添加外圈效果
-      if (this.progressDrag.isDragging) {
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-    }
-    
-    // 绘制模块分割线
-    const modulePositions = [0.33, 0.66];
-    ctx.strokeStyle = '#FF9800';
-    ctx.lineWidth = 2;
-    modulePositions.forEach(pos => {
-      const lineX = x + width * pos;
-      ctx.beginPath();
-      ctx.moveTo(lineX, y);
-      ctx.lineTo(lineX, y + barHeight);
-      ctx.stroke();
-    });
-  }
 
-  /**
-   * 获取进度条的点击区域
-   */
-  getProgressBarRect() {
-    // 获取圆角方框的实际区域
-    const leftPanelX = this.layout.video.x;
-    const leftPanelY = this.layout.progress.y - 10;
-    const leftPanelWidth = this.layout.video.width;
-    
-    // 在圆角方框内居中布局，添加内边距
-    const padding = 20;
-    const contentX = leftPanelX + padding;
-    const contentY = leftPanelY + padding;
-    const contentWidth = leftPanelWidth - padding * 2;
-    
-    const progressY = contentY + 85; // 对应 renderProgressSection 中调用时的 contentY + 85
-    return {
-      x: contentX,
-      y: progressY - 4, // 包含扩展的点击区域
-      width: contentWidth,
-      height: 20 // 扩大的点击高度
-    };
-  }
+
+
+
+
+
+
+
 
   /**
    * 绘制卡片
@@ -986,17 +713,9 @@ export default class VideoLearningPage {
     
     console.log(`VideoLearningPage 触摸事件: ${eventType} at (${x}, ${y})`);
     
-    // 优先检查进度条拖动
-    const progressHandled = this.checkProgressBarDrag(x, y, eventType);
-    console.log(`进度条拖动检查结果: ${progressHandled}`);
-    
-    if (progressHandled) {
-      return;
-    }
-    
-    // 仅在触摸结束时处理其他点击事件，避免拖动过程中误触发
+    // 仅在触摸结束时处理点击事件
     if (eventType === 'touchend') {
-      console.log('处理其他点击事件');
+      console.log('处理点击事件');
       
       // 检查返回按钮点击
       this.checkBackButtonClick(x, y);
@@ -1009,124 +728,9 @@ export default class VideoLearningPage {
     }
   }
 
-  /**
-   * 检查进度条拖动事件
-   */
-  checkProgressBarDrag(touchX, touchY, eventType) {
-    const progressRect = this.getProgressBarRect();
-    
-    console.log('🎯 进度条拖动检查:', {
-      eventType,
-      touchPosition: { x: touchX, y: touchY },
-      progressRect,
-      isDragging: this.progressDrag.isDragging
-    });
-    
-    // 检查是否在进度条区域内或正在拖动中
-    const inProgressArea = touchX >= progressRect.x && touchX <= progressRect.x + progressRect.width &&
-                          touchY >= progressRect.y && touchY <= progressRect.y + progressRect.height;
-    
-    console.log('是否在进度条区域内:', inProgressArea);
-    
-    if (eventType === 'touchstart' && inProgressArea) {
-      // 开始拖动
-      console.log('✅ 开始拖动进度条');
-      this.progressDrag.isDragging = true;
-      this.progressDrag.startX = touchX;
-      this.progressDrag.startY = touchY;
-      
-      // 计算初始进度
-      const progress = Math.max(0, Math.min(1, (touchX - progressRect.x) / progressRect.width));
-      this.progressDrag.dragProgress = progress;
-      
-      console.log('初始进度:', progress);
-      showToast('开始拖动进度条');
-      return true;
-      
-    } else if (eventType === 'touchmove' && this.progressDrag.isDragging) {
-      // 拖动中
-      console.log('🔄 拖动中');
-      const progress = Math.max(0, Math.min(1, (touchX - progressRect.x) / progressRect.width));
-      this.progressDrag.dragProgress = progress;
-      
-      console.log('当前进度:', progress);
-      
-      // 实时显示拖动到的时间
-      if (this.videoState.duration > 0) {
-        const targetTime = progress * this.videoState.duration;
-        console.log('拖动到时间:', this.formatTime(targetTime));
-      }
-      
-      return true;
-      
-    } else if (eventType === 'touchend' && this.progressDrag.isDragging) {
-      // 结束拖动，应用进度
-      console.log('🏁 结束拖动，应用进度');
-      this.applyProgressDrag();
-      return true;
-    }
-    
-    console.log('❌ 进度条拖动未处理');
-    return false;
-  }
 
-  /**
-   * 应用拖动进度到视频
-   */
-  applyProgressDrag() {
-    if (!this.progressDrag.isDragging) {
-      console.log('没有在拖动状态，跳过应用进度');
-      return;
-    }
-    
-    console.log('应用拖动进度:', {
-      dragProgress: this.progressDrag.dragProgress,
-      videoExists: !!this.video,
-      videoDuration: this.videoState.duration
-    });
-    
-    try {
-      if (this.video && this.videoState.duration > 0) {
-        const targetTime = this.progressDrag.dragProgress * this.videoState.duration;
-        
-        console.log('尝试跳转到时间:', targetTime, '秒');
-        
-        // 尝试多种跳转方法，适配微信小游戏的视频API
-        if (typeof this.video.seek === 'function') {
-          console.log('使用 seek 方法');
-          this.video.seek(targetTime);
-          this.videoState.currentTime = targetTime;
-          showToast(`已跳转到: ${this.formatTime(targetTime)}`);
-        } else if (typeof this.video.currentTime !== 'undefined') {
-          console.log('使用 currentTime 属性');
-          this.video.currentTime = targetTime;
-          this.videoState.currentTime = targetTime;
-          showToast(`已跳转到: ${this.formatTime(targetTime)}`);
-        } else {
-          // 如果没有直接的跳转方法，我们可以尝试模拟跳转
-          console.warn('视频组件不支持跳转方法，尝试模拟跳转');
-          this.videoState.currentTime = targetTime;
-          showToast(`已跳转到: ${this.formatTime(targetTime)}`);
-        }
-      } else {
-        console.warn('视频未就绪:', {
-          video: !!this.video,
-          duration: this.videoState.duration
-        });
-        showToast('视频未就绪');
-      }
-    } catch (error) {
-      console.error('视频跳转失败:', error);
-      showErrorToast('视频跳转失败');
-    } finally {
-      // 重置拖动状态
-      console.log('重置拖动状态');
-      this.progressDrag.isDragging = false;
-      this.progressDrag.dragProgress = 0;
-      this.progressDrag.startX = 0;
-      this.progressDrag.startY = 0;
-    }
-  }
+
+
 
   /**
    * 检查返回按钮点击
@@ -1399,20 +1003,11 @@ export default class VideoLearningPage {
       isPlaying: false,
       isFullScreen: false,
       volume: 1,
-      lastModuleIndex: -1,
       isCompleted: false
     };
     
     // 重置卡片状态
     this.resetCardStates();
-    
-    // 重置进度条拖动状态
-    this.progressDrag = {
-      isDragging: false,
-      dragProgress: 0,
-      startX: 0,
-      startY: 0
-    };
     
     // 销毁现有视频组件
     if (this.video) {

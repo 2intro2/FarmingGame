@@ -14,26 +14,12 @@ export default class WechatAPI {
   init() {
     // 监听触摸事件
     wx.onTouchStart(this.handleTouchStart.bind(this));
-    wx.onTouchMove(this.handleTouchMove.bind(this));
-    wx.onTouchEnd(this.handleTouchEnd.bind(this));
-  }
-
-  /**
-   * 处理触摸事件
-   * @param {Object} event - 触摸事件对象
-   */
-  handleTouch(event) {
-    if (GameGlobal.logger) {
-      GameGlobal.logger.debug('微信触摸事件接收', { event }, 'wechat');
+    // 拖拽需要的移动与结束事件
+    if (wx.onTouchMove) {
+      wx.onTouchMove(this.handleTouchMove.bind(this));
     }
-    
-    // 将触摸事件传递给当前页面
-    if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
-      GameGlobal.pageManager.handleTouch(event);
-    } else {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.warn('PageManager或当前页面不存在', null, 'wechat');
-      }
+    if (wx.onTouchEnd) {
+      wx.onTouchEnd(this.handleTouchEnd.bind(this));
     }
   }
 
@@ -42,54 +28,30 @@ export default class WechatAPI {
    * @param {Object} event - 触摸事件对象
    */
   handleTouchStart(event) {
-    if (GameGlobal.logger) {
-      GameGlobal.logger.debug('微信触摸开始事件接收', { event }, 'wechat');
-    }
-    
     // 将触摸事件传递给当前页面
     if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
-      GameGlobal.pageManager.handleTouchStart(event);
-    } else {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.warn('PageManager或当前页面不存在', null, 'wechat');
-      }
+      GameGlobal.pageManager.handleTouch(event);
     }
   }
 
   /**
    * 处理触摸移动事件
-   * @param {Object} event - 触摸事件对象
    */
   handleTouchMove(event) {
-    if (GameGlobal.logger) {
-      GameGlobal.logger.debug('微信触摸移动事件接收', { event }, 'wechat');
-    }
-    
-    // 将触摸事件传递给当前页面
     if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
-      GameGlobal.pageManager.handleTouchMove(event);
-    } else {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.warn('PageManager或当前页面不存在', null, 'wechat');
+      if (GameGlobal.pageManager.handleTouchMove) {
+        GameGlobal.pageManager.handleTouchMove(event);
       }
     }
   }
 
   /**
    * 处理触摸结束事件
-   * @param {Object} event - 触摸事件对象
    */
   handleTouchEnd(event) {
-    if (GameGlobal.logger) {
-      GameGlobal.logger.debug('微信触摸结束事件接收', { event }, 'wechat');
-    }
-    
-    // 将触摸事件传递给当前页面
     if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
-      GameGlobal.pageManager.handleTouchEnd(event);
-    } else {
-      if (GameGlobal.logger) {
-        GameGlobal.logger.warn('PageManager或当前页面不存在', null, 'wechat');
+      if (GameGlobal.pageManager.handleTouchEnd) {
+        GameGlobal.pageManager.handleTouchEnd(event);
       }
     }
   }

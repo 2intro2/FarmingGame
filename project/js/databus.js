@@ -23,7 +23,7 @@ export default class DataBus {
 
   // 游戏模块状态
   modules = {
-    toolAssemblyNav: { unlocked: true, name: '农具拼装' },
+    toolAssembly: { unlocked: true, name: '农具拼装' },
     noodleLife: { unlocked: false, name: '面条的一生' },
     emergencyChallenge: { unlocked: false, name: '突发状况挑战' },
     cornGrowth: { unlocked: false, name: '玉米生长过程' }
@@ -31,63 +31,10 @@ export default class DataBus {
 
   // 农具拼接游戏数据
   currentToolIndex = 0; // 当前农具索引
-  currentTool = null; // 当前选中的农具
   toolSteps = {
     step1: { status: 'in_progress', name: '第一步' },
     step2: { status: 'locked', name: '第二步' },
     step3: { status: 'locked', name: '第三步' }
-  };
-
-  // 农具数据
-  toolsData = {
-    hoe: {
-      id: 'hoe',
-      name: '锄头',
-      unlocked: true,
-      completed: false,
-      progress: 0,
-      steps: [
-        { id: 'step1', name: '选择锄头头', status: 'in_progress' },
-        { id: 'step2', name: '选择木柄', status: 'locked' },
-        { id: 'step3', name: '组装完成', status: 'locked' }
-      ]
-    },
-    shovel: {
-      id: 'shovel',
-      name: '铁锹',
-      unlocked: true,
-      completed: false,
-      progress: 0,
-      steps: [
-        { id: 'step1', name: '选择铁锹头', status: 'in_progress' },
-        { id: 'step2', name: '选择手柄', status: 'locked' },
-        { id: 'step3', name: '组装完成', status: 'locked' }
-      ]
-    },
-    sickle: {
-      id: 'sickle',
-      name: '镰刀',
-      unlocked: false,
-      completed: false,
-      progress: 0,
-      steps: [
-        { id: 'step1', name: '选择镰刀头', status: 'locked' },
-        { id: 'step2', name: '选择刀柄', status: 'locked' },
-        { id: 'step3', name: '组装完成', status: 'locked' }
-      ]
-    },
-    rake: {
-      id: 'rake',
-      name: '耙子',
-      unlocked: false,
-      completed: false,
-      progress: 0,
-      steps: [
-        { id: 'step1', name: '选择耙子头', status: 'locked' },
-        { id: 'step2', name: '选择手柄', status: 'locked' },
-        { id: 'step3', name: '组装完成', status: 'locked' }
-      ]
-    }
   };
 
   // 通知系统
@@ -95,20 +42,26 @@ export default class DataBus {
   unreadCount = 1; // 未读消息数量
 
   // 页面状态
-  currentPage = 'login'; // 当前页面
+  currentPage = 'login'; // 当前页面，默认为登录页
   pageHistory = []; // 页面历史
+
+  // 全局音乐管理
+  backgroundMusic = null;
+  isMusicPlaying = false;
+  musicInitialized = false;
 
   constructor() {
     // 确保单例模式
     if (instance) return instance;
 
     instance = this;
+    this.initMusic();
   }
 
   // 重置游戏状态
   reset() {
     this.frame = 0;
-    this.currentPage = 'login';
+    this.currentPage = 'login'; // 重置时回到登录页
     this.pageHistory = [];
   }
 
@@ -133,60 +86,15 @@ export default class DataBus {
 
   // 切换页面
   switchPage(pageName) {
-    // 记录页面切换历史
-    if (this.currentPage && this.currentPage !== pageName) {
-      this.pageHistory.push({
-        page: this.currentPage,
-        timestamp: Date.now()
-      });
-      
-      // 限制历史栈大小
-      if (this.pageHistory.length > 10) {
-        this.pageHistory.shift();
-      }
-    }
-    
+    this.pageHistory.push(this.currentPage);
     this.currentPage = pageName;
-    
-    // 记录导航日志
-    if (GameGlobal.logger) {
-      GameGlobal.logger.info(`DataBus页面切换: ${pageName}`, { 
-        from: this.pageHistory.length > 0 ? this.pageHistory[this.pageHistory.length - 1].page : 'none',
-        to: pageName 
-      }, 'databus');
-    }
   }
 
   // 返回上一页
   goBack() {
     if (this.pageHistory.length > 0) {
-      const lastEntry = this.pageHistory.pop();
-      this.currentPage = lastEntry.page;
-      
-      // 记录返回日志
-      if (GameGlobal.logger) {
-        GameGlobal.logger.info(`DataBus返回上一页: ${lastEntry.page}`, { 
-          from: this.currentPage,
-          to: lastEntry.page 
-        }, 'databus');
-      }
-      
-      return true;
+      this.currentPage = this.pageHistory.pop();
     }
-    return false;
-  }
-
-  // 获取导航历史信息
-  getNavigationInfo() {
-    return {
-      currentPage: this.currentPage,
-      historySize: this.pageHistory.length,
-      canGoBack: this.pageHistory.length > 0,
-      history: this.pageHistory.map(entry => ({
-        page: entry.page,
-        timestamp: entry.timestamp
-      }))
-    };
   }
 
   // 更新任务进度
@@ -219,97 +127,12 @@ export default class DataBus {
     }
   }
 
-  // 获取当前农具信息
-  getCurrentTool() {
-    const toolList = Object.keys(this.modules).filter(key => this.modules[key].unlocked);
-    const currentToolKey = toolList[this.currentToolIndex];
-    return {
-      key: currentToolKey,
-      ...this.modules[currentToolKey]
-    };
-  }
-
-  // 获取农具数据
-  getToolData(toolId) {
-    return this.toolsData[toolId] || null;
-  }
-
-  // 更新农具进度
-  updateToolProgress(toolId, progress) {
-    if (this.toolsData[toolId]) {
-      this.toolsData[toolId].progress = Math.min(100, Math.max(0, progress));
-      
-      // 如果进度达到100%，标记为完成
-      if (this.toolsData[toolId].progress >= 100) {
-        this.toolsData[toolId].completed = true;
-        this.unlockNextTool(toolId);
-      }
-      
-      // 记录日志
-      if (GameGlobal.logger) {
-        GameGlobal.logger.info(`更新农具进度: ${toolId}`, {
-          toolId: toolId,
-          progress: progress,
-          completed: this.toolsData[toolId].completed
-        }, 'databus');
-      }
-    }
-  }
-
-  // 解锁下一个农具
-  unlockNextTool(completedToolId) {
-    const toolOrder = ['hoe', 'shovel', 'sickle', 'rake'];
-    const currentIndex = toolOrder.indexOf(completedToolId);
-    
-    if (currentIndex >= 0 && currentIndex < toolOrder.length - 1) {
-      const nextToolId = toolOrder[currentIndex + 1];
-      if (this.toolsData[nextToolId]) {
-        this.toolsData[nextToolId].unlocked = true;
-        
-        // 记录解锁日志
-        if (GameGlobal.logger) {
-          GameGlobal.logger.info(`解锁农具: ${nextToolId}`, {
-            unlockedTool: nextToolId,
-            completedTool: completedToolId
-          }, 'databus');
-        }
-      }
-    }
-  }
-
   // 更新农具步骤状态
-  updateToolStep(toolId, stepId, status) {
-    if (this.toolsData[toolId]) {
-      const step = this.toolsData[toolId].steps.find(s => s.id === stepId);
-      if (step) {
-        step.status = status;
-        
-        // 计算总体进度
-        const totalSteps = this.toolsData[toolId].steps.length;
-        const completedSteps = this.toolsData[toolId].steps.filter(s => s.status === 'completed').length;
-        const progress = (completedSteps / totalSteps) * 100;
-        
-        this.updateToolProgress(toolId, progress);
-      }
+  updateToolStep(stepIndex, status) {
+    const stepKeys = Object.keys(this.toolSteps);
+    if (stepKeys[stepIndex]) {
+      this.toolSteps[stepKeys[stepIndex]].status = status;
     }
-  }
-
-  // 设置当前选中的农具
-  setCurrentTool(tool) {
-    this.currentTool = tool;
-    
-    // 记录日志
-    if (GameGlobal.logger) {
-      GameGlobal.logger.info(`设置当前农具: ${tool.name}`, {
-        toolId: tool.id,
-        toolName: tool.name
-      }, 'databus');
-    }
-  }
-
-  // 获取所有农具数据
-  getAllToolsData() {
-    return this.toolsData;
   }
 
   // 添加通知
@@ -329,6 +152,108 @@ export default class DataBus {
     if (notification && !notification.isRead) {
       notification.isRead = true;
       this.unreadCount = Math.max(0, this.unreadCount - 1);
+    }
+  }
+
+  // 获取当前农具信息
+  getCurrentTool() {
+    const toolList = Object.keys(this.modules).filter(key => this.modules[key].unlocked);
+    const currentToolKey = toolList[this.currentToolIndex];
+    return {
+      key: currentToolKey,
+      ...this.modules[currentToolKey]
+    };
+  }
+
+  // 全局音乐管理方法
+  initMusic() {
+    if (this.musicInitialized) return;
+    
+    try {
+      this.backgroundMusic = wx.createInnerAudioContext();
+      this.backgroundMusic.src = 'audio/bgm.mp3';
+      this.backgroundMusic.loop = true;
+      this.backgroundMusic.volume = 0.5; // 设置音量为50%
+      
+      this.backgroundMusic.onPlay(() => {
+        console.log('全局背景音乐开始播放');
+        this.isMusicPlaying = true;
+      });
+      
+      this.backgroundMusic.onPause(() => {
+        console.log('全局背景音乐暂停');
+        this.isMusicPlaying = false;
+      });
+      
+      this.backgroundMusic.onStop(() => {
+        console.log('全局背景音乐停止');
+        this.isMusicPlaying = false;
+      });
+      
+      this.backgroundMusic.onError((error) => {
+        console.warn('全局背景音乐播放错误:', error);
+        this.isMusicPlaying = false;
+      });
+
+      this.musicInitialized = true;
+      
+      // 延迟自动播放背景音乐
+      setTimeout(() => {
+        this.playMusic();
+      }, 1000);
+      
+    } catch (error) {
+      console.warn('全局音乐初始化失败:', error);
+      this.backgroundMusic = null;
+    }
+  }
+
+  // 播放背景音乐
+  playMusic() {
+    if (this.backgroundMusic && !this.isMusicPlaying) {
+      try {
+        this.backgroundMusic.play();
+      } catch (error) {
+        console.warn('播放全局背景音乐失败:', error);
+      }
+    }
+  }
+
+  // 停止背景音乐
+  stopMusic() {
+    if (this.backgroundMusic && this.isMusicPlaying) {
+      try {
+        this.backgroundMusic.pause();
+      } catch (error) {
+        console.warn('停止全局背景音乐失败:', error);
+      }
+    }
+  }
+
+  // 切换背景音乐播放状态
+  toggleMusic() {
+    if (this.isMusicPlaying) {
+      this.stopMusic();
+      return false; // 返回当前状态：停止
+    } else {
+      this.playMusic();
+      return true; // 返回当前状态：播放
+    }
+  }
+
+  // 销毁音乐资源
+  destroyMusic() {
+    if (this.backgroundMusic) {
+      try {
+        this.backgroundMusic.stop();
+        this.backgroundMusic.destroy();
+        this.backgroundMusic = null;
+        this.isMusicPlaying = false;
+        this.musicInitialized = false;
+        console.log('全局背景音乐资源已清理');
+      } catch (error) {
+        console.warn('清理全局音乐资源失败:', error);
+      }
     }
   }
 }

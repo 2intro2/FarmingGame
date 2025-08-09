@@ -2,29 +2,12 @@ import './render'; // 初始化Canvas
 import DataBus from './databus'; // 导入数据类，用于管理游戏状态和数据
 import PageManager from './pages/PageManager'; // 导入页面管理器
 import WechatAPI from './utils/wechat'; // 导入微信API工具
-import errorHandler from './utils/errorHandler'; // 导入错误处理工具
-import logger from './utils/logger'; // 导入日志系统
-import navigationDebug from './utils/navigationDebug'; // 导入导航调试工具
-import animationManager from './utils/animationManager'; // 导入动画管理器
-import animationDebug from './utils/animationDebug'; // 导入动画调试工具
 
 const ctx = canvas.getContext('2d'); // 获取canvas的2D绘图上下文
-
-// 在Canvas上下文创建后立即添加roundRect polyfill
-if (GameGlobal.addRoundRectPolyfill) {
-  GameGlobal.addRoundRectPolyfill();
-  GameGlobal.addRoundRectPolyfill = null; // 只添加一次
-}
 
 GameGlobal.databus = new DataBus(); // 全局数据管理，用于管理游戏状态和数据
 GameGlobal.pageManager = new PageManager(); // 全局页面管理器
 GameGlobal.wechatAPI = new WechatAPI(); // 全局微信API管理实例
-GameGlobal.errorHandler = errorHandler; // 全局错误处理器
-GameGlobal.logger = logger; // 全局日志系统
-GameGlobal.navigationDebug = navigationDebug; // 全局导航调试工具
-GameGlobal.animationManager = animationManager; // 全局动画管理器
-GameGlobal.animationDebug = animationDebug; // 全局动画调试工具
-GameGlobal.canvas = canvas; // 设置Canvas引用供动画管理器使用
 
 /**
  * 游戏主函数
@@ -43,18 +26,14 @@ export default class Main {
    */
   init() {
     try {
-      logger.info('游戏开始初始化', null, 'main');
-      
       // 检查登录状态
       this.checkLoginStatus();
       
       // 开始游戏循环
       this.start();
-      
-      logger.info('游戏初始化完成', null, 'main');
     } catch (error) {
-      logger.error('游戏初始化失败', error, 'main');
-      errorHandler.handleError(error, 'game-init');
+      console.error('游戏初始化失败:', error);
+      this.handleError(error);
     }
   }
 
@@ -63,24 +42,29 @@ export default class Main {
    */
   checkLoginStatus() {
     try {
-      logger.info('检查登录状态', null, 'main');
-      
       // 检查本地存储的登录状态
       const loginInfo = wx.getStorageSync('loginInfo');
-      if (loginInfo && loginInfo.isLoggedIn) {
-        // 已登录，直接进入主页
-        logger.info('用户已登录，进入主页', null, 'main');
-        GameGlobal.pageManager.switchToPage('home');
-      } else {
-        // 未登录，进入登录页
-        logger.info('用户未登录，进入登录页', null, 'main');
-        GameGlobal.pageManager.switchToPage('login');
+      console.log('检查登录状态:', loginInfo);
+      
+      // 每次启动都默认显示登录页面，不自动跳转到主页
+      console.log('默认显示登录页面');
+      GameGlobal.pageManager.switchToPage('login');
+      // 每次启动默认进入立体组装页
+      // console.log('默认显示立体组装页');
+      // GameGlobal.pageManager.switchToPage('threeDAssembly');
+      
+      // 如果有登录信息，设置到数据总线但不切换页面
+      if (loginInfo && loginInfo.isLoggedIn && loginInfo.userInfo) {
+        console.log('检测到已登录用户信息，设置到数据总线');
+        GameGlobal.databus.setUserInfo(loginInfo.userInfo);
       }
     } catch (error) {
-      logger.error('检查登录状态失败', error, 'main');
-      errorHandler.handleError(error, 'login-check');
+      console.error('检查登录状态失败:', error);
       // 出错时默认进入登录页
+      console.log('登录状态检查出错，默认进入登录页');
       GameGlobal.pageManager.switchToPage('login');
+      // console.log('登录状态检查出错，默认进入立体组装页');
+      // GameGlobal.pageManager.switchToPage('threeDAssembly');
     }
   }
 
@@ -124,8 +108,6 @@ export default class Main {
         this.renderErrorPage(ctx);
       }
     } catch (error) {
-      logger.error('渲染失败', error, 'main');
-      errorHandler.handleError(error, 'render');
       console.error('渲染失败:', error);
       this.renderErrorPage(ctx);
     }
@@ -161,29 +143,21 @@ export default class Main {
     }
   }
 
-  /**
-   * 游戏主循环
-   */
+  // 实现游戏帧循环
   loop() {
+    if (!this.isRunning) {
+      return;
+    }
+
     try {
-      // 更新游戏状态
-      this.update();
-      
-      // 更新动画管理器
-      if (GameGlobal.animationManager) {
-        GameGlobal.animationManager.update();
-      }
-      
-      // 渲染游戏画面
-      this.render();
-      
-      // 继续循环
-      if (this.isRunning) {
-        this.aniId = requestAnimationFrame(this.loop.bind(this));
-      }
+      this.update(); // 更新游戏逻辑
+      this.render(); // 渲染游戏画面
+
+      // 请求下一帧动画
+      this.aniId = requestAnimationFrame(this.loop.bind(this));
     } catch (error) {
-      logger.error('游戏循环错误', error, 'main');
-      errorHandler.handleError(error, 'game-loop');
+      console.error('游戏循环错误:', error);
+      this.handleError(error);
     }
   }
 

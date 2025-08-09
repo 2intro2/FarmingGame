@@ -803,17 +803,24 @@ export default class ToolAssemblyNavPage extends BasePage {
     gradient.addColorStop(1, '#1976D2');
     
     ctx.fillStyle = gradient;
-    const tagRadius = 20; // 增大圆角半径，创造更圆润的标签效果
+    // 使用更大的圆角半径，确保效果明显
+    const tagRadius = Math.min(25, tagHeight / 2); // 最大25px或标签高度的一半
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug('绘制难度标签圆角', { 
+        tagWidth, tagHeight, tagRadius 
+      }, 'toolAssemblyNav');
+    }
+    
+    // 直接使用兼容性最好的圆角绘制方法
     try {
-      if (ctx.roundRect && typeof ctx.roundRect === 'function') {
-        ctx.roundRect(x, y, tagWidth, tagHeight, tagRadius);
-        ctx.fill();
-      } else {
-        this.drawSimpleRoundedRect(ctx, x, y, tagWidth, tagHeight, tagRadius);
-        ctx.fill();
-      }
+      this.drawSimpleRoundedRect(ctx, x, y, tagWidth, tagHeight, tagRadius);
+      ctx.fill();
     } catch (rectError) {
       ctx.fillRect(x, y, tagWidth, tagHeight);
+      if (GameGlobal.logger) {
+        GameGlobal.logger.warn('难度标签圆角绘制失败', { error: rectError.message }, 'toolAssemblyNav');
+      }
     }
     
     // 绘制星级（适配最大标签）
@@ -842,17 +849,24 @@ export default class ToolAssemblyNavPage extends BasePage {
     gradient.addColorStop(1, '#FF9800');
     
     ctx.fillStyle = gradient;
-    const tagRadius = 20; // 增大圆角半径，与难度标签保持一致
+    // 使用更大的圆角半径，与难度标签保持一致
+    const tagRadius = Math.min(25, tagHeight / 2); // 最大25px或标签高度的一半
+    
+    if (GameGlobal.logger) {
+      GameGlobal.logger.debug('绘制奖励标签圆角', { 
+        tagWidth, tagHeight, tagRadius 
+      }, 'toolAssemblyNav');
+    }
+    
+    // 直接使用兼容性最好的圆角绘制方法
     try {
-      if (ctx.roundRect && typeof ctx.roundRect === 'function') {
-        ctx.roundRect(x, y - tagHeight, tagWidth, tagHeight, tagRadius);
-        ctx.fill();
-      } else {
-        this.drawSimpleRoundedRect(ctx, x, y - tagHeight, tagWidth, tagHeight, tagRadius);
-        ctx.fill();
-      }
+      this.drawSimpleRoundedRect(ctx, x, y - tagHeight, tagWidth, tagHeight, tagRadius);
+      ctx.fill();
     } catch (rectError) {
       ctx.fillRect(x, y - tagHeight, tagWidth, tagHeight);
+      if (GameGlobal.logger) {
+        GameGlobal.logger.warn('奖励标签圆角绘制失败', { error: rectError.message }, 'toolAssemblyNav');
+      }
     }
     
     // 绘制奖励文本和数值（添加"奖励:"前缀）

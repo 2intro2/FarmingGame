@@ -173,9 +173,9 @@ export default class HomePage {
     this.moduleImages.iconButton1.src = 'images/icon.png';
     this.moduleImages.iconButton2.src = 'images/icon.png';
     this.moduleImages.iconButton3.src = 'images/icon.png';
-    this.moduleImages.noodleLife.src = 'images/bg08.png';
-    this.moduleImages.emergencyChallenge.src = 'images/bg09.png';
-    this.moduleImages.cornGrowth.src = 'images/bg10.png';
+    this.moduleImages.noodleLife.src = 'images/bg12.png';
+    this.moduleImages.emergencyChallenge.src = 'images/bg13.png';
+    this.moduleImages.cornGrowth.src = 'images/bg01.jpeg';
     // 错误处理
     Object.entries(this.moduleImages).forEach(([k, img]) => {
       img.onerror = () => {

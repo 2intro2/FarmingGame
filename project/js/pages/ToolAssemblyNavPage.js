@@ -281,9 +281,9 @@ export default class ToolAssemblyNavPage extends BasePage {
     
     ctx.restore();
 
-    // 标题
+    // 标题 - 现代化字体，去掉加粗
     ctx.fillStyle = '#333333';
-    ctx.font = 'bold 24px Arial';
+    ctx.font = '24px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('农具拼装', 80, 45);
   }
@@ -951,54 +951,69 @@ export default class ToolAssemblyNavPage extends BasePage {
       const isCurrent = step.status === 'current';
       const isLocked = step.status === 'locked';
       
-      // 步骤背景
-      ctx.fillStyle = isCompleted ? '#E8F5E8' : isCurrent ? '#E3F2FD' : '#F5F5F5';
-      ctx.strokeStyle = isCompleted ? '#4CAF50' : isCurrent ? '#2196F3' : '#CCCCCC';
-      ctx.lineWidth = 2;
+      // 使用绿色圆角卡片样式
+      const cardHeight = 60;
+      const borderRadius = 20; // 大圆角
       
-      try {
-        if (ctx.roundRect && typeof ctx.roundRect === 'function') {
-          ctx.roundRect(x, y, width, 60, 10);
-          ctx.fill();
-          ctx.stroke();
-        } else {
-          ctx.fillRect(x, y, width, 60);
-          ctx.strokeRect(x, y, width, 60);
-        }
-      } catch (rectError) {
-        ctx.fillRect(x, y, width, 60);
-        ctx.strokeRect(x, y, width, 60);
+      // 背景颜色 - 统一使用绿色系渐变色
+      let bgColor, textColor;
+      if (isCompleted) {
+        bgColor = '#d9f7be'; // 浅绿色背景
+        textColor = '#52c41a'; // 深绿色文字
+      } else if (isCurrent) {
+        bgColor = '#d9f7be'; // 当前步骤也使用绿色
+        textColor = '#52c41a';
+      } else {
+        bgColor = '#f0f0f0'; // 锁定状态使用灰色
+        textColor = '#999999';
       }
-
-      // 步骤标题
-      ctx.fillStyle = isCompleted ? '#4CAF50' : isCurrent ? '#2196F3' : '#999999';
-      ctx.font = 'bold 12px Arial';
+      
+      // 绘制圆角卡片背景
+      ctx.fillStyle = bgColor;
+      try {
+        this.drawSimpleRoundedRect(ctx, x, y, width, cardHeight, borderRadius);
+        ctx.fill();
+      } catch (rectError) {
+        ctx.fillRect(x, y, width, cardHeight);
+      }
+      
+      // 步骤标题 - 现代化字体
+      ctx.fillStyle = textColor;
+      ctx.font = 'bold 14px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(step.title, x + width / 2, y + 20);
+      ctx.textBaseline = 'middle';
+      ctx.fillText(step.title, x + width / 2, y + 18);
 
-      // 步骤名称
-      ctx.fillStyle = '#666666';
-      ctx.font = '12px Arial';
-      ctx.fillText(step.name, x + width / 2, y + 40);
+      // 步骤名称 - 现代化字体
+      ctx.fillStyle = textColor;
+      ctx.font = '12px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
+      ctx.fillText(step.name, x + width / 2, y + 42);
 
       // 状态图标
       if (isCompleted) {
-        // 已完成印章
-        ctx.fillStyle = '#FF4444';
+        // 已完成徽章 - 更精致的设计
+        ctx.fillStyle = '#52c41a';
         ctx.beginPath();
-        ctx.arc(x + width - 15, y + 15, 10, 0, 2 * Math.PI);
+        ctx.arc(x + width - 15, y + 15, 8, 0, 2 * Math.PI);
         ctx.fill();
         
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 8px Arial';
+        ctx.font = 'bold 10px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('已完成', x + width - 15, y + 18);
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✓', x + width - 15, y + 15);
       } else if (isLocked) {
-        // 锁定图标
-        ctx.fillStyle = '#FFD700';
-        ctx.font = '16px Arial';
+        // 锁定图标 - 使用绿色主题
+        ctx.fillStyle = '#bfbfbf';
+        ctx.beginPath();
+        ctx.arc(x + width - 15, y + 15, 8, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 10px "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('🔒', x + width - 15, y + 20);
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🔒', x + width - 15, y + 15);
       }
     } catch (error) {
       if (GameGlobal.logger) {

@@ -1004,17 +1004,17 @@ export default class ToolAssemblyNavPage extends BasePage {
       const cardHeight = 105; // 从95进一步增加到105，适配200px宽度的更大卡片
       const borderRadius = 22; // 适当增大圆角，与卡片尺寸协调
       
-      // 背景颜色 - 统一使用绿色背景，文字改为正文颜色
+      // 背景颜色 - 三张卡片使用不同的绿色系背景
       let bgColor, textColor;
       if (isCompleted) {
-        bgColor = '#d9f7be'; // 浅绿色背景
+        bgColor = '#f6ffed'; // 第一张卡片：最浅绿色背景
         textColor = '#333333'; // 正文颜色 - 深灰色
       } else if (isCurrent) {
-        bgColor = '#d9f7be'; // 当前步骤也使用绿色背景
+        bgColor = '#d9f7be'; // 第二张卡片：中等绿色背景
         textColor = '#333333'; // 正文颜色 - 深灰色
       } else {
-        bgColor = '#f0f0f0'; // 锁定状态使用灰色背景
-        textColor = '#999999'; // 锁定状态保持灰色文字
+        bgColor = '#b7eb8f'; // 第三张卡片：较深绿色背景
+        textColor = '#333333'; // 改为正文颜色，保持一致性
       }
       
       // 绘制圆角卡片背景
@@ -1040,10 +1040,10 @@ export default class ToolAssemblyNavPage extends BasePage {
 
       // 状态图标
       if (isCompleted) {
-        // 已完成图标 - 使用finish.png图片，适配更大卡片
-        const iconSize = 28; // 从24增加到28，图标尺寸更大
-        const iconX = x + width - iconSize - 10; // 右上角位置，增加到10px边距
-        const iconY = y + 10; // 顶部增加到10px边距
+        // 已完成图标 - 使用finish.png图片，再次增大尺寸
+        const iconSize = 32; // 从28增加到32，图标尺寸再次变大
+        const iconX = x + width - iconSize - 12; // 右上角位置，增加到12px边距
+        const iconY = y + 12; // 顶部增加到12px边距
         
         if (this.finishIconLoaded && this.finishIcon) {
           try {
@@ -1057,10 +1057,10 @@ export default class ToolAssemblyNavPage extends BasePage {
           this.drawFallbackCompletedIcon(ctx, x + width - 15, y + 15);
         }
       } else if (isLocked) {
-        // 锁定图标 - 使用lock.png图片，适配更大卡片
-        const iconSize = 28; // 从24增加到28，图标尺寸更大
-        const iconX = x + width - iconSize - 10; // 右上角位置，增加到10px边距
-        const iconY = y + 10; // 顶部增加到10px边距
+        // 锁定图标 - 使用lock.png图片，再次增大尺寸
+        const iconSize = 32; // 从28增加到32，图标尺寸再次变大
+        const iconX = x + width - iconSize - 12; // 右上角位置，增加到12px边距
+        const iconY = y + 12; // 顶部增加到12px边距
         
         if (this.lockIconLoaded && this.lockIcon) {
           try {

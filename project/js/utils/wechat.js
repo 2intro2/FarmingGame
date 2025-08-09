@@ -30,7 +30,14 @@ export default class WechatAPI {
   handleTouchStart(event) {
     // 将触摸事件传递给当前页面
     if (GameGlobal.pageManager && GameGlobal.pageManager.currentPage) {
-      GameGlobal.pageManager.handleTouch(event);
+      // 优先调用具体的touchStart方法
+      if (GameGlobal.pageManager.handleTouchStart) {
+        GameGlobal.pageManager.handleTouchStart(event);
+      }
+      // 兼容旧的handleTouch方法
+      if (GameGlobal.pageManager.handleTouch) {
+        GameGlobal.pageManager.handleTouch(event);
+      }
     }
   }
 

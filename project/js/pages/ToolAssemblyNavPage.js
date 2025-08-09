@@ -617,8 +617,12 @@ export default class ToolAssemblyNavPage extends BasePage {
    * 处理触摸事件（保持兼容性）
    */
   handleTouch(event) {
-    // 将处理逻辑委托给touchEnd，保持与现有PageManager的兼容性
-    this.handleTouchEnd(event);
+    // 兼容旧的触摸事件处理，但避免与新的具体触摸方法重复
+    // 只有在没有changedTouches的情况下才处理（即非TouchEnd事件）
+    if (!event.changedTouches && event.touches && event.touches.length > 0) {
+      const touch = event.touches[0];
+      this.handleTouchTap(touch.clientX, touch.clientY);
+    }
   }
 
   /**
